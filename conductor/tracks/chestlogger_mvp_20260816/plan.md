@@ -27,12 +27,12 @@
 - [x] Task: Implement unified automation transaction capture for Hopper and Hopper Minecart transfers within the container abstraction. (42c657a)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (a568800)
 
-## Phase 5: Persistent Multi-Dimensional Indexing
+## Phase 5: Persistent Multi-Dimensional Indexing [checkpoint: 95d1962]
 - [x] Task: Write unit tests for index entry serialization and multi-dimensional query filters (time, player UUID, BlockPos, segment offset). (b94e7d6)
 - [x] Task: Implement `PersistentIndexManager` with atomic checkpoints and disk batching. (8686323)
 - [x] Task: Write unit tests for index recovery and rebuilding from binary log metadata. (d3d4ea1)
 - [x] Task: Implement automatic index rebuild engine for corrupted/missing index files. (95d1962)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (95d1962)
 
 ## Phase 6: Crash Safety & Segment Tail Recovery
 - [ ] Task: Write unit tests for corrupted block detection, partial writes, and tail truncation.
