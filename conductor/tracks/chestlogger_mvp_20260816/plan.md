@@ -1,7 +1,7 @@
 # Implementation Plan: ChestLogger MVP (Minecraft 26.2)
 
 ## Phase 1: Project Bootstrap & Build Verification
-- [ ] Task: Verify official Minecraft 26.2 Fabric ecosystem dependencies (Loader 0.19.3+, Loom 1.17, Fabric API 26.2, Java 25, Gradle 9.5.1 wrapper).
+- [x] Task: Verify official Minecraft 26.2 Fabric ecosystem dependencies (Loader 0.19.3+, Loom 1.17, Fabric API 26.2, Java 25, Gradle 9.5.1 wrapper). (af5b860)
 - [ ] Task: Scaffold root gradle build scripts (`build.gradle`, `settings.gradle`, `gradle.properties`, `fabric.mod.json`).
 - [ ] Task: Validate clean build and compile execution with `./gradlew build`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
