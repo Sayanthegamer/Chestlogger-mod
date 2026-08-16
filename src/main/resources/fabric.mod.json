@@ -16,6 +16,9 @@
   "entrypoints": {
     "main": [
       "com.chestlogger.ChestLoggerMod"
+    ],
+    "client": [
+      "com.chestlogger.client.ChestLoggerClient"
     ]
   },
   "mixins": [
