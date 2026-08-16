@@ -13,12 +13,12 @@
 - [x] Task: Implement bounded `EventQueue` with diagnostic counters (depth, dropped events, total enqueued). (e04f678)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (e04f678)
 
-## Phase 3: Binary Storage Engine, Block Compression & Disk Profiles
+## Phase 3: Binary Storage Engine, Block Compression & Disk Profiles [checkpoint: 908b49d]
 - [x] Task: Write unit tests for VarInt/VarLong encoding, string table dictionaries, and binary block serialization. (8042d23)
 - [x] Task: Implement versioned binary serializer (`BinaryLogWriter`) with block checksums (CRC32). (36b2d09)
 - [x] Task: Write unit tests for LZ4 block compressor and decompression round-trips. (df66e53)
 - [x] Task: Implement LZ4 block compressor and profile presets (`balanced`, `hdd`, `ssd`) with configurable batch flushing. (908b49d)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (908b49d)
 
 ## Phase 4: Unified Container Abstraction & Server-Authoritative Transaction Capture
 - [ ] Task: Write unit tests for unified container abstraction and transaction state diffing.
