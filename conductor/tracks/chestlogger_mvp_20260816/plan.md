@@ -47,7 +47,7 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (374412c)
 
 ## Phase 8: Non-Destructive Compensation Rollback Engine
-- [ ] Task: Write unit tests for rollback dry-run calculation, safety validation, and inverse delta application.
+- [x] Task: Write unit tests for rollback dry-run calculation, safety validation, and inverse delta application. (535c63a)
 - [ ] Task: Implement `RollbackEngine` with pre-validation (refusing occupied/modified invalid slots, preventing item dupe/deletion) and audit trail logging.
 - [ ] Task: Implement `/chestlog rollback` command interface with dry-run summary and confirmation.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
