@@ -48,8 +48,8 @@
 
 ## Phase 8: Non-Destructive Compensation Rollback Engine
 - [x] Task: Write unit tests for rollback dry-run calculation, safety validation, and inverse delta application. (535c63a)
-- [ ] Task: Implement `RollbackEngine` with pre-validation (refusing occupied/modified invalid slots, preventing item dupe/deletion) and audit trail logging.
-- [ ] Task: Implement `/chestlog rollback` command interface with dry-run summary and confirmation.
+- [x] Task: Implement `RollbackEngine` with pre-validation (refusing occupied/modified invalid slots, preventing item dupe/deletion) and audit trail logging. (aba724e)
+- [x] Task: Implement `/chestlog rollback` command interface with dry-run summary and confirmation. (aba724e)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 9: Singleplayer & Dedicated Server Lifecycle Integration
