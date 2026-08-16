@@ -39,12 +39,12 @@
 - [x] Task: Implement startup log segment validator, corrupted tail truncation/quarantine, and monotonic sequence resumption. (265bf06)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (265bf06)
 
-## Phase 7: Administrative Query Engine & Commands
+## Phase 7: Administrative Query Engine & Commands [checkpoint: 374412c]
 - [x] Task: Write unit tests for query pagination and formatted display output. (a0ec0e6)
 - [x] Task: Implement `/chestlog inspect` command with player, location, and time range filters. (374412c)
 - [x] Task: Implement `/chestlog stats` displaying live queue, flush, and compression metrics. (374412c)
 - [x] Task: Implement `/chestlog purge` with confirmation token safeguards. (374412c)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (374412c)
 
 ## Phase 8: Non-Destructive Compensation Rollback Engine
 - [ ] Task: Write unit tests for rollback dry-run calculation, safety validation, and inverse delta application.
