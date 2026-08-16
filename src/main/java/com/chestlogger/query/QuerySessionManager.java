@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class QuerySessionManager {
     public static final int DEFAULT_PAGE_SIZE = 25;
     private static final long SESSION_TTL_MS = 5 * 60 * 1000L; // 5 minutes
+    private static final UUID NIL_UUID = new UUID(0L, 0L);
 
     private final int pageSize;
     private final Map<UUID, SessionEntry> sessions = new ConcurrentHashMap<>();
@@ -40,12 +41,15 @@ public final class QuerySessionManager {
         List<DisplayRecord> displayRecords = new ArrayList<>();
         if (records != null) {
             for (TransactionLogEntry entry : records) {
+                UUID actorUuid = entry.actorUuid() != null ? entry.actorUuid() : NIL_UUID;
+                String actorName = entry.actorName() != null ? entry.actorName() : "System";
+
                 if (entry.deltas().isEmpty()) {
                     displayRecords.add(new DisplayRecord(
                             entry.sequenceId(),
                             entry.timestampMs(),
-                            entry.actorUuid(),
-                            entry.actorName(),
+                            actorUuid,
+                            actorName,
                             entry.actorType().getWireId(),
                             entry.actionType().getWireId(),
                             0,
@@ -58,8 +62,8 @@ public final class QuerySessionManager {
                         displayRecords.add(new DisplayRecord(
                                 entry.sequenceId(),
                                 entry.timestampMs(),
-                                entry.actorUuid(),
-                                entry.actorName(),
+                                actorUuid,
+                                actorName,
                                 entry.actorType().getWireId(),
                                 entry.actionType().getWireId(),
                                 delta.slotIndex(),
@@ -73,19 +77,22 @@ public final class QuerySessionManager {
         }
 
         SessionEntry session = new SessionEntry(
-                queryId,
-                containerType,
-                dimension,
+                queryId != null ? queryId : UUID.randomUUID(),
+                containerType != null ? containerType : "Container",
+                dimension != null ? dimension : "minecraft:overworld",
                 packedBlockPos,
                 displayRecords,
                 System.currentTimeMillis()
         );
-        sessions.put(queryId, session);
+        sessions.put(session.queryId, session);
 
         return slicePage(session, initialPage);
     }
 
     public synchronized ChestLogPagePayload getPage(UUID queryId, int pageIndex) {
+        if (queryId == null) {
+            return null;
+        }
         SessionEntry session = sessions.get(queryId);
         if (session == null) {
             return null;
@@ -95,11 +102,13 @@ public final class QuerySessionManager {
     }
 
     public synchronized boolean hasSession(UUID queryId) {
-        return sessions.containsKey(queryId);
+        return queryId != null && sessions.containsKey(queryId);
     }
 
     public synchronized void invalidate(UUID queryId) {
-        sessions.remove(queryId);
+        if (queryId != null) {
+            sessions.remove(queryId);
+        }
     }
 
     private ChestLogPagePayload slicePage(SessionEntry session, int requestedPage) {

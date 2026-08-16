@@ -21,6 +21,8 @@ public record DisplayRecord(
         int quantityDelta,
         long metadataFingerprint
 ) {
+    public static final UUID NIL_UUID = new UUID(0L, 0L);
+
     public DisplayRecord {
         Objects.requireNonNull(actorUuid, "actorUuid cannot be null");
         Objects.requireNonNull(actorName, "actorName cannot be null");
