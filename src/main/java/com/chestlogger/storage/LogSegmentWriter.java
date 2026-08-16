@@ -70,25 +70,28 @@ public final class LogSegmentWriter implements Closeable {
 
         String fileName = String.format("%s_%06d.clog", segmentPrefix, segmentIndex);
         currentSegmentFile = new File(logDir, fileName);
-        this.currentFos = new FileOutputStream(currentSegmentFile, false);
+        boolean exists = currentSegmentFile.exists() && currentSegmentFile.length() >= BinaryLogHeader.HEADER_SIZE;
+        this.currentFos = new FileOutputStream(currentSegmentFile, exists);
         this.currentChannel = currentFos.getChannel();
         this.segmentCreationTimeMs = System.currentTimeMillis();
-        this.bytesWrittenToCurrentSegment = 0L;
+        this.bytesWrittenToCurrentSegment = exists ? currentSegmentFile.length() : 0L;
 
-        // Write 32-byte header
-        BinaryLogHeader header = new BinaryLogHeader(
-                BinaryLogHeader.CURRENT_VERSION,
-                compressor.getCompressionType(),
-                (byte) 0x01, // Has dictionary flag
-                segmentCreationTimeMs,
-                startSeqId
-        );
+        if (!exists) {
+            // Write 32-byte header
+            BinaryLogHeader header = new BinaryLogHeader(
+                    BinaryLogHeader.CURRENT_VERSION,
+                    compressor.getCompressionType(),
+                    (byte) 0x01, // Has dictionary flag
+                    segmentCreationTimeMs,
+                    startSeqId
+            );
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(BinaryLogHeader.HEADER_SIZE);
-        header.writeTo(baos);
-        byte[] headerBytes = baos.toByteArray();
-        currentFos.write(headerBytes);
-        bytesWrittenToCurrentSegment += headerBytes.length;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(BinaryLogHeader.HEADER_SIZE);
+            header.writeTo(baos);
+            byte[] headerBytes = baos.toByteArray();
+            currentFos.write(headerBytes);
+            bytesWrittenToCurrentSegment += headerBytes.length;
+        }
     }
 
     /**

@@ -10,10 +10,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.*;
 
 /**
- * Fast disk retrieval engine resolving IndexPointers into TransactionLogEntry instances.
+ * Fast disk retrieval engine resolving IndexPointers into TransactionLogEntry instances
+ * with O(1) random-access file channel seeking.
  */
 public final class QueryEngine {
     private final File logDir;
@@ -56,15 +58,19 @@ public final class QueryEngine {
 
         StringTableDictionary dict = getOrLoadDictionary(segmentFile, ptr.segmentIndex());
 
-        try (FileInputStream fis = new FileInputStream(segmentFile)) {
-            BinaryLogHeader header = BinaryLogHeader.readFrom(fis);
-            long skipped = fis.skip(ptr.blockOffset() - BinaryLogHeader.HEADER_SIZE);
-            if (skipped < ptr.blockOffset() - BinaryLogHeader.HEADER_SIZE) {
-                return null;
-            }
+        try (RandomAccessFile raf = new RandomAccessFile(segmentFile, "r")) {
+            byte[] headerBytes = new byte[BinaryLogHeader.HEADER_SIZE];
+            raf.readFully(headerBytes);
+            BinaryLogHeader header = BinaryLogHeader.readFrom(new ByteArrayInputStream(headerBytes));
 
-            BlockFrameHeader blockHeader = BlockFrameHeader.readFrom(fis);
-            byte[] payloadBytes = fis.readNBytes(blockHeader.compressedLength());
+            raf.seek(ptr.blockOffset());
+
+            byte[] blockHeaderBytes = new byte[BlockFrameHeader.HEADER_SIZE];
+            raf.readFully(blockHeaderBytes);
+            BlockFrameHeader blockHeader = BlockFrameHeader.readFrom(new ByteArrayInputStream(blockHeaderBytes));
+
+            byte[] payloadBytes = new byte[blockHeader.compressedLength()];
+            raf.readFully(payloadBytes);
 
             byte[] rawBytes;
             boolean isCompressed = (blockHeader.flags() & 0x01) != 0;
@@ -79,6 +85,7 @@ public final class QueryEngine {
             long prevTime = header.creationEpochMs() + blockHeader.minTimestampDelta();
 
             for (int r = 0; r <= ptr.recordIndexInBlock(); r++) {
+                if (bais.available() == 0) break;
                 TransactionLogEntry entry = BinaryRecordCodec.decode(bais, dict, prevSeq, prevTime);
                 if (r == ptr.recordIndexInBlock()) {
                     return entry;
