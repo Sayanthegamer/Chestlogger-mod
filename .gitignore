@@ -10,3 +10,5 @@ bin/
 out/
 .DS_Store
 *.log
+logs/
+chestlogger_data/
