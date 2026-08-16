@@ -1,0 +1,1 @@
+Task 7.2-7.4: Implemented PagedResult, TransactionFormatter, direct-seek QueryEngine, and Brigadier commands (/chestlog inspect, /chestlog stats, /chestlog purge)
