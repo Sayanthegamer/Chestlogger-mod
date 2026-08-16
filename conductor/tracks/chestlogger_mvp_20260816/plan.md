@@ -34,10 +34,10 @@
 - [x] Task: Implement automatic index rebuild engine for corrupted/missing index files. (95d1962)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (95d1962)
 
-## Phase 6: Crash Safety & Segment Tail Recovery
+## Phase 6: Crash Safety & Segment Tail Recovery [checkpoint: 265bf06]
 - [x] Task: Write unit tests for corrupted block detection, partial writes, and tail truncation. (e7d4805)
 - [x] Task: Implement startup log segment validator, corrupted tail truncation/quarantine, and monotonic sequence resumption. (265bf06)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (265bf06)
 
 ## Phase 7: Administrative Query Engine & Commands
 - [ ] Task: Write unit tests for query pagination and formatted display output.
