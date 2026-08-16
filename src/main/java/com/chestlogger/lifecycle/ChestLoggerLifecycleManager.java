@@ -8,21 +8,15 @@ import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.recovery.RecoveryReport;
 import com.chestlogger.recovery.TailRecoveryEngine;
-import com.chestlogger.storage.BlockCompressor;
-import com.chestlogger.storage.LogSegmentWriter;
-import com.chestlogger.storage.StorageProfile;
-import com.chestlogger.storage.StringTableDictionary;
+import com.chestlogger.storage.*;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,11 +97,36 @@ public final class ChestLoggerLifecycleManager {
 
         // 3. String dictionary & Segment writer initialization
         stringDictionary = new StringTableDictionary();
+
+        // Populate string dictionary from existing segments to maintain ID continuity
+        File[] clogFiles = dataDir.listFiles((dir, name) -> name.endsWith(".clog"));
+        if (clogFiles != null && clogFiles.length > 0) {
+            Arrays.sort(clogFiles, Comparator.comparing(File::getName));
+            for (File cf : clogFiles) {
+                try (FileInputStream fis = new FileInputStream(cf)) {
+                    if (fis.available() >= BinaryLogHeader.HEADER_SIZE) {
+                        BinaryLogHeader.readFrom(fis);
+                        while (fis.available() >= BlockFrameHeader.HEADER_SIZE) {
+                            BlockFrameHeader bh = BlockFrameHeader.readFrom(fis);
+                            byte[] payload = fis.readNBytes(bh.compressedLength());
+                            if (bh.blockType() == BlockFrameHeader.TYPE_DICTIONARY) {
+                                StringTableDictionary loaded = StringTableDictionary.readFrom(new ByteArrayInputStream(payload));
+                                for (int i = 0; i < loaded.size(); i++) {
+                                    stringDictionary.getOrAssign(loaded.getString(i));
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
         long nextSequenceId = report.maxSequenceId() + 1;
         int activeSegIdx = report.activeSegmentIndex();
 
         segmentWriter = new LogSegmentWriter(dataDir, "chestlog", activeSegIdx, nextSequenceId, compressor, profile, stringDictionary);
-        queryEngine = new QueryEngine(dataDir, compressor, indexManager);
+        queryEngine = new QueryEngine(dataDir, compressor, indexManager, () -> stringDictionary);
 
         running.set(true);
 

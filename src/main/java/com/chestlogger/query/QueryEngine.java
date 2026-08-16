@@ -12,21 +12,33 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Fast disk retrieval engine resolving IndexPointers into TransactionLogEntry instances
- * with O(1) random-access file channel seeking.
+ * with O(1) random-access file channel seeking and live dictionary fallback.
  */
 public final class QueryEngine {
     private final File logDir;
     private final BlockCompressor compressor;
     private final PersistentIndexManager indexManager;
+    private final Supplier<StringTableDictionary> liveDictionarySupplier;
     private final Map<Integer, StringTableDictionary> segmentDictionaries = new HashMap<>();
 
     public QueryEngine(File logDir, BlockCompressor compressor, PersistentIndexManager indexManager) {
+        this(logDir, compressor, indexManager, null);
+    }
+
+    public QueryEngine(
+            File logDir,
+            BlockCompressor compressor,
+            PersistentIndexManager indexManager,
+            Supplier<StringTableDictionary> liveDictionarySupplier
+    ) {
         this.logDir = Objects.requireNonNull(logDir, "logDir cannot be null");
         this.compressor = Objects.requireNonNull(compressor, "compressor cannot be null");
         this.indexManager = Objects.requireNonNull(indexManager, "indexManager cannot be null");
+        this.liveDictionarySupplier = liveDictionarySupplier;
     }
 
     public List<TransactionLogEntry> fetchRecords(IndexQueryFilter filter) throws IOException {
@@ -56,7 +68,7 @@ public final class QueryEngine {
         Arrays.sort(files, Comparator.comparing(File::getName));
         File segmentFile = files[ptr.segmentIndex()];
 
-        StringTableDictionary dict = getOrLoadDictionary(segmentFile, ptr.segmentIndex());
+        StringTableDictionary dict = getOrLoadDictionary(segmentFile, ptr.segmentIndex(), ptr.segmentIndex() == files.length - 1);
 
         try (RandomAccessFile raf = new RandomAccessFile(segmentFile, "r")) {
             byte[] headerBytes = new byte[BinaryLogHeader.HEADER_SIZE];
@@ -98,9 +110,16 @@ public final class QueryEngine {
         return null;
     }
 
-    private synchronized StringTableDictionary getOrLoadDictionary(File segmentFile, int segmentIndex) throws IOException {
+    private synchronized StringTableDictionary getOrLoadDictionary(File segmentFile, int segmentIndex, boolean isActiveSegment) throws IOException {
+        if (isActiveSegment && liveDictionarySupplier != null) {
+            StringTableDictionary live = liveDictionarySupplier.get();
+            if (live != null && live.size() > 0) {
+                return live;
+            }
+        }
+
         StringTableDictionary existing = segmentDictionaries.get(segmentIndex);
-        if (existing != null) {
+        if (existing != null && existing.size() > 0) {
             return existing;
         }
 
@@ -120,6 +139,14 @@ public final class QueryEngine {
                 }
             }
         }
+
+        if (dict.size() == 0 && liveDictionarySupplier != null) {
+            StringTableDictionary live = liveDictionarySupplier.get();
+            if (live != null) {
+                return live;
+            }
+        }
+
         segmentDictionaries.put(segmentIndex, dict);
         return dict;
     }
