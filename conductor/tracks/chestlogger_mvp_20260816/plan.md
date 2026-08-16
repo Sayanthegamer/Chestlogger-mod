@@ -35,7 +35,7 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (95d1962)
 
 ## Phase 6: Crash Safety & Segment Tail Recovery
-- [ ] Task: Write unit tests for corrupted block detection, partial writes, and tail truncation.
+- [x] Task: Write unit tests for corrupted block detection, partial writes, and tail truncation. (e7d4805)
 - [ ] Task: Implement startup log segment validator, corrupted tail truncation/quarantine, and monotonic sequence resumption.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
