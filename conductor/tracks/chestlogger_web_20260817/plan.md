@@ -1,10 +1,10 @@
 # Implementation Plan: ChestLogger Embedded Web Admin Dashboard
 
 ## Phase 1: Web Server Foundation & Configuration (TDD)
-- [ ] Task: Write unit tests for `WebConfig` and `HttpAuthHandler` (token authentication, CORS, rate limiting).
-- [ ] Task: Implement `WebConfig` loaded from `config/chestlogger_web.json` (port, enabled, secretToken, allowedOrigins).
-- [ ] Task: Implement `EmbeddedHttpServer` wrapping `com.sun.net.httpserver.HttpServer` with background executor pool.
-- [ ] Task: Wire server start and stop hooks to `ServerLifecycleEvents`.
+- [x] Task: Write unit tests for `WebConfig` and `HttpAuthHandler` (token authentication, CORS, rate limiting). (0d932bf)
+- [x] Task: Implement `WebConfig` loaded from `config/chestlogger_web.json` (port, enabled, secretToken, allowedOrigins). (0d932bf)
+- [x] Task: Implement `EmbeddedHttpServer` wrapping `com.sun.net.httpserver.HttpServer` with background executor pool. (0d932bf)
+- [x] Task: Wire server start and stop hooks to `ServerLifecycleEvents`. (0d932bf)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: REST API Endpoints & Export Streamers (TDD)
