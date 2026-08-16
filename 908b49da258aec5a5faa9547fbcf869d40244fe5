@@ -1,0 +1,1 @@
+Task 3.4: Implemented LZ4 block compression, StorageProfile presets (balanced, hdd, ssd), and LogSegmentWriter with automated dictionary syncing and rotation
