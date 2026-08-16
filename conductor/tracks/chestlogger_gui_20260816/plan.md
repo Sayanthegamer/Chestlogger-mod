@@ -28,6 +28,6 @@
 ## Phase 5: Interactive Pagination, Filtering & End-to-End Hardening
 - [x] Task: Wire client pagination and filter interactions to `ClientPlayNetworking.send(ChestLogPageRequestPayload)`. (484d55d)
 - [x] Task: Implement client receiver updating `ChestLogScreen` state on new incoming `ChestLogPagePayload`. (484d55d)
-- [~] Task: Implement integration tests validating permission checks, malformed payload rejections, and zero thread leaks.
-- [ ] Task: Run full regression test suite (Phases 1 through 11).
+- [x] Task: Implement integration tests validating permission checks, malformed payload rejections, and zero thread leaks. (b3f7258)
+- [x] Task: Run full regression test suite (Phases 1 through 11). (b3f7258)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
