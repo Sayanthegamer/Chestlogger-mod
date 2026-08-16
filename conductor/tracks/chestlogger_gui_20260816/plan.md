@@ -6,12 +6,12 @@
 - [x] Task: Register payload types in `PayloadTypeRegistry.clientboundPlay()` and `serverboundPlay()` for Fabric 26.2. (3794cde)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (3794cde)
 
-## Phase 2: Server-Side Query Session Manager & Command Integration
+## Phase 2: Server-Side Query Session Manager & Command Integration [checkpoint: cdf5fa7]
 - [x] Task: Write unit tests for `QuerySessionManager` (session expiration, bounded page slicing, permission validation). (cdf5fa7)
 - [x] Task: Implement `QuerySessionManager` integrating with `QueryEngine` to serve bounded 25-record pages. (cdf5fa7)
 - [x] Task: Connect `/chestlog inspect` to dispatch initial `ChestLogPagePayload` when invoked by players. (cdf5fa7)
 - [x] Task: Implement serverbound receiver handling `ChestLogPageRequestPayload` pagination and filter requests. (cdf5fa7)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (cdf5fa7)
 
 ## Phase 3: Client GUI Foundation & Modular Layout
 - [ ] Task: Implement `ChestLogScreen extends Screen` with responsive dimensions, title, and container metadata header.
