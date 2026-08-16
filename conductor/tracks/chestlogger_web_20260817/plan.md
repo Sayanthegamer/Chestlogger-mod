@@ -8,10 +8,10 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (0d932bf)
 
 ## Phase 2: REST API Endpoints & Export Streamers (TDD)
-- [~] Task: Write integration tests for `/api/v1/stats`, `/api/v1/query`, and `/api/v1/export` endpoints.
-- [ ] Task: Implement `StatsHttpHandler` returning JSON telemetry from `TransactionEventQueue` and `PersistentIndexManager`.
-- [ ] Task: Implement `QueryHttpHandler` integrating with `QueryEngine` to serve paginated JSON records.
-- [ ] Task: Implement `ExportHttpHandler` streaming filtered results in CSV and JSON formats.
+- [x] Task: Write integration tests for `/api/v1/stats`, `/api/v1/query`, and `/api/v1/export` endpoints. (36952b8)
+- [x] Task: Implement `StatsHttpHandler` returning JSON telemetry from `TransactionEventQueue` and `PersistentIndexManager`. (36952b8)
+- [x] Task: Implement `QueryHttpHandler` integrating with `QueryEngine` to serve paginated JSON records. (36952b8)
+- [x] Task: Implement `ExportHttpHandler` streaming filtered results in CSV and JSON formats. (36952b8)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Embedded Web Dashboard Single-Page Application
