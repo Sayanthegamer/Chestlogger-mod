@@ -58,7 +58,7 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (00fb9d7)
 
 ## Phase 10: End-to-End Testing, Microbenchmarks & Hardening
-- [ ] Task: Implement integration tests simulating concurrent container transactions, hopper automation, and crash-restart cycles.
+- [x] Task: Implement integration tests simulating concurrent container transactions, hopper automation, and crash-restart cycles. (12235df)
 - [ ] Task: Implement microbenchmarks for throughput (100 to 1M events) across HDD and SSD profiles.
 - [ ] Task: Complete documentation (`README.md`, configuration comments) and verify release artifact packaging.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
