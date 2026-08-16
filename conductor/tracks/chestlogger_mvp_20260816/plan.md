@@ -52,10 +52,10 @@
 - [x] Task: Implement `/chestlog rollback` command interface with dry-run summary and confirmation. (aba724e)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (8002eb4)
 
-## Phase 9: Singleplayer & Dedicated Server Lifecycle Integration
+## Phase 9: Singleplayer & Dedicated Server Lifecycle Integration [checkpoint: 00fb9d7]
 - [x] Task: Implement world lifecycle listeners for per-world storage directory resolution (`saves/<world>/chestlogger/` vs `server_root/world/chestlogger/`). (00fb9d7)
 - [x] Task: Implement deterministic flush and writer thread termination on server stop or world leave. (00fb9d7)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (00fb9d7)
 
 ## Phase 10: End-to-End Testing, Microbenchmarks & Hardening
 - [ ] Task: Implement integration tests simulating concurrent container transactions, hopper automation, and crash-restart cycles.
