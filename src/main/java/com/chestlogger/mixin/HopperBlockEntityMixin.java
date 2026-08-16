@@ -3,15 +3,18 @@ package com.chestlogger.mixin;
 import com.chestlogger.ChestLoggerMod;
 import com.chestlogger.container.ContainerSnapshot;
 import com.chestlogger.container.ContainerTracker;
+import com.chestlogger.container.ContainerType;
 import com.chestlogger.event.ActionType;
 import com.chestlogger.event.ActorType;
 import com.chestlogger.event.BlockPosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,11 +37,14 @@ public abstract class HopperBlockEntityMixin {
             Direction direction,
             CallbackInfoReturnable<ItemStack> cir
     ) {
-        // Prepare pre-snapshots if containers are valid tracked instances
-        if (from != null) {
+        if (stack == null || stack.isEmpty()) {
+            return;
+        }
+        // Only snapshot valid tracked containers
+        if (from != null && chestlogger$isTrackedContainer(from)) {
             chestlogger$threadFromPre.set(ContainerTracker.capture(from));
         }
-        if (to != null) {
+        if (to != null && chestlogger$isTrackedContainer(to)) {
             chestlogger$threadToPre.set(ContainerTracker.capture(to));
         }
     }
@@ -59,14 +65,20 @@ public abstract class HopperBlockEntityMixin {
         chestlogger$threadFromPre.remove();
         chestlogger$threadToPre.remove();
 
+        // If returned stack count equals input stack count, transfer failed completely -> no logs
+        ItemStack remainder = cir.getReturnValue();
+        if (remainder != null && !stack.isEmpty() && remainder.getCount() == stack.getCount()) {
+            return;
+        }
+
         if (fromPre != null && from != null) {
             ContainerSnapshot fromPost = ContainerTracker.capture(from);
-            chestlogger$recordTransfer(from, fromPre, fromPost, ActionType.HOPPER_EXTRACT, "hopper_extract");
+            chestlogger$recordTransfer(from, fromPre, fromPost, ActionType.HOPPER_EXTRACT, "hopper");
         }
 
         if (toPre != null && to != null) {
             ContainerSnapshot toPost = ContainerTracker.capture(to);
-            chestlogger$recordTransfer(to, toPre, toPost, ActionType.HOPPER_INSERT, "hopper_insert");
+            chestlogger$recordTransfer(to, toPre, toPost, ActionType.HOPPER_INSERT, "hopper");
         }
     }
 
@@ -75,6 +87,14 @@ public abstract class HopperBlockEntityMixin {
 
     @Unique
     private static final ThreadLocal<ContainerSnapshot> chestlogger$threadToPre = new ThreadLocal<>();
+
+    @Unique
+    private static boolean chestlogger$isTrackedContainer(Container container) {
+        return container instanceof BlockEntity
+                || container instanceof CompoundContainer
+                || container instanceof Entity
+                || container instanceof Hopper;
+    }
 
     @Unique
     private static void chestlogger$recordTransfer(
@@ -88,7 +108,18 @@ public abstract class HopperBlockEntityMixin {
         long packedPos = 0L;
         ActorType actorType = ActorType.HOPPER_BLOCK;
 
-        if (container instanceof BlockEntity blockEntity && blockEntity.getLevel() != null) {
+        if (container instanceof CompoundContainer compoundContainer) {
+            // Unwrap double chest container to primary block entity
+            if (compoundContainer instanceof CompoundContainerAccessor acc) {
+                Container primary = acc.chestlogger$getContainer1();
+                if (primary instanceof BlockEntity be && be.getLevel() != null) {
+                    dimension = be.getLevel().dimension().identifier().toString();
+                    BlockPos pos = be.getBlockPos();
+                    packedPos = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
+                }
+            }
+            actorType = ActorType.AUTOMATION;
+        } else if (container instanceof BlockEntity blockEntity && blockEntity.getLevel() != null) {
             dimension = blockEntity.getLevel().dimension().identifier().toString();
             BlockPos pos = blockEntity.getBlockPos();
             packedPos = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
