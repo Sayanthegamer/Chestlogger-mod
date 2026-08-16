@@ -1,0 +1,1 @@
+Task 6.1: Created unit tests for TailRecoveryEngine partial write truncation, corrupted CRC32 block detection, and sequence number resumption (Red Phase)
