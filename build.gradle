@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.17'
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
     id 'maven-publish'
 }
 
@@ -20,10 +20,10 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    loader "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // High performance compression & buffers
     implementation "org.lz4:lz4-java:1.8.0"
