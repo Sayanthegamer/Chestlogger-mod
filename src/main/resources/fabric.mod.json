@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "chestlogger",
+  "version": "${version}",
+  "name": "ChestLogger",
+  "description": "Production-grade server-authoritative container looting and transaction tracking mod with zero main-thread blocking I/O, append-only binary logging, and compensation rollback.",
+  "authors": [
+    "ChestLogger Team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/chestlogger/chestlogger",
+    "sources": "https://github.com/chestlogger/chestlogger"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.chestlogger.ChestLoggerMod"
+    ]
+  },
+  "mixins": [
+    "chestlogger.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
