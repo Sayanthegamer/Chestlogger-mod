@@ -36,7 +36,7 @@
 
 ## Phase 6: Crash Safety & Segment Tail Recovery
 - [x] Task: Write unit tests for corrupted block detection, partial writes, and tail truncation. (e7d4805)
-- [ ] Task: Implement startup log segment validator, corrupted tail truncation/quarantine, and monotonic sequence resumption.
+- [x] Task: Implement startup log segment validator, corrupted tail truncation/quarantine, and monotonic sequence resumption. (265bf06)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 7: Administrative Query Engine & Commands
