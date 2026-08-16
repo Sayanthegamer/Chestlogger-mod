@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Lightweight, zero-dependency embedded web server managing HTTP endpoints
@@ -23,8 +24,33 @@ public class EmbeddedHttpServer {
     private ExecutorService executor;
     private volatile boolean running = false;
 
+    private final Supplier<com.chestlogger.event.TransactionEventQueue> queueSupplier;
+    private final Supplier<com.chestlogger.index.PersistentIndexManager> indexManagerSupplier;
+    private final Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier;
+    private final Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier;
+
     public EmbeddedHttpServer(WebConfig config) {
+        this(
+                config,
+                com.chestlogger.ChestLoggerMod::getEventQueue,
+                com.chestlogger.ChestLoggerMod::getIndexManager,
+                com.chestlogger.ChestLoggerMod::getQueryEngine,
+                com.chestlogger.ChestLoggerMod::getSessionManager
+        );
+    }
+
+    public EmbeddedHttpServer(
+            WebConfig config,
+            Supplier<com.chestlogger.event.TransactionEventQueue> queueSupplier,
+            Supplier<com.chestlogger.index.PersistentIndexManager> indexManagerSupplier,
+            Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier,
+            Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier
+    ) {
         this.config = config != null ? config : new WebConfig();
+        this.queueSupplier = queueSupplier != null ? queueSupplier : com.chestlogger.ChestLoggerMod::getEventQueue;
+        this.indexManagerSupplier = indexManagerSupplier != null ? indexManagerSupplier : com.chestlogger.ChestLoggerMod::getIndexManager;
+        this.queryEngineSupplier = queryEngineSupplier != null ? queryEngineSupplier : com.chestlogger.ChestLoggerMod::getQueryEngine;
+        this.sessionManagerSupplier = sessionManagerSupplier != null ? sessionManagerSupplier : com.chestlogger.ChestLoggerMod::getSessionManager;
     }
 
     public synchronized void start() {
@@ -94,24 +120,49 @@ public class EmbeddedHttpServer {
         return config;
     }
 
+    private final java.util.Map<String, HttpHandler> customContexts = new java.util.concurrent.ConcurrentHashMap<>();
+
     public synchronized void createContext(String path, HttpHandler handler) {
-        if (server != null && path != null && handler != null) {
-            server.createContext(path, handler);
+        if (path != null && handler != null) {
+            customContexts.put(path, handler);
+            if (server != null) {
+                server.createContext(path, handler);
+            }
         }
     }
 
     private void registerDefaultEndpoints() {
-        // Simple health endpoint
-        createContext("/api/v1/health", exchange -> {
-            if (!HttpAuthValidator.validate(exchange, config)) {
-                return;
+        // Register all pre-configured custom contexts first
+        for (var entry : customContexts.entrySet()) {
+            if (server != null) {
+                server.createContext(entry.getKey(), entry.getValue());
             }
-            byte[] response = "{\"status\":\"UP\",\"service\":\"ChestLogger\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-            exchange.sendResponseHeaders(200, response.length);
-            try (var os = exchange.getResponseBody()) {
-                os.write(response);
-            }
-        });
+        }
+
+        // Simple health endpoint (if not overridden)
+        if (!customContexts.containsKey("/api/v1/health")) {
+            createContext("/api/v1/health", exchange -> {
+                if (!HttpAuthValidator.validate(exchange, config)) {
+                    return;
+                }
+                byte[] response = "{\"status\":\"UP\",\"service\":\"ChestLogger\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+                exchange.sendResponseHeaders(200, response.length);
+                try (var os = exchange.getResponseBody()) {
+                    os.write(response);
+                }
+            });
+        }
+
+        // REST API endpoints (if not overridden)
+        if (!customContexts.containsKey("/api/v1/stats")) {
+            createContext("/api/v1/stats", new StatsHttpHandler(config, queueSupplier, indexManagerSupplier, System.currentTimeMillis()));
+        }
+        if (!customContexts.containsKey("/api/v1/query")) {
+            createContext("/api/v1/query", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
+        }
+        if (!customContexts.containsKey("/api/v1/export")) {
+            createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));
+        }
     }
 }

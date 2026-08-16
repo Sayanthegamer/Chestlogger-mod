@@ -36,6 +36,18 @@ public final class QuerySessionManager {
             List<TransactionLogEntry> records,
             int initialPage
     ) {
+        return createSession(queryId, containerType, dimension, packedBlockPos, records, initialPage, this.pageSize);
+    }
+
+    public synchronized ChestLogPagePayload createSession(
+            UUID queryId,
+            String containerType,
+            String dimension,
+            long packedBlockPos,
+            List<TransactionLogEntry> records,
+            int initialPage,
+            int customPageSize
+    ) {
         cleanupExpired();
 
         List<DisplayRecord> displayRecords = new ArrayList<>();
@@ -76,13 +88,15 @@ public final class QuerySessionManager {
             }
         }
 
+        int effPageSize = customPageSize > 0 ? customPageSize : this.pageSize;
         SessionEntry session = new SessionEntry(
                 queryId != null ? queryId : UUID.randomUUID(),
                 containerType != null ? containerType : "Container",
                 dimension != null ? dimension : "minecraft:overworld",
                 packedBlockPos,
                 displayRecords,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                effPageSize
         );
         sessions.put(session.queryId, session);
 
@@ -90,6 +104,10 @@ public final class QuerySessionManager {
     }
 
     public synchronized ChestLogPagePayload getPage(UUID queryId, int pageIndex) {
+        return getPage(queryId, pageIndex, 0);
+    }
+
+    public synchronized ChestLogPagePayload getPage(UUID queryId, int pageIndex, int customPageSize) {
         if (queryId == null) {
             return null;
         }
@@ -98,6 +116,9 @@ public final class QuerySessionManager {
             return null;
         }
         session.lastAccessTimeMs = System.currentTimeMillis();
+        if (customPageSize > 0) {
+            session.pageSize = customPageSize;
+        }
         return slicePage(session, pageIndex);
     }
 
@@ -112,12 +133,13 @@ public final class QuerySessionManager {
     }
 
     private ChestLogPagePayload slicePage(SessionEntry session, int requestedPage) {
+        int effPageSize = session.pageSize > 0 ? session.pageSize : this.pageSize;
         int totalRecords = session.records.size();
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalRecords / pageSize));
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalRecords / effPageSize));
         int clampedPage = Math.max(1, Math.min(requestedPage, totalPages));
 
-        int fromIndex = (clampedPage - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, totalRecords);
+        int fromIndex = (clampedPage - 1) * effPageSize;
+        int toIndex = Math.min(fromIndex + effPageSize, totalRecords);
 
         List<DisplayRecord> pageSlice;
         if (fromIndex >= totalRecords) {
@@ -150,14 +172,16 @@ public final class QuerySessionManager {
         final long packedBlockPos;
         final List<DisplayRecord> records;
         long lastAccessTimeMs;
+        int pageSize;
 
-        SessionEntry(UUID queryId, String containerType, String dimension, long packedBlockPos, List<DisplayRecord> records, long lastAccessTimeMs) {
+        SessionEntry(UUID queryId, String containerType, String dimension, long packedBlockPos, List<DisplayRecord> records, long lastAccessTimeMs, int pageSize) {
             this.queryId = queryId;
             this.containerType = containerType;
             this.dimension = dimension;
             this.packedBlockPos = packedBlockPos;
             this.records = records;
             this.lastAccessTimeMs = lastAccessTimeMs;
+            this.pageSize = pageSize;
         }
     }
 }
