@@ -57,8 +57,8 @@
 - [x] Task: Implement deterministic flush and writer thread termination on server stop or world leave. (00fb9d7)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (00fb9d7)
 
-## Phase 10: End-to-End Testing, Microbenchmarks & Hardening
+## Phase 10: End-to-End Testing, Microbenchmarks & Hardening [checkpoint: 1b183a8]
 - [x] Task: Implement integration tests simulating concurrent container transactions, hopper automation, and crash-restart cycles. (12235df)
 - [x] Task: Implement microbenchmarks for throughput (100 to 1M events) across HDD and SSD profiles. (a228b54)
 - [x] Task: Complete documentation (`README.md`, configuration comments) and verify release artifact packaging. (a272bc2)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (1b183a8)
