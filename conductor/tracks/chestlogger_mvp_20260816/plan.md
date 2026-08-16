@@ -59,6 +59,6 @@
 
 ## Phase 10: End-to-End Testing, Microbenchmarks & Hardening
 - [x] Task: Implement integration tests simulating concurrent container transactions, hopper automation, and crash-restart cycles. (12235df)
-- [ ] Task: Implement microbenchmarks for throughput (100 to 1M events) across HDD and SSD profiles.
+- [x] Task: Implement microbenchmarks for throughput (100 to 1M events) across HDD and SSD profiles. (a228b54)
 - [ ] Task: Complete documentation (`README.md`, configuration comments) and verify release artifact packaging.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
