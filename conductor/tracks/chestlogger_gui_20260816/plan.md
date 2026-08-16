@@ -1,9 +1,9 @@
 # Implementation Plan: ChestLogger Phase 11 History GUI (Minecraft 26.2)
 
 ## Phase 1: Networking Protocol & Custom Payloads (TDD)
-- [ ] Task: Write unit tests for `ChestLogPagePayload` and `ChestLogPageRequestPayload` serialization and round-trip decoding.
-- [ ] Task: Implement payload records (`ChestLogPagePayload`, `ChestLogPageRequestPayload`, `DisplayRecord`, `ContainerHeader`).
-- [ ] Task: Register payload types in `PayloadTypeRegistry.clientboundPlay()` and `serverboundPlay()` for Fabric 26.2.
+- [x] Task: Write unit tests for `ChestLogPagePayload` and `ChestLogPageRequestPayload` serialization and round-trip decoding. (3794cde)
+- [x] Task: Implement payload records (`ChestLogPagePayload`, `ChestLogPageRequestPayload`, `DisplayRecord`, `ContainerHeader`). (3794cde)
+- [x] Task: Register payload types in `PayloadTypeRegistry.clientboundPlay()` and `serverboundPlay()` for Fabric 26.2. (3794cde)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Server-Side Query Session Manager & Command Integration
