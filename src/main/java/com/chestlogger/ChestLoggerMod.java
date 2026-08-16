@@ -5,6 +5,7 @@ import com.chestlogger.container.ContainerTracker;
 import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.lifecycle.ChestLoggerLifecycleManager;
+import com.chestlogger.network.ChestLogNetworking;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.rollback.RollbackEngine;
 import com.chestlogger.storage.BlockCompressor;
@@ -34,6 +35,7 @@ public class ChestLoggerMod implements ModInitializer {
         profile = StorageProfile.BALANCED;
         rollbackEngine = new RollbackEngine();
 
+        ChestLogNetworking.init();
         lifecycleManager = new ChestLoggerLifecycleManager(eventQueue, compressor, profile);
         ChestLoggerLifecycleManager.registerServerEvents(lifecycleManager);
         ChestLoggerCommands.register();
