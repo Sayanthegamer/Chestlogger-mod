@@ -1,0 +1,1 @@
+Task 10.2: Implemented microbenchmarks verifying >500k events/sec MPSC queue ingestion, >4x storage compression ratio, <30 bytes/event .clog footprint, and <45 bytes/pointer .cidx index footprint
