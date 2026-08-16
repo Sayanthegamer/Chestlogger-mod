@@ -5,6 +5,7 @@ import com.chestlogger.container.ContainerTracker;
 import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.query.QueryEngine;
+import com.chestlogger.rollback.RollbackEngine;
 import com.chestlogger.storage.BlockCompressor;
 import com.chestlogger.storage.LZ4BlockCompressor;
 import net.fabricmc.api.ModInitializer;
@@ -21,6 +22,7 @@ public class ChestLoggerMod implements ModInitializer {
     private static ContainerTracker tracker;
     private static PersistentIndexManager indexManager;
     private static QueryEngine queryEngine;
+    private static RollbackEngine rollbackEngine;
     private static BlockCompressor compressor;
 
     @Override
@@ -29,6 +31,7 @@ public class ChestLoggerMod implements ModInitializer {
         eventQueue = new TransactionEventQueue(65536);
         tracker = new ContainerTracker(eventQueue);
         compressor = new LZ4BlockCompressor();
+        rollbackEngine = new RollbackEngine();
 
         File dataDir = new File("chestlogger_data");
         if (!dataDir.exists()) {
@@ -61,6 +64,13 @@ public class ChestLoggerMod implements ModInitializer {
 
     public static QueryEngine getQueryEngine() {
         return queryEngine;
+    }
+
+    public static RollbackEngine getRollbackEngine() {
+        if (rollbackEngine == null) {
+            rollbackEngine = new RollbackEngine();
+        }
+        return rollbackEngine;
     }
 
     public static BlockCompressor getCompressor() {

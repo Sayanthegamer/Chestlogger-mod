@@ -42,6 +42,18 @@ public final class ContainerSnapshot {
         return slots[slotIndex];
     }
 
+    public ContainerSnapshot copy() {
+        ContainerSnapshot copy = new ContainerSnapshot(this.slots.length);
+        for (int i = 0; i < this.slots.length; i++) {
+            copy.slots[i] = this.slots[i];
+        }
+        return copy;
+    }
+
+    public static ContainerSnapshot capture(net.minecraft.world.Container container) {
+        return ContainerTracker.capture(container);
+    }
+
     public int size() {
         return slots.length;
     }

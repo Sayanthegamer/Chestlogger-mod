@@ -8,7 +8,8 @@ public enum ActorType {
     HOPPER_BLOCK((byte) 0x01),
     HOPPER_MINECART((byte) 0x02),
     DROPPER_DISPENSER((byte) 0x03),
-    AUTOMATION((byte) 0x04);
+    AUTOMATION((byte) 0x04),
+    ADMIN_COMMAND((byte) 0x05);
 
     private final byte wireId;
 
