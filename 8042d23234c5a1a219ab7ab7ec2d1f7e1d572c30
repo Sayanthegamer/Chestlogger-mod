@@ -1,0 +1,1 @@
+Task 3.1: Created unit tests for VarInt/VarLong encoding, StringTableDictionary, and BinaryRecordCodec binary round-trip (Red Phase)
