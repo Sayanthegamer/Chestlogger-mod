@@ -13,9 +13,11 @@ This track introduces a lightweight, zero-dependency embedded web server (`com.s
    - The HTTP server runs on a dedicated background executor thread pool.
    - Queries directly leverage `QueryEngine` with bounded memory pagination.
 3. **Security & Access Control**:
+   - **Disabled by Default**: Web server is strictly disabled by default (`enabled: false`) in config until an admin explicitly turns it on.
+   - **Localhost Binding by Default**: Binds to `127.0.0.1` by default (configurable to `0.0.0.0` or custom interface only if deliberately configured).
    - Config-defined authentication token / PIN header (`X-ChestLogger-Auth` or query parameter).
    - Rate limiting and bound payload sizes to prevent Denial of Service.
-   - Configurable port (default: `8080`) and toggle (`enabled: true/false`).
+   - Configurable port (default: `8080`) and host (default: `127.0.0.1`).
 
 ---
 
