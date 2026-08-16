@@ -1,0 +1,1 @@
+Task 1.1-1.4: Implemented WebConfig with disabled-by-default (enabled: false) and localhost-only (host: 127.0.0.1) security settings, token-based authentication via HttpAuthValidator, and zero-dependency EmbeddedHttpServer
