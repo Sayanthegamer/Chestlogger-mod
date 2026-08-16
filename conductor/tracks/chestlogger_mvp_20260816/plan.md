@@ -31,7 +31,7 @@
 - [x] Task: Write unit tests for index entry serialization and multi-dimensional query filters (time, player UUID, BlockPos, segment offset). (b94e7d6)
 - [x] Task: Implement `PersistentIndexManager` with atomic checkpoints and disk batching. (8686323)
 - [x] Task: Write unit tests for index recovery and rebuilding from binary log metadata. (d3d4ea1)
-- [ ] Task: Implement automatic index rebuild engine for corrupted/missing index files.
+- [x] Task: Implement automatic index rebuild engine for corrupted/missing index files. (95d1962)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: Crash Safety & Segment Tail Recovery
