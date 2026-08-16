@@ -1,0 +1,1 @@
+Task 3.2: Implemented versioned binary serialization (BinaryLogWriter, BinaryRecordCodec, VarIntUtil, StringTableDictionary, CRC32 block checksums) with 100% passing tests
