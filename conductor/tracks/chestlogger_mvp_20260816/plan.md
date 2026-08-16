@@ -41,9 +41,9 @@
 
 ## Phase 7: Administrative Query Engine & Commands
 - [x] Task: Write unit tests for query pagination and formatted display output. (a0ec0e6)
-- [ ] Task: Implement `/chestlog inspect` command with player, location, and time range filters.
-- [ ] Task: Implement `/chestlog stats` displaying live queue, flush, and compression metrics.
-- [ ] Task: Implement `/chestlog purge` with confirmation token safeguards.
+- [x] Task: Implement `/chestlog inspect` command with player, location, and time range filters. (374412c)
+- [x] Task: Implement `/chestlog stats` displaying live queue, flush, and compression metrics. (374412c)
+- [x] Task: Implement `/chestlog purge` with confirmation token safeguards. (374412c)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 8: Non-Destructive Compensation Rollback Engine
