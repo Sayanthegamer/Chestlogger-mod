@@ -23,7 +23,7 @@
 ## Phase 4: Unified Container Abstraction & Server-Authoritative Transaction Capture
 - [x] Task: Write unit tests for unified container abstraction and transaction state diffing. (b736116)
 - [x] Task: Implement unified container detection abstraction (`ContainerTracker`, `ContainerType`) for Single/Double Chests, Trapped Chests, Barrels, Shulker Boxes, Hoppers, and Hopper Minecarts. (5361e59)
-- [ ] Task: Implement Mixins for player container screen handling (pickup, shift-click, drag, number keys, container close verification).
+- [x] Task: Implement Mixins for player container screen handling (pickup, shift-click, drag, number keys, container close verification). (782abe8)
 - [ ] Task: Implement unified automation transaction capture for Hopper and Hopper Minecart transfers within the container abstraction.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
