@@ -15,7 +15,7 @@
 
 ## Phase 3: Binary Storage Engine, Block Compression & Disk Profiles
 - [x] Task: Write unit tests for VarInt/VarLong encoding, string table dictionaries, and binary block serialization. (8042d23)
-- [ ] Task: Implement versioned binary serializer (`BinaryLogWriter`) with block checksums (CRC32).
+- [x] Task: Implement versioned binary serializer (`BinaryLogWriter`) with block checksums (CRC32). (36b2d09)
 - [ ] Task: Write unit tests for LZ4 block compressor and decompression round-trips.
 - [ ] Task: Implement LZ4 block compressor and profile presets (`balanced`, `hdd`, `ssd`) with configurable batch flushing.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
