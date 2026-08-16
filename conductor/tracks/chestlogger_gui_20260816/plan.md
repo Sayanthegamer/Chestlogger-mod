@@ -25,9 +25,9 @@
 - [x] Task: Implement real item icon drawing with `guiGraphics.item()` and hover tooltip rendering (`guiGraphics.setTooltipForNextFrame`). (484d55d)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (484d55d)
 
-## Phase 5: Interactive Pagination, Filtering & End-to-End Hardening
+## Phase 5: Interactive Pagination, Filtering & End-to-End Hardening [checkpoint: b3f7258]
 - [x] Task: Wire client pagination and filter interactions to `ClientPlayNetworking.send(ChestLogPageRequestPayload)`. (484d55d)
 - [x] Task: Implement client receiver updating `ChestLogScreen` state on new incoming `ChestLogPagePayload`. (484d55d)
 - [x] Task: Implement integration tests validating permission checks, malformed payload rejections, and zero thread leaks. (b3f7258)
 - [x] Task: Run full regression test suite (Phases 1 through 11). (b3f7258)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (b3f7258)
