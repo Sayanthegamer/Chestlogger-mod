@@ -10,7 +10,7 @@
 - [x] Task: Write unit tests for Transaction models, Slot Delta calculations, and Item Metadata Fingerprint hashing. (fbdb394)
 - [x] Task: Implement `TransactionLogEntry`, `ItemDelta`, `ActionType`, and compact metadata fingerprinting. (d4770db)
 - [x] Task: Write unit tests for the bounded non-blocking MPSC queue and overflow policies. (f2b025b)
-- [ ] Task: Implement bounded `EventQueue` with diagnostic counters (depth, dropped events, total enqueued).
+- [x] Task: Implement bounded `EventQueue` with diagnostic counters (depth, dropped events, total enqueued). (e04f678)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Binary Storage Engine, Block Compression & Disk Profiles
