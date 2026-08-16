@@ -8,10 +8,8 @@ import com.chestlogger.event.BlockPosUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -21,12 +19,10 @@ import java.util.OptionalInt;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin {
 
-    @Shadow public AbstractContainerMenu containerMenu;
-
     @Inject(method = "openMenu", at = @At("RETURN"))
     private void chestlogger$onOpenMenu(MenuProvider menuProvider, CallbackInfoReturnable<OptionalInt> cir) {
         ServerPlayer player = (ServerPlayer) (Object) this;
-        if (player.containerMenu != null && player.containerMenu instanceof MenuContainerAccessor accessor) {
+        if (player.containerMenu instanceof MenuContainerAccessor accessor) {
             String dimKey = player.level().dimension().identifier().toString();
 
             if (menuProvider instanceof BlockEntity blockEntity) {
