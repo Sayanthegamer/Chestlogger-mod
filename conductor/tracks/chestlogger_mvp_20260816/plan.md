@@ -29,7 +29,7 @@
 
 ## Phase 5: Persistent Multi-Dimensional Indexing
 - [x] Task: Write unit tests for index entry serialization and multi-dimensional query filters (time, player UUID, BlockPos, segment offset). (b94e7d6)
-- [ ] Task: Implement `PersistentIndexManager` with atomic checkpoints and disk batching.
+- [x] Task: Implement `PersistentIndexManager` with atomic checkpoints and disk batching. (8686323)
 - [ ] Task: Write unit tests for index recovery and rebuilding from binary log metadata.
 - [ ] Task: Implement automatic index rebuild engine for corrupted/missing index files.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
