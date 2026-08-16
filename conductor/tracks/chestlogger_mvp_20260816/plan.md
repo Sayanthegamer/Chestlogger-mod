@@ -7,7 +7,7 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (382f236)
 
 ## Phase 2: Core Event Model, Metadata Fingerprinting & Event Queue
-- [ ] Task: Write unit tests for Transaction models, Slot Delta calculations, and Item Metadata Fingerprint hashing.
+- [x] Task: Write unit tests for Transaction models, Slot Delta calculations, and Item Metadata Fingerprint hashing. (fbdb394)
 - [ ] Task: Implement `TransactionLogEntry`, `ItemDelta`, `ActionType`, and compact metadata fingerprinting.
 - [ ] Task: Write unit tests for the bounded non-blocking MPSC queue and overflow policies.
 - [ ] Task: Implement bounded `EventQueue` with diagnostic counters (depth, dropped events, total enqueued).
