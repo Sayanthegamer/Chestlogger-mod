@@ -14,15 +14,15 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (cdf5fa7)
 
 ## Phase 3: Client GUI Foundation & Modular Layout
-- [ ] Task: Implement `ChestLogScreen extends Screen` with responsive dimensions, title, and container metadata header.
-- [ ] Task: Implement `ChestLogPaginationWidget` supporting first/prev/next/last controls with boundary disabling.
-- [ ] Task: Implement `ChestLogFilterWidget` with search inputs for player name and item identifier.
+- [x] Task: Implement `ChestLogScreen extends Screen` with responsive dimensions, title, and container metadata header. (484d55d)
+- [x] Task: Implement `ChestLogPaginationWidget` supporting first/prev/next/last controls with boundary disabling. (484d55d)
+- [x] Task: Implement `ChestLogFilterWidget` with search inputs for player name and item identifier. (484d55d)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Real Item Icon Resolution & Rich Log Row Rendering
-- [ ] Task: Implement client item resolver binding logged item identifiers to `ItemStack` via `BuiltInRegistries.ITEM`.
-- [ ] Task: Implement `ChestLogEntryWidget` rendering timestamp, actor badge, action type, slot, and color-coded signed quantities.
-- [ ] Task: Implement real item icon drawing with `guiGraphics.item()` and hover tooltip rendering (`guiGraphics.setTooltipForNextFrame`).
+- [x] Task: Implement client item resolver binding logged item identifiers to `ItemStack` via `BuiltInRegistries.ITEM`. (484d55d)
+- [x] Task: Implement `ChestLogEntryWidget` rendering timestamp, actor badge, action type, slot, and color-coded signed quantities. (484d55d)
+- [x] Task: Implement real item icon drawing with `guiGraphics.item()` and hover tooltip rendering (`guiGraphics.setTooltipForNextFrame`). (484d55d)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: Interactive Pagination, Filtering & End-to-End Hardening
