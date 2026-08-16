@@ -6,12 +6,12 @@
 - [x] Task: Validate clean build and compile execution with `./gradlew build`. (382f236)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (382f236)
 
-## Phase 2: Core Event Model, Metadata Fingerprinting & Event Queue
+## Phase 2: Core Event Model, Metadata Fingerprinting & Event Queue [checkpoint: e04f678]
 - [x] Task: Write unit tests for Transaction models, Slot Delta calculations, and Item Metadata Fingerprint hashing. (fbdb394)
 - [x] Task: Implement `TransactionLogEntry`, `ItemDelta`, `ActionType`, and compact metadata fingerprinting. (d4770db)
 - [x] Task: Write unit tests for the bounded non-blocking MPSC queue and overflow policies. (f2b025b)
 - [x] Task: Implement bounded `EventQueue` with diagnostic counters (depth, dropped events, total enqueued). (e04f678)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (e04f678)
 
 ## Phase 3: Binary Storage Engine, Block Compression & Disk Profiles
 - [ ] Task: Write unit tests for VarInt/VarLong encoding, string table dictionaries, and binary block serialization.
