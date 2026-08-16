@@ -1,0 +1,1 @@
+Task 9.1-9.2: Implemented ChestLoggerLifecycleManager with per-world directory binding (LevelResource.ROOT), startup tail validation, self-healing index loading, and graceful shutdown flushing
