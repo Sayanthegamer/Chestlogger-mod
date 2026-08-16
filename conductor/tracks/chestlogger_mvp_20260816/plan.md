@@ -3,7 +3,7 @@
 ## Phase 1: Project Bootstrap & Build Verification
 - [x] Task: Verify official Minecraft 26.2 Fabric ecosystem dependencies (Loader 0.19.3+, Loom 1.17, Fabric API 26.2, Java 25, Gradle 9.5.1 wrapper). (af5b860)
 - [x] Task: Scaffold root gradle build scripts (`build.gradle`, `settings.gradle`, `gradle.properties`, `fabric.mod.json`). (4443b36)
-- [ ] Task: Validate clean build and compile execution with `./gradlew build`.
+- [x] Task: Validate clean build and compile execution with `./gradlew build`. (382f236)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Core Event Model, Metadata Fingerprinting & Event Queue
