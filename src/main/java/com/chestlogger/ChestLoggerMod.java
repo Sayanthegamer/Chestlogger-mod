@@ -7,6 +7,7 @@ import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.lifecycle.ChestLoggerLifecycleManager;
 import com.chestlogger.network.ChestLogNetworking;
 import com.chestlogger.query.QueryEngine;
+import com.chestlogger.query.QuerySessionManager;
 import com.chestlogger.rollback.RollbackEngine;
 import com.chestlogger.storage.BlockCompressor;
 import com.chestlogger.storage.LZ4BlockCompressor;
@@ -25,6 +26,7 @@ public class ChestLoggerMod implements ModInitializer {
     private static StorageProfile profile;
     private static RollbackEngine rollbackEngine;
     private static ChestLoggerLifecycleManager lifecycleManager;
+    private static QuerySessionManager sessionManager = new QuerySessionManager();
 
     @Override
     public void onInitialize() {
@@ -80,5 +82,12 @@ public class ChestLoggerMod implements ModInitializer {
 
     public static ChestLoggerLifecycleManager getLifecycleManager() {
         return lifecycleManager;
+    }
+
+    public static QuerySessionManager getSessionManager() {
+        if (sessionManager == null) {
+            sessionManager = new QuerySessionManager();
+        }
+        return sessionManager;
     }
 }

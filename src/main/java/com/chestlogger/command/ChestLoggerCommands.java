@@ -13,7 +13,9 @@ import com.chestlogger.rollback.RollbackResult;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.chestlogger.network.ChestLogPagePayload;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -105,7 +107,20 @@ public final class ChestLoggerCommands {
                 return 0;
             }
 
-            PagedResult<TransactionLogEntry> result = ChestLoggerMod.getQueryEngine().queryPaged(builder.build(), page, 8);
+            BlockEntity be = source.getLevel().getBlockEntity(pos);
+            String containerType = (be != null) ? be.getBlockState().getBlock().getName().getString() : "Container";
+
+            List<TransactionLogEntry> allMatches = ChestLoggerMod.getQueryEngine().fetchRecords(builder.limit(1000).build());
+
+            if (source.getEntity() instanceof ServerPlayer player) {
+                UUID queryId = UUID.randomUUID();
+                ChestLogPagePayload pagePayload = ChestLoggerMod.getSessionManager().createSession(
+                        queryId, containerType, dim, packed, allMatches, page
+                );
+                ServerPlayNetworking.send(player, pagePayload);
+            }
+
+            PagedResult<TransactionLogEntry> result = PagedResult.of(allMatches, page, 8);
 
             if (result.totalElements() == 0) {
                 source.sendSuccess(() -> Component.literal(String.format("§eNo container records found at (%d, %d, %d).", pos.getX(), pos.getY(), pos.getZ())), false);
