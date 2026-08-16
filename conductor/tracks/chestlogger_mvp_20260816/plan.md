@@ -53,8 +53,8 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (8002eb4)
 
 ## Phase 9: Singleplayer & Dedicated Server Lifecycle Integration
-- [ ] Task: Implement world lifecycle listeners for per-world storage directory resolution (`saves/<world>/chestlogger/` vs `server_root/world/chestlogger/`).
-- [ ] Task: Implement deterministic flush and writer thread termination on server stop or world leave.
+- [x] Task: Implement world lifecycle listeners for per-world storage directory resolution (`saves/<world>/chestlogger/` vs `server_root/world/chestlogger/`). (00fb9d7)
+- [x] Task: Implement deterministic flush and writer thread termination on server stop or world leave. (00fb9d7)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 10: End-to-End Testing, Microbenchmarks & Hardening
