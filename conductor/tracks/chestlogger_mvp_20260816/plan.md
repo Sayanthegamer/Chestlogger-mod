@@ -17,7 +17,7 @@
 - [x] Task: Write unit tests for VarInt/VarLong encoding, string table dictionaries, and binary block serialization. (8042d23)
 - [x] Task: Implement versioned binary serializer (`BinaryLogWriter`) with block checksums (CRC32). (36b2d09)
 - [x] Task: Write unit tests for LZ4 block compressor and decompression round-trips. (df66e53)
-- [ ] Task: Implement LZ4 block compressor and profile presets (`balanced`, `hdd`, `ssd`) with configurable batch flushing.
+- [x] Task: Implement LZ4 block compressor and profile presets (`balanced`, `hdd`, `ssd`) with configurable batch flushing. (908b49d)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Unified Container Abstraction & Server-Authoritative Transaction Capture
