@@ -40,7 +40,7 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (265bf06)
 
 ## Phase 7: Administrative Query Engine & Commands
-- [ ] Task: Write unit tests for query pagination and formatted display output.
+- [x] Task: Write unit tests for query pagination and formatted display output. (a0ec0e6)
 - [ ] Task: Implement `/chestlog inspect` command with player, location, and time range filters.
 - [ ] Task: Implement `/chestlog stats` displaying live queue, flush, and compression metrics.
 - [ ] Task: Implement `/chestlog purge` with confirmation token safeguards.
