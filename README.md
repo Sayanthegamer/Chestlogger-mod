@@ -62,7 +62,7 @@ ChestLogger is built from the ground up for **Minecraft 26.2** using modern Fabr
    - Delta-encoded timestamps and sequence IDs using ZigZag VarInt/VarLong serialization.
    - Bi-directional String Table Dictionary interning for item identifiers, dimensions, and player names.
    - Framed LZ4 block compression with individual CRC32 checksums per block.
-   - Achieving **< 30 bytes per transaction** (>4x space reduction over raw JSON).
+   - Achieving **< 30 bytes per transaction** (>4x space reduction over raw JSON on reference test workloads).
 
 3. **Multi-Dimensional Spatial & Temporal Indexing (`.cidx`)**:
    - Inverted indexes for instantaneous lookup by 64-bit packed `BlockPos`, radius bounding box, player `UUID`, `itemId`, and time range.
