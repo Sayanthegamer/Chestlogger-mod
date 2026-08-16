@@ -7,12 +7,12 @@
 - [x] Task: Wire server start and stop hooks to `ServerLifecycleEvents`. (0d932bf)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (0d932bf)
 
-## Phase 2: REST API Endpoints & Export Streamers (TDD)
+## Phase 2: REST API Endpoints & Export Streamers (TDD) [checkpoint: 36952b8]
 - [x] Task: Write integration tests for `/api/v1/stats`, `/api/v1/query`, and `/api/v1/export` endpoints. (36952b8)
 - [x] Task: Implement `StatsHttpHandler` returning JSON telemetry from `TransactionEventQueue` and `PersistentIndexManager`. (36952b8)
 - [x] Task: Implement `QueryHttpHandler` integrating with `QueryEngine` to serve paginated JSON records. (36952b8)
 - [x] Task: Implement `ExportHttpHandler` streaming filtered results in CSV and JSON formats. (36952b8)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (36952b8)
 
 ## Phase 3: Embedded Web Dashboard Single-Page Application
 - [ ] Task: Create static HTML/CSS/JS web assets in `src/main/resources/assets/chestlogger/web/`.
