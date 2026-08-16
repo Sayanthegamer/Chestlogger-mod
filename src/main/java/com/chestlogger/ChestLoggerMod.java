@@ -1,6 +1,5 @@
 package com.chestlogger;
 
-import com.chestlogger.command.ChestLoggerCommands;
 import com.chestlogger.container.ContainerTracker;
 import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.index.PersistentIndexManager;
@@ -12,10 +11,17 @@ import com.chestlogger.rollback.RollbackEngine;
 import com.chestlogger.storage.BlockCompressor;
 import com.chestlogger.storage.LZ4BlockCompressor;
 import com.chestlogger.storage.StorageProfile;
+import com.chestlogger.web.EmbeddedHttpServer;
+import com.chestlogger.web.WebConfig;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
+/**
+ * Main mod entrypoint for ChestLogger on Fabric (Minecraft 26.2).
+ */
 public class ChestLoggerMod implements ModInitializer {
     public static final String MOD_ID = "chestlogger";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -27,6 +33,8 @@ public class ChestLoggerMod implements ModInitializer {
     private static RollbackEngine rollbackEngine;
     private static ChestLoggerLifecycleManager lifecycleManager;
     private static QuerySessionManager sessionManager = new QuerySessionManager();
+    private static WebConfig webConfig;
+    private static EmbeddedHttpServer httpServer;
 
     @Override
     public void onInitialize() {
@@ -37,10 +45,15 @@ public class ChestLoggerMod implements ModInitializer {
         profile = StorageProfile.BALANCED;
         rollbackEngine = new RollbackEngine();
 
+        // Load Web Config (disabled by default, 127.0.0.1 binding)
+        File configFile = new File("config/chestlogger_web.json");
+        webConfig = WebConfig.load(configFile);
+        httpServer = new EmbeddedHttpServer(webConfig);
+
         ChestLogNetworking.init();
         lifecycleManager = new ChestLoggerLifecycleManager(eventQueue, compressor, profile);
         ChestLoggerLifecycleManager.registerServerEvents(lifecycleManager);
-        ChestLoggerCommands.register();
+        com.chestlogger.command.ChestLoggerCommands.register();
     }
 
     public static ContainerTracker getTracker() {
@@ -73,13 +86,6 @@ public class ChestLoggerMod implements ModInitializer {
         return rollbackEngine;
     }
 
-    public static BlockCompressor getCompressor() {
-        if (compressor == null) {
-            compressor = new LZ4BlockCompressor();
-        }
-        return compressor;
-    }
-
     public static ChestLoggerLifecycleManager getLifecycleManager() {
         return lifecycleManager;
     }
@@ -89,5 +95,19 @@ public class ChestLoggerMod implements ModInitializer {
             sessionManager = new QuerySessionManager();
         }
         return sessionManager;
+    }
+
+    public static WebConfig getWebConfig() {
+        if (webConfig == null) {
+            webConfig = new WebConfig();
+        }
+        return webConfig;
+    }
+
+    public static EmbeddedHttpServer getHttpServer() {
+        if (httpServer == null) {
+            httpServer = new EmbeddedHttpServer(getWebConfig());
+        }
+        return httpServer;
     }
 }

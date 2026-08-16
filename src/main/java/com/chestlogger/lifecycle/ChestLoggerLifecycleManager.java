@@ -1,5 +1,6 @@
 package com.chestlogger.lifecycle;
 
+import com.chestlogger.ChestLoggerMod;
 import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.event.TransactionLogEntry;
 import com.chestlogger.index.IndexPointer;
@@ -54,6 +55,7 @@ public final class ChestLoggerLifecycleManager {
             try {
                 LOGGER.info("Starting ChestLogger for world at: {}", storageDir.getAbsolutePath());
                 lifecycleManager.start(storageDir);
+                ChestLoggerMod.getHttpServer().start();
             } catch (Exception e) {
                 LOGGER.error("Failed to start ChestLogger storage engine: {}", e.getMessage(), e);
             }
@@ -61,6 +63,7 @@ public final class ChestLoggerLifecycleManager {
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             LOGGER.info("Gracefully stopping ChestLogger storage engine...");
+            ChestLoggerMod.getHttpServer().stop();
             lifecycleManager.stop(10000);
         });
     }
