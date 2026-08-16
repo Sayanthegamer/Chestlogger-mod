@@ -46,11 +46,11 @@
 - [x] Task: Implement `/chestlog purge` with confirmation token safeguards. (374412c)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (374412c)
 
-## Phase 8: Non-Destructive Compensation Rollback Engine
+## Phase 8: Non-Destructive Compensation Rollback Engine [checkpoint: 8002eb4]
 - [x] Task: Write unit tests for rollback dry-run calculation, safety validation, and inverse delta application. (535c63a)
 - [x] Task: Implement `RollbackEngine` with pre-validation (refusing occupied/modified invalid slots, preventing item dupe/deletion) and audit trail logging. (aba724e)
 - [x] Task: Implement `/chestlog rollback` command interface with dry-run summary and confirmation. (aba724e)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (8002eb4)
 
 ## Phase 9: Singleplayer & Dedicated Server Lifecycle Integration
 - [ ] Task: Implement world lifecycle listeners for per-world storage directory resolution (`saves/<world>/chestlogger/` vs `server_root/world/chestlogger/`).
