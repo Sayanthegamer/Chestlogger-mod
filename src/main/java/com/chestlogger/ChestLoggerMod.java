@@ -4,15 +4,15 @@ import com.chestlogger.command.ChestLoggerCommands;
 import com.chestlogger.container.ContainerTracker;
 import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.index.PersistentIndexManager;
+import com.chestlogger.lifecycle.ChestLoggerLifecycleManager;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.rollback.RollbackEngine;
 import com.chestlogger.storage.BlockCompressor;
 import com.chestlogger.storage.LZ4BlockCompressor;
+import com.chestlogger.storage.StorageProfile;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class ChestLoggerMod implements ModInitializer {
     public static final String MOD_ID = "chestlogger";
@@ -20,10 +20,10 @@ public class ChestLoggerMod implements ModInitializer {
 
     private static TransactionEventQueue eventQueue;
     private static ContainerTracker tracker;
-    private static PersistentIndexManager indexManager;
-    private static QueryEngine queryEngine;
-    private static RollbackEngine rollbackEngine;
     private static BlockCompressor compressor;
+    private static StorageProfile profile;
+    private static RollbackEngine rollbackEngine;
+    private static ChestLoggerLifecycleManager lifecycleManager;
 
     @Override
     public void onInitialize() {
@@ -31,15 +31,11 @@ public class ChestLoggerMod implements ModInitializer {
         eventQueue = new TransactionEventQueue(65536);
         tracker = new ContainerTracker(eventQueue);
         compressor = new LZ4BlockCompressor();
+        profile = StorageProfile.BALANCED;
         rollbackEngine = new RollbackEngine();
 
-        File dataDir = new File("chestlogger_data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-        indexManager = new PersistentIndexManager(dataDir);
-        queryEngine = new QueryEngine(dataDir, compressor, indexManager);
-
+        lifecycleManager = new ChestLoggerLifecycleManager(eventQueue, compressor, profile);
+        ChestLoggerLifecycleManager.registerServerEvents(lifecycleManager);
         ChestLoggerCommands.register();
     }
 
@@ -59,11 +55,11 @@ public class ChestLoggerMod implements ModInitializer {
     }
 
     public static PersistentIndexManager getIndexManager() {
-        return indexManager;
+        return lifecycleManager != null ? lifecycleManager.getIndexManager() : null;
     }
 
     public static QueryEngine getQueryEngine() {
-        return queryEngine;
+        return lifecycleManager != null ? lifecycleManager.getQueryEngine() : null;
     }
 
     public static RollbackEngine getRollbackEngine() {
@@ -78,5 +74,9 @@ public class ChestLoggerMod implements ModInitializer {
             compressor = new LZ4BlockCompressor();
         }
         return compressor;
+    }
+
+    public static ChestLoggerLifecycleManager getLifecycleManager() {
+        return lifecycleManager;
     }
 }
