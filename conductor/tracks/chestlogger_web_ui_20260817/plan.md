@@ -12,7 +12,7 @@
   - [x] Style expandable row drawer, copy buttons, and code blocks
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [8b9286c]
 
-## Phase 2: Interactive Log Stream, Expandable Inspector & Quick Filters
+## Phase 2: Interactive Log Stream, Expandable Inspector & Quick Filters [checkpoint: 2a57d59]
 - [x] Task: Implement row expansion & transaction detail inspector in `app.js` [2a57d59]
   - [x] Parse and display rich transaction metadata (UUID, sequence number, dimension, coordinates)
   - [x] Render slot change breakdown and formatted JSON payload
@@ -20,7 +20,7 @@
 - [x] Task: Implement quick-filter query chips and search state in `app.js` [2a57d59]
   - [x] Add interactive chips for dimensions (Overworld/Nether/End), action types (TAKE/PUT), and quick time ranges
   - [x] Wire chips directly to query state and trigger instant log queries
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2a57d59]
 
 ## Phase 3: Live Auto-Tail Polling, Keyboard Ergonomics & Integration Testing
 - [ ] Task: Implement Live Auto-Tail streaming engine in `app.js`
