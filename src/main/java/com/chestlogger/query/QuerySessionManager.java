@@ -55,6 +55,8 @@ public final class QuerySessionManager {
             for (TransactionLogEntry entry : records) {
                 UUID actorUuid = entry.actorUuid() != null ? entry.actorUuid() : NIL_UUID;
                 String actorName = entry.actorName() != null ? entry.actorName() : "System";
+                String entryDim = entry.dimension() != null ? entry.dimension() : dimension;
+                long entryPos = entry.packedBlockPos() != 0L ? entry.packedBlockPos() : packedBlockPos;
 
                 if (entry.deltas().isEmpty()) {
                     displayRecords.add(new DisplayRecord(
@@ -67,7 +69,9 @@ public final class QuerySessionManager {
                             0,
                             "minecraft:air",
                             0,
-                            0L
+                            0L,
+                            entryDim,
+                            entryPos
                     ));
                 } else {
                     for (SlotDelta delta : entry.deltas()) {
@@ -81,7 +85,9 @@ public final class QuerySessionManager {
                                 delta.slotIndex(),
                                 delta.itemId(),
                                 delta.deltaQuantity(),
-                                delta.metadataFingerprint()
+                                delta.metadataFingerprint(),
+                                entryDim,
+                                entryPos
                         ));
                     }
                 }

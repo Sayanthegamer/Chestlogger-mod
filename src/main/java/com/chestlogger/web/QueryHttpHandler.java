@@ -221,6 +221,12 @@ public class QueryHttpHandler implements HttpHandler {
         for (int i = 0; i < records.size(); i++) {
             if (i > 0) sb.append(",");
             DisplayRecord r = records.get(i);
+            long packed = (r.packedBlockPos() != 0L) ? r.packedBlockPos() : payload.packedBlockPos();
+            int recX = BlockPosUtil.unpackX(packed);
+            int recY = BlockPosUtil.unpackY(packed);
+            int recZ = BlockPosUtil.unpackZ(packed);
+            String recDim = (r.dimension() != null && !r.dimension().isBlank()) ? r.dimension() : defDim;
+
             sb.append("{");
             sb.append("\"sequenceId\":").append(r.sequenceId()).append(",");
             sb.append("\"timestamp\":").append(r.timestampMs()).append(",");
@@ -231,10 +237,10 @@ public class QueryHttpHandler implements HttpHandler {
             sb.append("\"slot\":").append(r.slotIndex()).append(",");
             sb.append("\"item\":\"").append(escapeJson(r.itemId())).append("\",");
             sb.append("\"itemId\":\"").append(escapeJson(r.itemId())).append("\",");
-            sb.append("\"x\":").append(defX).append(",");
-            sb.append("\"y\":").append(defY).append(",");
-            sb.append("\"z\":").append(defZ).append(",");
-            sb.append("\"dimension\":\"").append(escapeJson(defDim)).append("\",");
+            sb.append("\"x\":").append(recX).append(",");
+            sb.append("\"y\":").append(recY).append(",");
+            sb.append("\"z\":").append(recZ).append(",");
+            sb.append("\"dimension\":\"").append(escapeJson(recDim)).append("\",");
             sb.append("\"delta\":").append(r.quantityDelta()).append(",");
             sb.append("\"metadataFingerprint\":").append(r.metadataFingerprint());
             sb.append("}");
