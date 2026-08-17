@@ -26,6 +26,8 @@
             action: ''
         },
         statsTimer: null,
+        rateLimitTimer: null,
+        isRateLimited: false,
         autoTailInterval: 5000,
         isConnected: false,
         rawRecords: []
@@ -50,6 +52,7 @@
         statIndexSize: document.getElementById('stat-index-size'),
         statUptime: document.getElementById('stat-uptime'),
         selectAutoTail: document.getElementById('select-auto-tail'),
+        liveIndicator: document.querySelector('.live-indicator'),
 
         // Filter Form Controls
         filterForm: document.getElementById('filter-form'),
@@ -90,6 +93,7 @@
     // Initialize Application
     function init() {
         bindEvents();
+        bindKeyboardShortcuts();
         updateAuthButtonLabel();
         syncChipsUI();
 
@@ -178,6 +182,29 @@
         if (elements.btnPagePrev) elements.btnPagePrev.addEventListener('click', () => fetchLogs(state.currentPage - 1));
         if (elements.btnPageNext) elements.btnPageNext.addEventListener('click', () => fetchLogs(state.currentPage + 1));
         if (elements.btnPageLast) elements.btnPageLast.addEventListener('click', () => fetchLogs(state.totalPages));
+
+        // Tab Visibility Lifecycle Management
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Background tab: stop polling interval
+                if (state.statsTimer) {
+                    clearInterval(state.statsTimer);
+                    state.statsTimer = null;
+                }
+                updateLiveIndicatorUI();
+            } else {
+                // Tab focused again: resume polling if enabled and not rate-limited
+                if (!state.isRateLimited && state.autoTailInterval > 0) {
+                    fetchStats();
+                    if (state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
+                        fetchLogsSilently(1);
+                    }
+                    setupAutoTailTimer();
+                } else {
+                    updateLiveIndicatorUI();
+                }
+            }
+        });
     }
 
     // Quick-Filter Chips Handler
@@ -241,27 +268,164 @@
         });
     }
 
-    // Live Stream Auto-Tail Timer Setup
+    // Live Stream Auto-Tail Lifecycle & Indicator State
+    function updateLiveIndicatorUI() {
+        const liveIndicator = elements.liveIndicator || document.querySelector('.live-indicator');
+        if (!liveIndicator) return;
+
+        const isPaused = state.autoTailInterval <= 0 || state.isRateLimited || document.hidden;
+        if (isPaused) {
+            liveIndicator.classList.add('paused');
+            liveIndicator.classList.remove('active');
+            if (state.isRateLimited) {
+                liveIndicator.title = 'Auto-tail paused: Server rate limit reached (resuming in 60s)';
+            } else if (document.hidden) {
+                liveIndicator.title = 'Auto-tail paused: Tab in background';
+            } else {
+                liveIndicator.title = 'Auto-tail stream paused';
+            }
+        } else {
+            liveIndicator.classList.remove('paused');
+            liveIndicator.classList.add('active');
+            liveIndicator.title = `Live stream active (${state.autoTailInterval / 1000}s interval)`;
+        }
+    }
+
     function setupAutoTailTimer() {
         if (state.statsTimer) {
             clearInterval(state.statsTimer);
             state.statsTimer = null;
         }
 
-        const liveIndicator = document.querySelector('.live-indicator');
-        if (state.autoTailInterval > 0) {
-            if (liveIndicator) liveIndicator.style.opacity = '1';
-            state.statsTimer = setInterval(() => {
-                fetchStats();
-                // If currently on first page and modal is closed, refresh latest logs
-                if (state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
-                    // Refresh current live records
-                    fetchLogsSilently(1);
-                }
-            }, state.autoTailInterval);
-        } else {
-            if (liveIndicator) liveIndicator.style.opacity = '0.35';
+        updateLiveIndicatorUI();
+
+        if (state.autoTailInterval <= 0 || state.isRateLimited || document.hidden) {
+            return;
         }
+
+        state.statsTimer = setInterval(() => {
+            if (document.hidden || state.isRateLimited) return;
+
+            fetchStats();
+            // If currently on first page and modal is closed, refresh latest logs
+            if (state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
+                fetchLogsSilently(1);
+            }
+        }, state.autoTailInterval);
+    }
+
+    function handleRateLimitBackoff() {
+        if (state.statsTimer) {
+            clearInterval(state.statsTimer);
+            state.statsTimer = null;
+        }
+
+        state.isRateLimited = true;
+        updateLiveIndicatorUI();
+        showToast('Auto-tail paused: Server rate limit reached. Resuming in 60s.', 'warning');
+
+        if (state.rateLimitTimer) {
+            clearTimeout(state.rateLimitTimer);
+        }
+
+        state.rateLimitTimer = setTimeout(() => {
+            state.isRateLimited = false;
+            state.rateLimitTimer = null;
+            showToast('Resuming auto-tail stream...');
+            setupAutoTailTimer();
+        }, 60000);
+    }
+
+    // Global Keyboard Shortcuts
+    function bindKeyboardShortcuts() {
+        window.addEventListener('keydown', (e) => {
+            const activeEl = document.activeElement;
+            const isInputActive = activeEl && (
+                activeEl.tagName === 'INPUT' ||
+                activeEl.tagName === 'TEXTAREA' ||
+                activeEl.tagName === 'SELECT' ||
+                activeEl.isContentEditable
+            );
+
+            // Escape key handler: always active (even when input is focused or modal is open)
+            if (e.key === 'Escape') {
+                let handled = false;
+
+                // 1. Close auth modal if open
+                if (elements.authModal && !elements.authModal.classList.contains('hidden')) {
+                    closeAuthModal();
+                    handled = true;
+                }
+
+                // 2. Collapse all expanded detail rows
+                const expandedDetailRows = document.querySelectorAll('.row-detail-expanded');
+                if (expandedDetailRows.length > 0) {
+                    expandedDetailRows.forEach(row => {
+                        const parentRow = row.previousElementSibling;
+                        if (parentRow && parentRow.classList.contains('log-row')) {
+                            parentRow.classList.remove('is-expanded', 'expanded');
+                            const chevron = parentRow.querySelector('.chevron-icon');
+                            if (chevron) chevron.classList.remove('expanded');
+                        }
+                        row.remove();
+                    });
+                    handled = true;
+                }
+
+                // 3. Blur active input element
+                if (isInputActive) {
+                    activeEl.blur();
+                    handled = true;
+                }
+
+                if (handled) {
+                    e.preventDefault();
+                }
+                return;
+            }
+
+            // For all other shortcuts, ignore if user is typing in an input/textarea/select or modifier keys are pressed
+            if (isInputActive || e.ctrlKey || e.altKey || e.metaKey) {
+                return;
+            }
+
+            // '/' : Focus player search input, prevent default typing slash
+            if (e.key === '/') {
+                if (elements.inputPlayer) {
+                    e.preventDefault();
+                    elements.inputPlayer.focus();
+                    elements.inputPlayer.select();
+                }
+                return;
+            }
+
+            // 'r' or 'R' : Trigger manual refresh of telemetry & current page logs with toast
+            if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                fetchStats();
+                fetchLogs(state.currentPage);
+                showToast('Refreshed telemetry and transaction records.');
+                return;
+            }
+
+            // 'ArrowLeft' : Navigate to previous page (when pagination is active)
+            if (e.key === 'ArrowLeft') {
+                if (state.currentPage > 1) {
+                    e.preventDefault();
+                    fetchLogs(state.currentPage - 1);
+                }
+                return;
+            }
+
+            // 'ArrowRight' : Navigate to next page (when pagination is active)
+            if (e.key === 'ArrowRight') {
+                if (state.currentPage < state.totalPages) {
+                    e.preventDefault();
+                    fetchLogs(state.currentPage + 1);
+                }
+                return;
+            }
+        });
     }
 
     // Auth Helpers
@@ -390,14 +554,14 @@
     // Query & Fetch Logs
     async function fetchLogs(targetPage) {
         renderTableLoading();
-        await executeFetchLogs(targetPage);
+        await executeFetchLogs(targetPage, false);
     }
 
     async function fetchLogsSilently(targetPage) {
-        await executeFetchLogs(targetPage);
+        await executeFetchLogs(targetPage, true);
     }
 
-    async function executeFetchLogs(targetPage) {
+    async function executeFetchLogs(targetPage, isSilent = false) {
         const queryParams = new URLSearchParams();
         queryParams.set('page', targetPage || 1);
         queryParams.set('limit', state.filters.limit || 25);
@@ -422,14 +586,26 @@
             });
 
             if (resp.status === 401) {
-                renderTableEmpty('Authentication required. Click "Auth Token" in the top-right to enter your secretToken.');
-                openAuthModal();
+                if (!isSilent) {
+                    renderTableEmpty('Authentication required. Click "Auth Token" in the top-right to enter your secretToken.');
+                    openAuthModal();
+                }
+                return;
+            }
+
+            if (resp.status === 429) {
+                handleRateLimitBackoff();
+                if (!isSilent) {
+                    renderTableEmpty('Server rate limit reached (HTTP 429). Auto-tail paused for 60s.');
+                }
                 return;
             }
 
             if (!resp.ok) {
                 const errData = await resp.json().catch(() => ({}));
-                renderTableEmpty('Error fetching logs: ' + (errData.error || ('HTTP ' + resp.status)));
+                if (!isSilent) {
+                    renderTableEmpty('Error fetching logs: ' + (errData.error || ('HTTP ' + resp.status)));
+                }
                 return;
             }
 
@@ -443,7 +619,9 @@
             renderTableData(state.rawRecords);
             updatePaginationUI();
         } catch (err) {
-            renderTableEmpty('Failed to connect to server: ' + err.message);
+            if (!isSilent) {
+                renderTableEmpty('Failed to connect to server: ' + err.message);
+            }
         }
     }
 
@@ -505,6 +683,12 @@
             elements.resultsSummary.textContent = `Showing ${displayRecords.length} of ${state.totalRecords.toLocaleString()} records`;
         }
 
+        // Capture expanded row keys to preserve user state during auto-tail updates
+        const expandedKeys = new Set();
+        document.querySelectorAll('.log-row.is-expanded').forEach(r => {
+            if (r.dataset.txKey) expandedKeys.add(r.dataset.txKey);
+        });
+
         elements.logsTbody.innerHTML = '';
 
         displayRecords.forEach((rec, idx) => {
@@ -540,9 +724,12 @@
             const deltaClass = deltaVal >= 0 ? 'delta-pos' : 'delta-neg';
             const deltaSign = deltaVal > 0 ? '+' : '';
 
+            const txKey = String(rec.transactionId || rec.uuid || rec.id || `${timeObj}_${posX}_${posY}_${posZ}_${slotNum}`);
+
             const tr = document.createElement('tr');
             tr.className = 'log-row';
             tr.dataset.index = String(idx);
+            tr.dataset.txKey = txKey;
 
             tr.innerHTML = `
                 <td class="col-expand">
@@ -648,6 +835,11 @@
             }
 
             elements.logsTbody.appendChild(tr);
+
+            // Re-open if previously expanded before refresh
+            if (expandedKeys.has(txKey)) {
+                toggleRowDetail();
+            }
         });
     }
 
@@ -928,17 +1120,17 @@
             .replace(/'/g, '&#039;');
     }
 
-    function showToast(msg) {
+    function showToast(msg, type = 'info') {
         if (!elements.toastContainer) return;
         const toast = document.createElement('div');
-        toast.className = 'toast';
+        toast.className = `toast ${type !== 'info' ? 'toast-' + type : ''}`.trim();
         toast.textContent = msg;
         elements.toastContainer.appendChild(toast);
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
             }
-        }, 3200);
+        }, 3600);
     }
 
     // Start App on DOM Ready

@@ -384,6 +384,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: opacity 0.2s ease;
 }
 
 .pulse-dot {
@@ -394,6 +395,7 @@ body {
     position: relative;
     z-index: 2;
     box-shadow: 0 0 8px var(--color-success);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pulse-ring {
@@ -403,6 +405,32 @@ body {
     border-radius: var(--radius-full);
     border: 2px solid var(--color-success);
     opacity: 0;
+    animation: pulse-dot 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Paused State */
+.live-indicator.paused .pulse-dot {
+    background: var(--text-muted);
+    box-shadow: none;
+}
+
+.live-indicator.paused .pulse-ring {
+    animation: none;
+    opacity: 0;
+    border-color: var(--text-muted);
+}
+
+/* Active State */
+.live-indicator:not(.paused) .pulse-dot,
+.live-indicator.active .pulse-dot {
+    background: var(--color-success);
+    box-shadow: 0 0 8px var(--color-success);
+}
+
+.live-indicator:not(.paused) .pulse-ring,
+.live-indicator.active .pulse-ring {
+    border-color: var(--color-success);
     animation: pulse-dot 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
 }
 
@@ -1203,6 +1231,37 @@ body {
     display: none;
 }
 
+/* Keyboard Shortcut Badges */
+kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text-secondary);
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-bottom: 2px solid var(--border-hover);
+    border-radius: var(--radius-xs);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    user-select: none;
+    vertical-align: middle;
+}
+
+.kbd-hint {
+    margin-left: 5px;
+    font-size: 9px;
+    padding: 0 3px;
+    height: 15px;
+    min-width: 15px;
+    opacity: 0.85;
+}
+
 /* Toast Notifications */
 .toast-container {
     position: fixed;
@@ -1225,6 +1284,27 @@ body {
     font-size: 12px;
     pointer-events: auto;
     animation: toastSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-warning {
+    border-color: var(--color-warning-border);
+    background: #1c1507;
+    color: #fbbf24;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.toast-error {
+    border-color: var(--color-danger-border);
+    background: #1e0b11;
+    color: var(--color-danger);
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.15);
+}
+
+.toast-success {
+    border-color: var(--color-success-border);
+    background: #081a13;
+    color: var(--color-success);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 @keyframes toastSlideIn {

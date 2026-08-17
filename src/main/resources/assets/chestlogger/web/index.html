@@ -40,7 +40,7 @@
                     <span id="auth-status-label">Auth Token</span>
                 </button>
 
-                <button type="button" id="btn-refresh-all" class="btn btn-primary btn-icon" title="Refresh Telemetry and Results">
+                <button type="button" id="btn-refresh-all" class="btn btn-primary btn-icon" title="Refresh Telemetry &amp; Records (Press 'R')">
                     <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
                         <path d="M21 3v5h-5"/>
@@ -48,6 +48,7 @@
                         <path d="M3 21v-5h5"/>
                     </svg>
                     <span>Refresh</span>
+                    <kbd class="kbd-hint">R</kbd>
                 </button>
             </div>
         </header>
@@ -228,8 +229,11 @@
                         </div>
 
                         <div class="input-group input-group-wide">
-                            <label for="input-player">Player / Actor</label>
-                            <input type="text" id="input-player" placeholder="Player username or UUID..." class="form-input">
+                            <label for="input-player">
+                                Player / Actor
+                                <kbd class="kbd-hint">/</kbd>
+                            </label>
+                            <input type="text" id="input-player" placeholder="Player username or UUID... (Press / to focus)" class="form-input">
                         </div>
 
                         <div class="input-group input-group-wide">
@@ -361,13 +365,13 @@
                                 <polyline points="18 17 13 12 18 7"/>
                             </svg>
                         </button>
-                        <button type="button" id="btn-page-prev" class="btn btn-sm btn-secondary" title="Previous Page" disabled>
+                        <button type="button" id="btn-page-prev" class="btn btn-sm btn-secondary" title="Previous Page (&larr; / Left Arrow)" disabled>
                             <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="15 18 9 12 15 6"/>
                             </svg>
                             <span>Prev</span>
                         </button>
-                        <button type="button" id="btn-page-next" class="btn btn-sm btn-secondary" title="Next Page" disabled>
+                        <button type="button" id="btn-page-next" class="btn btn-sm btn-secondary" title="Next Page (&rarr; / Right Arrow)" disabled>
                             <span>Next</span>
                             <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="9 18 15 12 9 6"/>
@@ -502,7 +506,7 @@
                         </svg>
                         <h3 class="modal-title">Admin Authentication</h3>
                     </div>
-                    <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal">
+                    <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal" title="Close (Esc)">
                         <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"/>
                             <line x1="6" y1="6" x2="18" y2="18"/>
