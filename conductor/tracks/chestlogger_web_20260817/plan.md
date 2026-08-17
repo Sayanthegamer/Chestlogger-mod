@@ -15,9 +15,9 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (36952b8)
 
 ## Phase 3: Embedded Web Dashboard Single-Page Application
-- [ ] Task: Create static HTML/CSS/JS web assets in `src/main/resources/assets/chestlogger/web/`.
-- [ ] Task: Implement `StaticAssetHttpHandler` serving embedded resources with proper MIME types and caching headers.
-- [ ] Task: Implement responsive dark-theme dashboard with telemetry gauges, coordinate/player search, log table, and export triggers.
+- [x] Task: Create static HTML/CSS/JS web assets in `src/main/resources/assets/chestlogger/web/`. (5cb96a8)
+- [x] Task: Implement `StaticAssetHttpHandler` serving embedded resources with proper MIME types and caching headers. (5cb96a8)
+- [x] Task: Implement responsive dark-theme dashboard with telemetry gauges, coordinate/player search, log table, and export triggers. (5cb96a8)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Security Hardening, Edge Cases & End-to-End Regression
