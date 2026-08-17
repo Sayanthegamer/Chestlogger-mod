@@ -9,14 +9,14 @@
   - [x] Implement sliding 300s multi-container velocity tracking, `OFFLINE_THEFT` vs `ABSENT_OWNER_THEFT` separation, and proximity mitigation [371baa9]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [20f6fb8]
 
-## Phase 2: In-Game Trust Commands & Admin HUD Telemetry (`chestlogger-paper` & `chestlogger-fabric`)
-- [~] Task: Phase 2 Test Harness - Trust Commands & Alert Listener Tests
-  - [~] Write unit tests for trust command parsing and permission checks
-- [ ] Task: Implement Player Trust Commands
-  - [ ] Support `/chestlog trust <player>`, `/chestlog untrust <player>`, and `/chestlog trustlist` on Paper and Fabric
-- [ ] Task: Implement Real-Time Admin Action-Bar & Clickable Chat Alerts
-  - [ ] Broadcast Action-Bar HUD notice and interactive `[Teleport]` / `[Inspect]` chat cards to online admins
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 2: In-Game Trust Commands & Admin HUD Telemetry (`chestlogger-paper` & `chestlogger-fabric`) [checkpoint: 0f85944]
+- [x] Task: Phase 2 Test Harness - Trust Commands & Alert Listener Tests [0f85944]
+  - [x] Write unit tests for trust command parsing and permission checks [0f85944]
+- [x] Task: Implement Player Trust Commands [0f85944]
+  - [x] Support `/chestlog trust <player>`, `/chestlog untrust <player>`, and `/chestlog trustlist` on Paper and Fabric [0f85944]
+- [x] Task: Implement Real-Time Admin Action-Bar & Clickable Chat Alerts [0f85944]
+  - [x] Broadcast Action-Bar HUD notice and interactive `[Teleport]` / `[Inspect]` chat cards to online admins [0f85944]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [0f85944]
 
 ## Phase 3: Discord Rich Embeds & Web Dashboard Incidents Feed (`chestlogger-common`)
 - [ ] Task: Phase 3 Test Harness - Discord Embed & Incidents REST API Tests
