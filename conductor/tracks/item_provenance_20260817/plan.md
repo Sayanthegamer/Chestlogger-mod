@@ -18,18 +18,18 @@
   - [x] Support `/chestlog trace <x> <y> <z> [slot]` and `/chestlog trace hand` on Paper and Fabric [b549286]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [b549286]
 
-## Phase 3: Web REST API & Interactive Observability Graph (`chestlogger-common`)
-- [~] Task: Phase 3 Test Harness - Provenance REST API Tests
-  - [~] Write unit tests for `/api/v1/provenance` JSON responses
-- [ ] Task: Implement `/api/v1/provenance` in Embedded HTTP Server
-  - [ ] Serialize `ProvenanceGraph` into structured JSON nodes and links
-- [ ] Task: Implement Web UI Visual Node-Link Graph & Timeline Drawer
-  - [ ] Add interactive Canvas/SVG journey visualizer with confidence filters to `index.html`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Web REST API & Interactive Observability Graph (`chestlogger-common`) [checkpoint: 97bc2b9]
+- [x] Task: Phase 3 Test Harness - Provenance REST API Tests [61e6508]
+  - [x] Write unit tests for `/api/v1/provenance` JSON responses [61e6508]
+- [x] Task: Implement `/api/v1/provenance` in Embedded HTTP Server [61e6508]
+  - [x] Serialize `ProvenanceGraph` into structured JSON nodes and links [61e6508]
+- [x] Task: Implement Web UI Visual Node-Link Graph & Timeline Drawer [61e6508]
+  - [x] Add interactive Canvas/SVG journey visualizer with confidence filters to `index.html` [61e6508]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [97bc2b9]
 
 ## Phase 4: Cross-Platform Regression, Benchmark & CI Release Verification
-- [ ] Task: Provenance Resolver Performance Benchmark
-  - [ ] Implement `ProvenanceResolverBenchmarkTest` verifying sub-50ms execution on 100,000+ transaction segments
+- [~] Task: Provenance Resolver Performance Benchmark
+  - [~] Implement `ProvenanceResolverBenchmarkTest` verifying sub-50ms execution on 100,000+ transaction segments
 - [ ] Task: Cross-Platform Regression Test Suite
   - [ ] Run full test suite across common, fabric, and paper
 - [ ] Task: Documentation & Release Bump to `2.3.0`
