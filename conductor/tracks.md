@@ -10,3 +10,7 @@
 
 - [x] **Track: ChestLogger Embedded Web Admin Dashboard**
   *Link: [./tracks/chestlogger_web_20260817/index.md](./tracks/chestlogger_web_20260817/index.md)*
+
+- [ ] **Track: ChestLogger Professional Log Observability UI**
+  *Link: [./tracks/chestlogger_web_ui_20260817/index.md](./tracks/chestlogger_web_ui_20260817/index.md)*
+
