@@ -1,6 +1,7 @@
 package com.chestlogger.network;
 
 import com.chestlogger.ChestLoggerMod;
+import com.chestlogger.event.BlockPosUtil;
 import com.chestlogger.event.TransactionLogEntry;
 import com.chestlogger.index.IndexQueryFilter;
 import com.chestlogger.query.PagedResult;
@@ -70,18 +71,21 @@ public final class ChestLogNetworking {
                                         .toList();
                             }
 
+                            String containerType = resolveContainerType(player.level(), payload.packedBlockPos());
+
                             sessionPage = sessionManager.createSession(
                                     payload.queryId(),
-                                    "Container",
+                                    containerType,
                                     payload.dimension(),
                                     payload.packedBlockPos(),
                                     history,
                                     payload.requestedPage()
                             );
                         } catch (Exception e) {
+                            String containerType = resolveContainerType(player.level(), payload.packedBlockPos());
                             sessionPage = sessionManager.createSession(
                                     payload.queryId(),
-                                    "Container",
+                                    containerType,
                                     payload.dimension(),
                                     payload.packedBlockPos(),
                                     Collections.emptyList(),
@@ -93,11 +97,31 @@ public final class ChestLogNetworking {
                     }
 
                     if (sessionPage != null) {
-                        ChestLogPagePayload response = toPayload(payload.queryId(), "Container", payload.dimension(), payload.packedBlockPos(), sessionPage);
+                        String containerType = resolveContainerType(player.level(), payload.packedBlockPos());
+                        ChestLogPagePayload response = toPayload(payload.queryId(), containerType, payload.dimension(), payload.packedBlockPos(), sessionPage);
                         ServerPlayNetworking.send(player, response);
                     }
                 }
         );
+    }
+
+    private static String resolveContainerType(net.minecraft.world.level.Level level, long packedPos) {
+        if (level != null) {
+            try {
+                int x = BlockPosUtil.unpackX(packedPos);
+                int y = BlockPosUtil.unpackY(packedPos);
+                int z = BlockPosUtil.unpackZ(packedPos);
+                net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
+                net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+                if (state != null && state.getBlock() != null) {
+                    String name = state.getBlock().getName().getString();
+                    if (name != null && !name.isBlank() && !name.equalsIgnoreCase("Air")) {
+                        return name;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return "Container";
     }
 
     private static ChestLogPagePayload toPayload(

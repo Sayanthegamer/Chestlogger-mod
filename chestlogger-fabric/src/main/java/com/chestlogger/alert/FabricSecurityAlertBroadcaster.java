@@ -63,6 +63,12 @@ public final class FabricSecurityAlertBroadcaster {
         UUID ownerUuid = containerOwners.get(entry.packedBlockPos());
         String ownerName = containerOwnerNames.get(entry.packedBlockPos());
 
+        if (ownerUuid == null) {
+            resolveHistoricalOwnerIfAbsent(entry.packedBlockPos(), entry.dimension());
+            ownerUuid = containerOwners.get(entry.packedBlockPos());
+            ownerName = containerOwnerNames.get(entry.packedBlockPos());
+        }
+
         if (entry.actionType() == ActionType.CONTAINER_BREAK) {
             containerOwners.remove(entry.packedBlockPos());
             containerOwnerNames.remove(entry.packedBlockPos());
@@ -165,5 +171,31 @@ public final class FabricSecurityAlertBroadcaster {
                 containerOwnerNames.put(packedPos, ownerName);
             }
         }
+    }
+
+    private void resolveHistoricalOwnerIfAbsent(long packedPos, String dimension) {
+        if (containerOwners.containsKey(packedPos)) {
+            return;
+        }
+        try {
+            var qe = com.chestlogger.ChestLoggerMod.getQueryEngine();
+            if (qe != null) {
+                var filter = com.chestlogger.index.IndexQueryFilter.builder()
+                        .dimension(dimension)
+                        .exactBlockPos(packedPos)
+                        .limit(50)
+                        .build();
+                java.util.List<TransactionLogEntry> history = qe.fetchRecords(filter);
+                for (TransactionLogEntry e : history) {
+                    if (e.actorUuid() != null && (e.actionType() == ActionType.CONTAINER_PLACE || e.actionType() == ActionType.PLACE)) {
+                        containerOwners.put(packedPos, e.actorUuid());
+                        if (e.actorName() != null) {
+                            containerOwnerNames.put(packedPos, e.actorName());
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 }
