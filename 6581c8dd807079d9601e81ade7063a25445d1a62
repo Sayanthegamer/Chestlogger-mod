@@ -1,0 +1,1 @@
+Task: Extended Container & Block Lifecycle Tracking. Implemented CONTAINER_BREAK, CONTAINER_PLACE, CRAFTER_CRAFT in ActionType and ActorType, added container break/place/dispense event listeners in Paper and Fabric.
