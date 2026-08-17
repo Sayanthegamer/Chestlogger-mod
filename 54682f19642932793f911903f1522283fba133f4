@@ -1,0 +1,1 @@
+{track:multiplatform_release_20260817,phase:Phase 3: Fabric 26.2 Reference Mod Refactor & Parity Verification,task:Refactor Fabric mod target to depend cleanly on common core,status:COMPLETED,tests:[:chestlogger-fabric:test (passed)]}
