@@ -19,7 +19,7 @@
 
 ## Embedded Web Administration & REST API
 - **HTTP Server**: Embedded `com.sun.net.httpserver.HttpServer` (Zero external dependencies, daemon thread pool)
-- **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) embedded directly in mod resources
+- **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) with inline SVG iconography, dark-carbon observability design system, expandable transaction inspector, and live auto-tail engine embedded directly in mod resources (zero npm build, zero CDN dependencies)
 - **Security**: Token-based authentication (`X-ChestLogger-Auth`, Bearer token, query param), IP-based rate limiting (HTTP 429), timing-safe token validation, strict path traversal blocking
 - **Export Engine**: RFC 4180 streaming CSV and structured JSON attachment exporters
 
