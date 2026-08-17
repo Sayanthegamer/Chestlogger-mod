@@ -164,5 +164,10 @@ public class EmbeddedHttpServer {
         if (!customContexts.containsKey("/api/v1/export")) {
             createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));
         }
+
+        // Static asset handler for embedded web dashboard
+        if (!customContexts.containsKey("/")) {
+            createContext("/", new StaticAssetHttpHandler());
+        }
     }
 }
