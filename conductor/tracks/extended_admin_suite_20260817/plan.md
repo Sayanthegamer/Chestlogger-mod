@@ -14,20 +14,20 @@
   - [x] Register `/chestlog i` / `/chestlog wand` commands on both Fabric and Paper [d13cad8]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [d13cad8]
 
-## Phase 2: Paper In-Game Inspection GUI Parity
-- [~] Task: Phase 2 Test Harness - Bukkit GUI View Model Unit Tests
-  - [~] Write unit tests for `PaperChestHistoryView` layout, item metadata, and pagination slicing
-- [ ] Task: Implement `PaperChestHistoryView` 54-Slot GUI Layout
-  - [ ] Implement 54-slot custom Inventory builder with item icons, lore formatting, and half indicators (`L`/`R`)
-- [ ] Task: Implement Paper GUI Click Listener & Action Handlers
-  - [ ] Intercept clicks on GUI slots, handle pagination navigation, and wire non-destructive rollback confirmation
-- [ ] Task: Connect Wand Right-Click to Paper GUI
-  - [ ] Automatically launch `PaperChestHistoryView` when right-clicking container with inspect mode / wand on Paper
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 2: Paper In-Game Inspection GUI Parity [checkpoint: f490ede]
+- [x] Task: Phase 2 Test Harness - Bukkit GUI View Model Unit Tests [f490ede]
+  - [x] Write unit tests for `PaperChestHistoryView` layout, item metadata, and pagination slicing [f490ede]
+- [x] Task: Implement `PaperChestHistoryView` 54-Slot GUI Layout [f490ede]
+  - [x] Implement 54-slot custom Inventory builder with item icons, lore formatting, and half indicators (`L`/`R`) [f490ede]
+- [x] Task: Implement Paper GUI Click Listener & Action Handlers [f490ede]
+  - [x] Intercept clicks on GUI slots, handle pagination navigation, and wire non-destructive rollback confirmation [f490ede]
+- [x] Task: Connect Wand Right-Click to Paper GUI [f490ede]
+  - [x] Automatically launch `PaperChestHistoryView` when right-clicking container with inspect mode / wand on Paper [f490ede]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [f490ede]
 
 ## Phase 3: Extended Container & Block Lifecycle Tracking
-- [ ] Task: Phase 3 Test Harness - Lifecycle Event & Extended Container Tests
-  - [ ] Write unit tests in `chestlogger-common` for `CONTAINER_BREAK` and `CONTAINER_PLACE` action types and delta extraction
+- [~] Task: Phase 3 Test Harness - Lifecycle Event & Extended Container Tests
+  - [~] Write unit tests in `chestlogger-common` for `CONTAINER_BREAK` and `CONTAINER_PLACE` action types and delta extraction
 - [ ] Task: Add Extended Container Support & Lifecycle Types in Common Core
   - [ ] Add `CONTAINER_BREAK` and `CONTAINER_PLACE` to `ActionType`, update binary serializer and query filters
 - [ ] Task: Implement Paper Extended Container & Lifecycle Event Interception
