@@ -1,0 +1,1 @@
+Task: Paper In-Game Inspection GUI Parity. Implemented PaperHistoryGuiModel, PaperChestHistoryView (54 slots), PaperChestGuiListener, and right-click wand GUI trigger.
