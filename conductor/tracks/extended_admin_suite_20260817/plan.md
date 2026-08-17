@@ -5,11 +5,11 @@
   - [x] Write unit tests for `InspectModeManager` (player toggle state, timeouts, wand item matching) in `chestlogger-common` [98ddffa]
 - [x] Task: Implement `InspectModeManager` & Configuration in Common Core [98ddffa]
   - [x] Implement `InspectModeManager` with concurrent player session tracking and `WandConfig` parsing [98ddffa]
-- [~] Task: Implement Paper Click & Wand Interaction Interception
-  - [~] Write unit test for `PaperWandListener`
-  - [ ] Implement `PlayerInteractEvent` and `BlockDamageEvent` interception in `chestlogger-paper`
-- [ ] Task: Implement Fabric Click & Wand Interaction Interception
-  - [ ] Implement `UseBlockCallback` and `AttackBlockCallback` hooks in `chestlogger-fabric`
+- [x] Task: Implement Paper Click & Wand Interaction Interception [2e4e544]
+  - [x] Write unit test for `PaperWandListener` [2e4e544]
+  - [x] Implement `PlayerInteractEvent` and `BlockDamageEvent` interception in `chestlogger-paper` [2e4e544]
+- [~] Task: Implement Fabric Click & Wand Interaction Interception
+  - [~] Implement `UseBlockCallback` and `AttackBlockCallback` hooks in `chestlogger-fabric`
 - [ ] Task: Add Command Aliases & Ergonomics (`/chestlog i`, `/chestlog wand`)
   - [ ] Register `/chestlog i` / `/chestlog wand` commands on both Fabric and Paper
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
