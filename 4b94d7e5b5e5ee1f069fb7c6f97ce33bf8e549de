@@ -1,0 +1,3 @@
+Task: Configure root multi-project Gradle build
+Summary: Configured settings.gradle, root build.gradle, chestlogger-common, chestlogger-fabric, and chestlogger-paper subprojects with Java 25 toolchains and dependency links.
+Why: Establishes isolated compiler boundaries preventing platform API leakage between Fabric, Paper, and Common.
