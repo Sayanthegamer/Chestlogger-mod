@@ -16,27 +16,27 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper 26.2 Plugin Scaffold & Event Interception Implementation
-- [ ] Task: Configure `chestlogger-paper` subproject with Paperweight Userdev
-  - [ ] Configure `chestlogger-paper/build.gradle` using `paperweight-userdev` with pinned Paper 26.2 dev bundle and Mojmap runtime (no legacy reobf)
-  - [ ] Determine plugin descriptor strategy and configure production `plugin.yml` (and optional `paper-plugin.yml`) with commands and permissions
-- [ ] Task: (TDD Red) Create unit tests for Paper transaction snapshotting & event delta calculation
-  - [ ] Write unit tests for click types (pickup, place, shift-click, hotbar swap, double-click, drag distributions)
-  - [ ] Write unit tests for `InventoryMoveItemEvent` (hoppers) and multi-viewer container synchronization
-  - [ ] Write thread-assertion test ensuring event handlers never trigger disk I/O or block compression
-- [ ] Task: (TDD Green) Implement Paper event listeners & `PaperRollbackExecutor`
-  - [ ] Implement `PaperChestEventListener` with explicit event-to-transaction delta modeling (before/after state capture)
-  - [ ] Implement `PaperRollbackExecutor` executing inventory rollbacks safely on the main server thread via `Inventory.setItem()`
-  - [ ] Enqueue immutable `TransactionLogEntry` to `TransactionEventQueue`
-- [ ] Task: (TDD Red) Create tests for Paper `/chestlog` command tree and permissions
-  - [ ] Write tests for `/chestlog inspect`, `/chestlog rollback`, `/chestlog stats`, `/chestlog web`
-- [ ] Task: (TDD Green) Implement Paper command handler and permission integration
-  - [ ] Implement Paper command tree with async query formatting and permission nodes
-- [ ] Task: (TDD Red) Create tests for Paper plugin lifecycle and async shutdown flush
-  - [ ] Write tests verifying thread-safe queue draining and block flush barrier on `onDisable()`
-- [ ] Task: (TDD Green) Implement `ChestLoggerPlugin` lifecycle & Paper scheduler binding
-  - [ ] Implement `onEnable()` / `onDisable()` with deterministic background worker flush barrier
-  - [ ] Run `./gradlew :chestlogger-paper:test`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Configure `chestlogger-paper` subproject with Paperweight Userdev e1b53b2
+  - [x] Configure `chestlogger-paper/build.gradle` using `paperweight-userdev` with pinned Paper 26.2 dev bundle and Mojmap runtime (no legacy reobf)
+  - [x] Determine plugin descriptor strategy and configure production `plugin.yml` (and optional `paper-plugin.yml`) with commands and permissions
+- [x] Task: (TDD Red) Create unit tests for Paper transaction snapshotting & event delta calculation e1b53b2
+  - [x] Write unit tests for click types (pickup, place, shift-click, hotbar swap, double-click, drag distributions)
+  - [x] Write unit tests for `InventoryMoveItemEvent` (hoppers) and multi-viewer container synchronization
+  - [x] Write thread-assertion test ensuring event handlers never trigger disk I/O or block compression
+- [x] Task: (TDD Green) Implement Paper event listeners & `PaperRollbackExecutor` e1b53b2
+  - [x] Implement `PaperChestEventListener` with explicit event-to-transaction delta modeling (before/after state capture)
+  - [x] Implement `PaperRollbackExecutor` executing inventory rollbacks safely on the main server thread via `Inventory.setItem()`
+  - [x] Enqueue immutable `TransactionLogEntry` to `TransactionEventQueue`
+- [x] Task: (TDD Red) Create tests for Paper `/chestlog` command tree and permissions e1b53b2
+  - [x] Write tests for `/chestlog inspect`, `/chestlog rollback`, `/chestlog stats`, `/chestlog web`
+- [x] Task: (TDD Green) Implement Paper command handler and permission integration e1b53b2
+  - [x] Implement Paper command tree with async query formatting and permission nodes
+- [x] Task: (TDD Red) Create tests for Paper plugin lifecycle and async shutdown flush e1b53b2
+  - [x] Write tests verifying thread-safe queue draining and block flush barrier on `onDisable()`
+- [x] Task: (TDD Green) Implement `ChestLoggerPlugin` lifecycle & Paper scheduler binding e1b53b2
+  - [x] Implement `onEnable()` / `onDisable()` with deterministic background worker flush barrier
+  - [x] Run `./gradlew :chestlogger-paper:test`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Fabric 26.2 Reference Mod Refactor & Parity Verification
 - [ ] Task: Configure `chestlogger-fabric` subproject
