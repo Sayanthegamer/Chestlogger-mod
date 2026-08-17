@@ -82,6 +82,32 @@ ChestLogger is built from the ground up for **Minecraft 26.2** using modern Fabr
    - World storage paths are dynamically bound to the active level save directory (`saves/<world>/chestlogger/` in singleplayer or `./world/chestlogger/` on dedicated servers).
    - Clean shutdown hooks (`ServerLifecycleEvents.SERVER_STOPPING`) guarantee complete queue evacuation and fsync flushes.
 
+7. **Embedded Web Admin Dashboard & Observability Suite**:
+   - Zero-dependency embedded HTTP server (`com.sun.net.httpserver`) with token authentication and rate-limiting.
+   - High-density dark-carbon web UI featuring:
+     - Real-time Ring Buffer queue saturation meter and throughput counters.
+     - Live Auto-Tail streaming with configurable intervals (1s, 5s, 10s, Paused), tab visibility throttling, and 429 backoff.
+     - Expandable transaction inspector displaying full transaction UUID, sequence number, coordinates, and slot mutation diffs.
+     - One-click copy helpers for `/chestlog rollback` commands and raw JSON payloads.
+     - Instant quick-filter chips for dimensions, actions, and timeframes.
+     - Streaming RFC 4180 CSV and JSON data exporters.
+
+---
+
+## 🌐 Web Admin REST API
+
+When enabled in `config/chestlogger_web.json`, the embedded server exposes:
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/` | `GET` | Serves the single-page Web Admin Dashboard. |
+| `/api/v1/health` | `GET` | Health status and authentication verification check. |
+| `/api/v1/stats` | `GET` | Real-time queue saturation, throughput, and index metrics. |
+| `/api/v1/query` | `GET` | Paginated spatial, temporal, player, and item query engine. |
+| `/api/v1/export` | `GET` | Streams filtered transaction logs as RFC 4180 CSV or structured JSON. |
+
+Authentication is performed via the `X-ChestLogger-Auth` header, `Authorization: Bearer <token>`, or `?token=` query parameter.
+
 ---
 
 ## 🛠️ Administrative Commands
@@ -117,7 +143,7 @@ ChestLogger provides three pre-tuned hardware profiles:
 
 ### Build Commands
 ```bash
-# Run complete test suite (43+ unit, integration, recovery, and benchmark tests)
+# Run complete test suite (255+ unit, integration, security, and benchmark tests)
 ./gradlew test
 
 # Assemble release mod JAR
@@ -132,3 +158,4 @@ Built artifacts are located in `build/libs/`:
 
 ## 📜 License
 ChestLogger is released under the **MIT License**.
+
