@@ -5,15 +5,15 @@
   - [x] Update `settings.gradle` with subproject declarations and centralized plugin repositories
   - [x] Create `chestlogger-common/build.gradle` (pure Java 25, LZ4, Zstandard, JUnit 5, AssertJ, zero platform dependencies)
   - [x] Configure root build orchestration and task dependencies
-- [ ] Task: (TDD Red) Create test fixtures & golden `.chlog` format test harness in `chestlogger-common`
-  - [ ] Create byte-for-byte valid and truncated/corrupted golden `.chlog` test fixtures in common test resources
-  - [ ] Write unit tests for `BinaryRecordCodec`, `LZ4BlockCompressor`, `TransactionEventQueue`, `RollbackPlanner`, and `TailRecoveryEngine`
-  - [ ] Instrument storage and compression layers with main-thread assertions that fail if invoked on a server thread
-- [ ] Task: (TDD Green) Extract core engines into `chestlogger-common`
-  - [ ] Extract `storage`, `event`, `index`, `query`, `recovery`, `rollback` (planner/math), and `web` (HTTP server & handlers) into `chestlogger-common`
-  - [ ] Decouple platform executors (keep `RollbackPlanner` in common; prepare platform executor interfaces)
-  - [ ] Run `./gradlew :chestlogger-common:test` and verify 100% tests pass
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create test fixtures & golden `.chlog` format test harness in `chestlogger-common` f1fdbff
+  - [x] Create byte-for-byte valid and truncated/corrupted golden `.chlog` test fixtures in common test resources
+  - [x] Write unit tests for `BinaryRecordCodec`, `LZ4BlockCompressor`, `TransactionEventQueue`, `RollbackPlanner`, and `TailRecoveryEngine`
+  - [x] Instrument storage and compression layers with main-thread assertions that fail if invoked on a server thread
+- [x] Task: (TDD Green) Extract core engines into `chestlogger-common` f1fdbff
+  - [x] Extract `storage`, `event`, `index`, `query`, `recovery`, `rollback` (planner/math), and `web` (HTTP server & handlers) into `chestlogger-common`
+  - [x] Decouple platform executors (keep `RollbackPlanner` in common; prepare platform executor interfaces)
+  - [x] Run `./gradlew :chestlogger-common:test` and verify 100% tests pass
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper 26.2 Plugin Scaffold & Event Interception Implementation
 - [ ] Task: Configure `chestlogger-paper` subproject with Paperweight Userdev
