@@ -108,6 +108,6 @@ public final class ContainerTracker {
     }
 
     public long getNextSequenceId() {
-        return sequenceGenerator.get();
+        return sequenceGenerator.getAndIncrement();
     }
 }

@@ -16,7 +16,10 @@ public enum ActionType {
     HOPPER_EXTRACT((byte) 0x09),
     HOPPER_INSERT((byte) 0x0A),
     DROP_FROM_SLOT((byte) 0x0B),
-    ROLLBACK_COMPENSATION((byte) 0x0C);
+    ROLLBACK_COMPENSATION((byte) 0x0C),
+    CONTAINER_BREAK((byte) 0x0D),
+    CONTAINER_PLACE((byte) 0x0E),
+    CRAFTER_CRAFT((byte) 0x0F);
 
     private final byte wireId;
 

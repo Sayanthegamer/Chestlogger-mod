@@ -9,7 +9,9 @@ public enum ActorType {
     HOPPER_MINECART((byte) 0x02),
     DROPPER_DISPENSER((byte) 0x03),
     AUTOMATION((byte) 0x04),
-    ADMIN_COMMAND((byte) 0x05);
+    ADMIN_COMMAND((byte) 0x05),
+    CRAFTER((byte) 0x06),
+    ENVIRONMENT((byte) 0x07);
 
     private final byte wireId;
 

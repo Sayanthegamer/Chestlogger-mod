@@ -269,7 +269,7 @@ public final class PaperChestEventListener implements Listener {
                     sequenceGenerator.incrementAndGet(),
                     System.currentTimeMillis(),
                     UUID.randomUUID(),
-                    ActionType.PICKUP,
+                    ActionType.CONTAINER_BREAK,
                     ActorType.PLAYER,
                     player.getUniqueId(),
                     player.getName(),
@@ -279,6 +279,75 @@ public final class PaperChestEventListener implements Listener {
             );
             eventQueue.offer(entry);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockPlace(org.bukkit.event.block.BlockPlaceEvent event) {
+        Block block = event.getBlockPlaced();
+        BlockState state = block.getState();
+        if (state instanceof Container container) {
+            Location loc = block.getLocation();
+            long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            String dim = loc.getWorld() != null ? loc.getWorld().getName() : "minecraft:overworld";
+            Player player = event.getPlayer();
+
+            List<SlotDelta> deltas = new ArrayList<>();
+            Inventory inv = container.getInventory();
+            for (int i = 0; i < inv.getSize(); i++) {
+                ItemStack stack = inv.getItem(i);
+                if (stack != null && !stack.getType().isAir()) {
+                    deltas.add(new SlotDelta(
+                            i,
+                            PaperRollbackExecutor.resolveItemId(stack.getType()),
+                            stack.getAmount(),
+                            0,
+                            stack.getAmount(),
+                            0L
+                    ));
+                }
+            }
+
+            TransactionLogEntry entry = new TransactionLogEntry(
+                    sequenceGenerator.incrementAndGet(),
+                    System.currentTimeMillis(),
+                    UUID.randomUUID(),
+                    ActionType.CONTAINER_PLACE,
+                    ActorType.PLAYER,
+                    player.getUniqueId(),
+                    player.getName(),
+                    dim,
+                    pos,
+                    deltas
+            );
+            eventQueue.offer(entry);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockDispense(org.bukkit.event.block.BlockDispenseEvent event) {
+        Block block = event.getBlock();
+        ItemStack item = event.getItem();
+        if (item.getType().isAir() || item.getAmount() <= 0) return;
+
+        Location loc = block.getLocation();
+        long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        String dim = loc.getWorld() != null ? loc.getWorld().getName() : "minecraft:overworld";
+        String itemId = PaperRollbackExecutor.resolveItemId(item.getType());
+
+        SlotDelta delta = new SlotDelta(0, itemId, -item.getAmount(), item.getAmount(), 0, 0L);
+        TransactionLogEntry entry = new TransactionLogEntry(
+                sequenceGenerator.incrementAndGet(),
+                System.currentTimeMillis(),
+                UUID.randomUUID(),
+                ActionType.DROP_FROM_SLOT,
+                ActorType.DROPPER_DISPENSER,
+                null,
+                block.getType().name(),
+                dim,
+                pos,
+                List.of(delta)
+        );
+        eventQueue.offer(entry);
     }
 
     private static List<Location> getInventoryLocations(Inventory inventory) {

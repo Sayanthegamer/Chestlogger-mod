@@ -107,6 +107,40 @@ public final class FabricWandListener {
             performChatInspection(serverPlayer, pos);
             return InteractionResult.SUCCESS;
         });
+
+        // Container destruction tracking
+        net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
+            if (world.isClientSide()) return true;
+            if (blockEntity instanceof Container container) {
+                java.util.List<com.chestlogger.event.SlotDelta> deltas = new java.util.ArrayList<>();
+                int size = container.getContainerSize();
+                for (int i = 0; i < size; i++) {
+                    ItemStack stack = container.getItem(i);
+                    if (!stack.isEmpty()) {
+                        String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                        deltas.add(new com.chestlogger.event.SlotDelta(i, itemId, -stack.getCount(), stack.getCount(), 0, 0L));
+                    }
+                }
+                if (!deltas.isEmpty()) {
+                    long packed = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
+                    String dim = world.dimension().identifier().toString();
+                    TransactionLogEntry entry = new TransactionLogEntry(
+                            ChestLoggerMod.getTracker().getNextSequenceId(),
+                            System.currentTimeMillis(),
+                            UUID.randomUUID(),
+                            com.chestlogger.event.ActionType.CONTAINER_BREAK,
+                            com.chestlogger.event.ActorType.PLAYER,
+                            player.getUUID(),
+                            player.getName().getString(),
+                            dim,
+                            packed,
+                            deltas
+                    );
+                    ChestLoggerMod.getEventQueue().offer(entry);
+                }
+            }
+            return true;
+        });
     }
 
     private static void performChatInspection(ServerPlayer player, BlockPos pos) {
