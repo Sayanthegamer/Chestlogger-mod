@@ -37,14 +37,29 @@ public final class RollbackEngine {
         int applied = 0;
 
         for (RollbackStep step : plan.steps()) {
-            if (step.slotIndex() < container.size()) {
-                SlotSnapshot current = container.getSlot(step.slotIndex());
+            int targetSlot = step.slotIndex();
+            if (targetSlot >= container.size()) {
+                // Adaptive compensation: find first empty slot in surviving container
+                int fallbackSlot = -1;
+                for (int s = 0; s < container.size(); s++) {
+                    if (container.getSlot(s).isEmpty()) {
+                        fallbackSlot = s;
+                        break;
+                    }
+                }
+                if (fallbackSlot != -1) {
+                    targetSlot = fallbackSlot;
+                }
+            }
+
+            if (targetSlot < container.size()) {
+                SlotSnapshot current = container.getSlot(targetSlot);
                 int newCount = Math.max(0, Math.min(64, current.count() + step.targetDeltaQuantity()));
                 String item = newCount == 0 ? "" : step.itemId();
-                container.setSlot(step.slotIndex(), item, newCount, step.metadataHash());
+                container.setSlot(targetSlot, item, newCount, step.metadataHash());
 
                 auditDeltas.add(new SlotDelta(
-                        step.slotIndex(),
+                        targetSlot,
                         step.itemId(),
                         step.targetDeltaQuantity(),
                         current.count(),
