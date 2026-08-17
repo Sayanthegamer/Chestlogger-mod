@@ -1,27 +1,37 @@
-name: CI
+name: CI & Release
 
 on:
   push:
     branches:
       - master
       - main
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - master
       - main
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Publish as a GitHub Release'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
-    name: Build & Verify
+    name: Build, Verify & Release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -47,3 +57,14 @@ jobs:
           name: chestlogger-binaries
           path: build/libs/*.jar
           retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/libs/*.jar
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
