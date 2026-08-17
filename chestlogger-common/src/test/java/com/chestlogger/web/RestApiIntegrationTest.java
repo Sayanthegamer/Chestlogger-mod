@@ -568,7 +568,7 @@ class RestApiIntegrationTest {
             assertThat(conn.getResponseCode()).isEqualTo(200);
         }
 
-        @ParameterizedTest(name = "Endpoint {0} accepts valid query param ?token= with 200")
+        @ParameterizedTest(name = "Endpoint {0} strictly rejects query param ?token= with 401 Unauthorized")
         @ValueSource(strings = {
                 "/api/v1/health",
                 "/api/v1/stats",
@@ -576,12 +576,12 @@ class RestApiIntegrationTest {
                 "/api/v1/provenance?item=minecraft:diamond",
                 "/api/v1/export"
         })
-        void testValidQueryParamTokenReturns200(String path) throws IOException {
+        void testQueryParamTokenReturns401(String path) throws IOException {
             String separator = path.contains("?") ? "&" : "?";
             HttpURLConnection conn = (HttpURLConnection) URI.create(BASE_URL + path + separator + "token=" + AUTH_TOKEN).toURL().openConnection();
             conn.setRequestMethod("GET");
 
-            assertThat(conn.getResponseCode()).isEqualTo(200);
+            assertThat(conn.getResponseCode()).isEqualTo(401);
         }
     }
 }

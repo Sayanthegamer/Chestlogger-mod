@@ -59,10 +59,10 @@ class EmbeddedHttpServerTest {
                 assertThat(body).contains("\"status\":\"UP\"");
             }
 
-            // 4. Request with query param ?token= -> 200 OK
+            // 4. Request with query param ?token= -> 401 Unauthorized (strictly rejected for URL security)
             HttpURLConnection conn4 = (HttpURLConnection) URI.create("http://127.0.0.1:" + testPort + "/api/v1/health?token=" + token).toURL().openConnection();
             conn4.setRequestMethod("GET");
-            assertThat(conn4.getResponseCode()).isEqualTo(200);
+            assertThat(conn4.getResponseCode()).isEqualTo(401);
 
         } finally {
             server.stop();

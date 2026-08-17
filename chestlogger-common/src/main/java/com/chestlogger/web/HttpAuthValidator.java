@@ -91,24 +91,8 @@ public final class HttpAuthValidator {
             }
         }
 
-        // 4. Check query param: ?token=<token>
-        String query = exchange.getRequestURI().getRawQuery();
-        if (query != null && !query.isBlank()) {
-            for (String param : query.split("&")) {
-                int eqIdx = param.indexOf('=');
-                if (eqIdx > 0) {
-                    try {
-                        String key = URLDecoder.decode(param.substring(0, eqIdx), StandardCharsets.UTF_8);
-                        String val = URLDecoder.decode(param.substring(eqIdx + 1), StandardCharsets.UTF_8);
-                        if ("token".equalsIgnoreCase(key) && constantTimeEquals(val.trim(), expectedToken)) {
-                            tracker.recordSuccess();
-                            return true;
-                        }
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
-        }
+        // Query parameter tokens (?token=...) are strictly rejected to prevent credentials
+        // from leaking into server access logs, URL query strings, and browser history.
 
         // Authentication failed -> record failure & check lockout
         boolean locked = tracker.recordFailure(now, maxAttempts, lockoutDurationMs, DEFAULT_WINDOW_MS);

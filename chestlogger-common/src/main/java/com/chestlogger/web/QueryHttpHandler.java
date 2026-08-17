@@ -127,7 +127,7 @@ public class QueryHttpHandler implements HttpHandler {
                     try {
                         maxHops = Integer.parseInt(hopsStr.trim());
                         if (maxHops < 1) maxHops = 1;
-                        if (maxHops > 200) maxHops = 200;
+                        if (maxHops > 50) maxHops = 50;
                     } catch (NumberFormatException e) {
                         sendError(exchange, 400, "Bad Request: Invalid numeric value for parameter 'maxHops': " + hopsStr);
                         return;
@@ -352,7 +352,8 @@ public class QueryHttpHandler implements HttpHandler {
 
         sb.append("\"nodes\":[");
         List<ProvenanceNode> nodes = graph.nodes();
-        for (int i = 0; i < nodes.size(); i++) {
+        int maxNodeCount = Math.min(nodes.size(), 50);
+        for (int i = 0; i < maxNodeCount; i++) {
             if (i > 0) sb.append(",");
             ProvenanceNode node = nodes.get(i);
             int x = BlockPosUtil.unpackX(node.packedPos());
@@ -385,9 +386,13 @@ public class QueryHttpHandler implements HttpHandler {
 
         sb.append("\"edges\":[");
         List<ProvenanceEdge> edges = graph.edges();
+        int edgeWritten = 0;
         for (int i = 0; i < edges.size(); i++) {
-            if (i > 0) sb.append(",");
             ProvenanceEdge edge = edges.get(i);
+            if (edge.from().stepIndex() >= maxNodeCount || edge.to().stepIndex() >= maxNodeCount) {
+                continue;
+            }
+            if (edgeWritten > 0) sb.append(",");
             sb.append("{");
             sb.append("\"fromIndex\":").append(edge.from().stepIndex()).append(",");
             sb.append("\"toIndex\":").append(edge.to().stepIndex()).append(",");
@@ -395,6 +400,7 @@ public class QueryHttpHandler implements HttpHandler {
             sb.append("\"confidence\":\"").append(edge.confidence().name()).append("\",");
             sb.append("\"transitionType\":\"").append(escapeJson(edge.transitionType())).append("\"");
             sb.append("}");
+            edgeWritten++;
         }
         sb.append("]");
 

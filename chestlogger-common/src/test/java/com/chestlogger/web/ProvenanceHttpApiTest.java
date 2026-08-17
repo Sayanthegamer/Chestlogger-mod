@@ -200,6 +200,18 @@ class ProvenanceHttpApiTest {
         }
 
         @Test
+        @DisplayName("Should reject query param ?token= with 401 to prevent URL credential leaks")
+        void testQueryParamTokenRejected() throws Exception {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/api/v1/provenance?item=minecraft:diamond&token=" + AUTH_TOKEN))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isEqualTo(401);
+        }
+
+        @Test
         @DisplayName("Should accept valid token in header with 200 OK")
         void testValidHeaderAuth() throws Exception {
             HttpRequest request = HttpRequest.newBuilder()
