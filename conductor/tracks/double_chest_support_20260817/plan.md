@@ -1,13 +1,13 @@
 # Implementation Plan: Double Chest (54-Slot) Linked Container Support
 
 ## Phase 1: Core 54-Slot Models & Dual-Coordinate Indexing (`chestlogger-common`)
-- [ ] Task: (TDD Red) Create unit tests for 54-slot container snapshots, compound deltas, and dual-coordinate queries
-  - [ ] Write tests verifying `ContainerSnapshot` with 54 slots
-  - [ ] Write tests verifying `PersistentIndexManager` dual-block pos resolution and query matching for both chest halves
-- [ ] Task: (TDD Green) Extend common models and indexer for linked containers
-  - [ ] Support linked/secondary `packedBlockPos` in index pointers and query filters
-  - [ ] Run `:chestlogger-common:test` to verify all tests pass
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create unit tests for 54-slot container snapshots, compound deltas, and dual-coordinate queries 1fb9f08
+  - [x] Write tests verifying `ContainerSnapshot` with 54 slots
+  - [x] Write tests verifying `PersistentIndexManager` dual-block pos resolution and query matching for both chest halves
+- [x] Task: (TDD Green) Extend common models and indexer for linked containers 1fb9f08
+  - [x] Support linked/secondary `packedBlockPos` in index pointers and query filters
+  - [x] Run `:chestlogger-common:test` to verify all tests pass
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper 26.2 Double Chest Event Interception & Rollback Adapter (`chestlogger-paper`)
 - [ ] Task: (TDD Red) Create Paper double chest test suite
