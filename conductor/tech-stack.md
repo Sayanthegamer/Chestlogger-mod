@@ -23,6 +23,13 @@
 - **Heuristic Temporal Traversal**: Lookback/lookahead window correlation for commodity flow with explicit confidence levels (`EXACT_LINKAGE`, `HIGH_CONFIDENCE`, `PROBABLE`)
 - **Visual Presentation**: Dual-presentation via in-game 54-slot GUI (`PaperProvenanceGuiView` / Fabric Screen) and Web UI Canvas/SVG interactive node-link visualizer with live step inspection drawer
 
+## Smart Theft & Security Architecture
+- **Heuristic Evaluator**: Thread-safe zero-allocation security evaluator (`SmartTheftEvaluator`) with sub-20ms p99 latency under 16-thread contention
+- **Velocity Tracker**: Sliding-window multi-container access tracker (`RaidVelocityTracker`) pruning expired entries over 300s configurable windows
+- **Trust Graphs**: Directional player trust management (`TrustManager`) backed by atomic JSON storage (`trust_data.json`)
+- **Telemetry Buffers**: Fixed-capacity ring buffer (`IncidentRingBuffer`, default 200) for real-time web telemetry and administrative incident streaming
+- **Multi-Channel Alert Dispatch**: Asynchronous Discord Webhooks with dynamic presence tags (`🔴 Offline`, `🟡 Absent`, `🟢 Nearby`), in-game Action-Bar HUD alerts, and interactive clickable chat cards (`[Teleport]`, `[Inspect]`)
+
 ## Embedded Web Administration & REST API
 - **HTTP Server**: Embedded `com.sun.net.httpserver.HttpServer` (Zero external dependencies, daemon thread pool)
 - **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) with inline SVG iconography, dark-carbon observability design system, expandable transaction inspector, interactive item journey graph visualizer, and live auto-tail engine embedded directly in mod resources (zero npm build, zero CDN dependencies)
