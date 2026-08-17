@@ -25,20 +25,20 @@
   - [x] Automatically launch `PaperChestHistoryView` when right-clicking container with inspect mode / wand on Paper [f490ede]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [f490ede]
 
-## Phase 3: Extended Container & Block Lifecycle Tracking
-- [~] Task: Phase 3 Test Harness - Lifecycle Event & Extended Container Tests
-  - [~] Write unit tests in `chestlogger-common` for `CONTAINER_BREAK` and `CONTAINER_PLACE` action types and delta extraction
-- [ ] Task: Add Extended Container Support & Lifecycle Types in Common Core
-  - [ ] Add `CONTAINER_BREAK` and `CONTAINER_PLACE` to `ActionType`, update binary serializer and query filters
-- [ ] Task: Implement Paper Extended Container & Lifecycle Event Interception
-  - [ ] Track Crafter, Dispenser, Dropper, Decorated Pot, Chiseled Bookshelf, Furnaces, Brewing Stands, and `BlockBreakEvent`/`BlockPlaceEvent`
-- [ ] Task: Implement Fabric Extended Container & Lifecycle Interception
-  - [ ] Implement Mixins and callbacks for extended block entities and block destruction with inventory contents
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Extended Container & Block Lifecycle Tracking [checkpoint: 6581c8d]
+- [x] Task: Phase 3 Test Harness - Lifecycle Event & Extended Container Tests [6581c8d]
+  - [x] Write unit tests in `chestlogger-common` for `CONTAINER_BREAK` and `CONTAINER_PLACE` action types and delta extraction [6581c8d]
+- [x] Task: Add Extended Container Support & Lifecycle Types in Common Core [6581c8d]
+  - [x] Add `CONTAINER_BREAK` and `CONTAINER_PLACE` to `ActionType`, update binary serializer and query filters [6581c8d]
+- [x] Task: Implement Paper Extended Container & Lifecycle Event Interception [6581c8d]
+  - [x] Track Crafter, Dispenser, Dropper, Decorated Pot, Chiseled Bookshelf, Furnaces, Brewing Stands, and `BlockBreakEvent`/`BlockPlaceEvent` [6581c8d]
+- [x] Task: Implement Fabric Extended Container & Lifecycle Interception [6581c8d]
+  - [x] Implement Mixins and callbacks for extended block entities and block destruction with inventory contents [6581c8d]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [6581c8d]
 
 ## Phase 4: Discord Webhook & Suspicious Activity Alert Engine
-- [ ] Task: Phase 4 Test Harness - Alert Config & Discord Embed Builder Tests
-  - [ ] Write unit tests for `AlertConfig`, suspicious threshold evaluations, and JSON embed payload formatting
+- [~] Task: Phase 4 Test Harness - Alert Config & Discord Embed Builder Tests
+  - [~] Write unit tests for `AlertConfig`, suspicious threshold evaluations, and JSON embed payload formatting
 - [ ] Task: Implement `DiscordAlertDispatcher` with Non-Blocking `HttpClient`
   - [ ] Implement asynchronous queue worker, rate limiting, and webhook HTTP dispatch in `chestlogger-common`
 - [ ] Task: Wire Transaction Stream to Alert Dispatcher
