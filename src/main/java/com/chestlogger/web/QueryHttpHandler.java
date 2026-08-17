@@ -86,41 +86,61 @@ public class QueryHttpHandler implements HttpHandler {
                 // Perform a new query search
                 IndexQueryFilter.Builder filterBuilder = IndexQueryFilter.builder();
 
-                Integer x = parseNullableInt(params, "x");
-                Integer y = parseNullableInt(params, "y");
-                Integer z = parseNullableInt(params, "z");
-                long packedPos = 0L;
-                if (x != null && y != null && z != null) {
-                    packedPos = BlockPosUtil.pack(x, y, z);
-                    filterBuilder.exactBlockPos(packedPos);
-                }
+            Integer x;
+            Integer y;
+            Integer z;
+            try {
+                x = parseCoordinateParam(params, "x");
+                y = parseCoordinateParam(params, "y");
+                z = parseCoordinateParam(params, "z");
+            } catch (IllegalArgumentException e) {
+                sendError(exchange, 400, e.getMessage());
+                return;
+            }
 
-                String dim = params.get("dim");
-                if (dim != null && !dim.isBlank()) {
-                    filterBuilder.dimension(dim.trim());
-                }
+            long packedPos = 0L;
+            if (x != null && y != null && z != null) {
+                packedPos = BlockPosUtil.pack(x, y, z);
+                filterBuilder.exactBlockPos(packedPos);
+            }
 
-                String player = params.get("player");
-                UUID playerUuid = null;
-                if (player != null && !player.isBlank()) {
+            String dim = params.get("dim");
+            if (dim != null && !dim.isBlank()) {
+                filterBuilder.dimension(dim.trim());
+            }
+
+            String player = params.get("player");
+            UUID playerUuid = null;
+            if (player != null && !player.isBlank()) {
+                try {
+                    playerUuid = UUID.fromString(player.trim());
+                    filterBuilder.actorUuid(playerUuid);
+                } catch (IllegalArgumentException ignored) {
+                    // Will filter by player name in-memory after fetching
+                }
+            }
+
+            String item = params.get("item");
+            if (item != null && !item.isBlank()) {
+                filterBuilder.itemId(item.trim());
+            }
+
+            Long sinceSeconds = null;
+            if (params.containsKey("sinceSeconds")) {
+                String ssVal = params.get("sinceSeconds");
+                if (ssVal != null && !ssVal.isBlank()) {
                     try {
-                        playerUuid = UUID.fromString(player.trim());
-                        filterBuilder.actorUuid(playerUuid);
-                    } catch (IllegalArgumentException ignored) {
-                        // Will filter by player name in-memory after fetching
+                        sinceSeconds = Long.parseLong(ssVal.trim());
+                    } catch (NumberFormatException e) {
+                        sendError(exchange, 400, "Bad Request: Invalid numeric value for parameter 'sinceSeconds': " + ssVal);
+                        return;
                     }
                 }
-
-                String item = params.get("item");
-                if (item != null && !item.isBlank()) {
-                    filterBuilder.itemId(item.trim());
-                }
-
-                Long sinceSeconds = parseNullableLong(params, "sinceSeconds");
-                if (sinceSeconds != null && sinceSeconds > 0) {
-                    long minTimeMs = System.currentTimeMillis() - (sinceSeconds * 1000L);
-                    filterBuilder.timeRange(minTimeMs, Long.MAX_VALUE);
-                }
+            }
+            if (sinceSeconds != null && sinceSeconds > 0) {
+                long minTimeMs = System.currentTimeMillis() - (sinceSeconds * 1000L);
+                filterBuilder.timeRange(minTimeMs, Long.MAX_VALUE);
+            }
 
                 // Fetch up to 10,000 candidate records for pagination
                 filterBuilder.limit(10_000);
@@ -239,6 +259,16 @@ public class QueryHttpHandler implements HttpHandler {
             return Integer.parseInt(val.trim());
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    private static Integer parseCoordinateParam(Map<String, String> params, String key) throws IllegalArgumentException {
+        String val = params.get(key);
+        if (val == null || val.isBlank()) return null;
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid numeric value for coordinate '" + key + "': " + val);
         }
     }
 

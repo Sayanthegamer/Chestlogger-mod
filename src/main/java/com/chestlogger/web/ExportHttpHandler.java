@@ -60,9 +60,18 @@ public class ExportHttpHandler implements HttpHandler {
             // Build query filter from params
             IndexQueryFilter.Builder filterBuilder = IndexQueryFilter.builder();
 
-            Integer x = parseNullableInt(params, "x");
-            Integer y = parseNullableInt(params, "y");
-            Integer z = parseNullableInt(params, "z");
+            Integer x;
+            Integer y;
+            Integer z;
+            try {
+                x = parseCoordinateParam(params, "x");
+                y = parseCoordinateParam(params, "y");
+                z = parseCoordinateParam(params, "z");
+            } catch (IllegalArgumentException e) {
+                sendError(exchange, 400, e.getMessage());
+                return;
+            }
+
             if (x != null && y != null && z != null) {
                 filterBuilder.exactBlockPos(BlockPosUtil.pack(x, y, z));
             }
@@ -87,7 +96,18 @@ public class ExportHttpHandler implements HttpHandler {
                 filterBuilder.itemId(item.trim());
             }
 
-            Long sinceSeconds = parseNullableLong(params, "sinceSeconds");
+            Long sinceSeconds = null;
+            if (params.containsKey("sinceSeconds")) {
+                String ssVal = params.get("sinceSeconds");
+                if (ssVal != null && !ssVal.isBlank()) {
+                    try {
+                        sinceSeconds = Long.parseLong(ssVal.trim());
+                    } catch (NumberFormatException e) {
+                        sendError(exchange, 400, "Bad Request: Invalid numeric value for parameter 'sinceSeconds': " + ssVal);
+                        return;
+                    }
+                }
+            }
             if (sinceSeconds != null && sinceSeconds > 0) {
                 long minTimeMs = System.currentTimeMillis() - (sinceSeconds * 1000L);
                 filterBuilder.timeRange(minTimeMs, Long.MAX_VALUE);
@@ -247,6 +267,16 @@ public class ExportHttpHandler implements HttpHandler {
             return Integer.parseInt(val.trim());
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    private static Integer parseCoordinateParam(Map<String, String> params, String key) throws IllegalArgumentException {
+        String val = params.get(key);
+        if (val == null || val.isBlank()) return null;
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid numeric value for coordinate '" + key + "': " + val);
         }
     }
 

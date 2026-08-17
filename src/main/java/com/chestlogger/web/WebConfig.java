@@ -22,18 +22,26 @@ public class WebConfig {
     private String secretToken;
     private String allowedOrigins = "*";
     private int maxConnections = 20;
+    private int maxFailedAuthAttempts = 5;
+    private long authLockoutDurationMs = 60_000L;
 
     public WebConfig() {
         this.secretToken = generateRandomToken();
     }
 
     public WebConfig(boolean enabled, String host, int port, String secretToken, String allowedOrigins, int maxConnections) {
+        this(enabled, host, port, secretToken, allowedOrigins, maxConnections, 5, 60_000L);
+    }
+
+    public WebConfig(boolean enabled, String host, int port, String secretToken, String allowedOrigins, int maxConnections, int maxFailedAuthAttempts, long authLockoutDurationMs) {
         this.enabled = enabled;
         this.host = (host != null && !host.isBlank()) ? host.trim() : "127.0.0.1";
         this.port = (port > 0 && port <= 65535) ? port : 8080;
         this.secretToken = (secretToken != null && !secretToken.isBlank()) ? secretToken.trim() : generateRandomToken();
         this.allowedOrigins = (allowedOrigins != null && !allowedOrigins.isBlank()) ? allowedOrigins.trim() : "*";
         this.maxConnections = (maxConnections > 0) ? maxConnections : 20;
+        this.maxFailedAuthAttempts = (maxFailedAuthAttempts > 0) ? maxFailedAuthAttempts : 5;
+        this.authLockoutDurationMs = (authLockoutDurationMs > 0) ? authLockoutDurationMs : 60_000L;
     }
 
     public boolean isEnabled() {
@@ -82,6 +90,22 @@ public class WebConfig {
 
     public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
+    }
+
+    public int getMaxFailedAuthAttempts() {
+        return maxFailedAuthAttempts;
+    }
+
+    public void setMaxFailedAuthAttempts(int maxFailedAuthAttempts) {
+        this.maxFailedAuthAttempts = (maxFailedAuthAttempts > 0) ? maxFailedAuthAttempts : 5;
+    }
+
+    public long getAuthLockoutDurationMs() {
+        return authLockoutDurationMs;
+    }
+
+    public void setAuthLockoutDurationMs(long authLockoutDurationMs) {
+        this.authLockoutDurationMs = (authLockoutDurationMs > 0) ? authLockoutDurationMs : 60_000L;
     }
 
     public static String generateRandomToken() {
@@ -139,7 +163,9 @@ public class WebConfig {
                 "  \"port\": " + port + ",\n" +
                 "  \"secretToken\": \"" + escape(secretToken) + "\",\n" +
                 "  \"allowedOrigins\": \"" + escape(allowedOrigins) + "\",\n" +
-                "  \"maxConnections\": " + maxConnections + "\n" +
+                "  \"maxConnections\": " + maxConnections + ",\n" +
+                "  \"maxFailedAuthAttempts\": " + maxFailedAuthAttempts + ",\n" +
+                "  \"authLockoutDurationMs\": " + authLockoutDurationMs + "\n" +
                 "}";
     }
 
@@ -150,8 +176,23 @@ public class WebConfig {
         String secretToken = extractString(json, "secretToken", generateRandomToken());
         String allowedOrigins = extractString(json, "allowedOrigins", "*");
         int maxConnections = extractInt(json, "maxConnections", 20);
+        int maxFailedAuthAttempts = extractInt(json, "maxFailedAuthAttempts", 5);
+        long authLockoutDurationMs = extractLong(json, "authLockoutDurationMs", 60_000L);
 
-        return new WebConfig(enabled, host, port, secretToken, allowedOrigins, maxConnections);
+        return new WebConfig(enabled, host, port, secretToken, allowedOrigins, maxConnections, maxFailedAuthAttempts, authLockoutDurationMs);
+    }
+
+    private static long extractLong(String json, String key, long defaultValue) {
+        String pattern = "\"" + key + "\"\\s*:\\s*(\\d+)";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(pattern).matcher(json);
+        if (m.find()) {
+            try {
+                return Long.parseLong(m.group(1));
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
     }
 
     private static String extractString(String json, String key, String defaultValue) {
