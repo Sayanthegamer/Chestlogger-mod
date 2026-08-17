@@ -51,17 +51,17 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Cross-Platform Interoperability, Durability & Rollback Validation
-- [ ] Task: (TDD Red) Create cross-platform golden `.chlog` compatibility tests
-  - [ ] Write tests validating that `.chlog` files generated on Paper are parsed, indexed, and rolled back identically on Fabric and vice versa using golden fixtures
-  - [ ] Validate truncated/corrupted tail recovery parity across both platforms
-- [ ] Task: (TDD Green) Validate bi-directional format parity and rollback execution
-  - [ ] Ensure byte-for-byte serialization consistency and coordinate/item namespace uniformity
-  - [ ] Verify cross-platform rollback dry-run and execution parity
-- [ ] Task: (TDD Red) Create HDD sequential I/O durability and crash-safety tests
-  - [ ] Test simulated queue overflow, Aternos crash conditions, tail recovery, and thread safety assertions
-- [ ] Task: (TDD Green) Optimize sequential batch writer and backpressure metrics
-  - [ ] Verify zero main-thread disk seek storms and zero disk blocking across both platform profiles
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create cross-platform golden `.chlog` compatibility tests ba6dd44
+  - [x] Write tests validating that `.chlog` files generated on Paper are parsed, indexed, and rolled back identically on Fabric and vice versa using golden fixtures
+  - [x] Validate truncated/corrupted tail recovery parity across both platforms
+- [x] Task: (TDD Green) Validate bi-directional format parity and rollback execution ba6dd44
+  - [x] Ensure byte-for-byte serialization consistency and coordinate/item namespace uniformity
+  - [x] Verify cross-platform rollback dry-run and execution parity
+- [x] Task: (TDD Red) Create HDD sequential I/O durability and crash-safety tests ba6dd44
+  - [x] Test simulated queue overflow, Aternos crash conditions, tail recovery, and thread safety assertions
+- [x] Task: (TDD Green) Optimize sequential batch writer and backpressure metrics ba6dd44
+  - [x] Verify zero main-thread disk seek storms and zero disk blocking across both platform profiles
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: Automated Test Harnesses, CI Pipeline & Release Packaging
 - [ ] Task: Build automated Paper 26.2 headless dedicated server test harness
