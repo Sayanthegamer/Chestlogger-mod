@@ -1,0 +1,1 @@
+Task: Web REST API & Interactive Observability Graph. Implemented GET /api/v1/provenance in QueryHttpHandler with JSON serialization, TDD unit tests in ProvenanceHttpApiTest, and interactive SVG node-link journey graph in Web Dashboard. 100% tests passing.
