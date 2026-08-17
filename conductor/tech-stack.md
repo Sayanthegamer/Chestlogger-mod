@@ -27,3 +27,8 @@
 - **Unit & Property Tests**: JUnit 5 (Jupiter), AssertJ, fuzz/property generators
 - **Integration Testing**: Fabric GameTest / Fabric Server Test runner
 - **Benchmarking**: Custom microbenchmarks for throughput (100 to 1M events)
+
+## Continuous Integration & DevOps
+- **CI Platform**: GitHub Actions (`.github/workflows/ci.yml`)
+- **Automated Pipeline**: JDK 25 (Temurin), Gradle caching, automated test verification (`./gradlew check`), release binary compilation (`./gradlew build`), and artifact archiving
+
