@@ -30,13 +30,13 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Adaptive Rollback Engine & Cross-Platform Durability
-- [ ] Task: (TDD Red) Create cross-platform 54-slot interop and broken-half recovery tests
-  - [ ] Write tests verifying Paper double chest logs are parsed, queried, and rolled back identically by Fabric and vice versa
-  - [ ] Write tests verifying adaptive rollback when one half of a double chest is missing/broken
-- [ ] Task: (TDD Green) Implement adaptive broken-half compensation in `RollbackEngine`
-  - [ ] Support fallback compensation for missing container halves without dropping unplaceable items
-  - [ ] Verify zero main-thread blocking under heavy multi-slot contention
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create cross-platform 54-slot interop and broken-half recovery tests 98d380c
+  - [x] Write tests verifying Paper double chest logs are parsed, queried, and rolled back identically by Fabric and vice versa
+  - [x] Write tests verifying adaptive rollback when one half of a double chest is missing/broken
+- [x] Task: (TDD Green) Implement adaptive broken-half compensation in `RollbackEngine` 98d380c
+  - [x] Support fallback compensation for missing container halves without dropping unplaceable items
+  - [x] Verify zero main-thread blocking under heavy multi-slot contention
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: GUI, Web Dashboard & Build Verification
 - [ ] Task: Update GUI and Web Dashboard 54-slot rendering
