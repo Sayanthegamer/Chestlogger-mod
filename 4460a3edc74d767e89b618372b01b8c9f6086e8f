@@ -1,0 +1,1 @@
+Task 4.1-4.4: Implemented IP-based auth brute-force rate limiting (HTTP 429), parameter clamping, timing-safe token validation, 20-thread concurrency stress tests under active ingestion, and full regression verification
