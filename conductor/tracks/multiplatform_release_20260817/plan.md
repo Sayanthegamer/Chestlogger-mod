@@ -39,16 +39,16 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Fabric 26.2 Reference Mod Refactor & Parity Verification
-- [ ] Task: Configure `chestlogger-fabric` subproject
-  - [ ] Configure `chestlogger-fabric/build.gradle` with `net.fabricmc.fabric-loom` 1.17, Loader 0.19.3, Gradle 9.5.1, and `chestlogger-common` dependency
-  - [ ] Relocate Fabric-specific mixins, commands, lifecycle hooks, `FabricRollbackExecutor`, and GUI networking
-- [ ] Task: (TDD Red) Create regression test suite for Fabric 26.2 integration
-  - [ ] Write tests for Fabric lifecycle events, container mixin capture, singleplayer separation, and GUI packet codecs
-  - [ ] Write thread-assertion test ensuring Fabric mixins never trigger disk I/O on the main thread
-- [ ] Task: (TDD Green) Wire Fabric entrypoints to `chestlogger-common`
-  - [ ] Update `ChestLoggerMod`, `ChestLoggerLifecycleManager`, and `ChestLoggerCommands` to use `chestlogger-common`
-  - [ ] Run `./gradlew :chestlogger-fabric:test` and verify zero regressions
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Configure `chestlogger-fabric` subproject 54682f1
+  - [x] Configure `chestlogger-fabric/build.gradle` with `net.fabricmc.fabric-loom` 1.17, Loader 0.19.3, Gradle 9.5.1, and `chestlogger-common` dependency
+  - [x] Relocate Fabric-specific mixins, commands, lifecycle hooks, `FabricRollbackExecutor`, and GUI networking
+- [x] Task: (TDD Red) Create regression test suite for Fabric 26.2 integration 54682f1
+  - [x] Write tests for Fabric lifecycle events, container mixin capture, singleplayer separation, and GUI packet codecs
+  - [x] Write thread-assertion test ensuring Fabric mixins never trigger disk I/O on the main thread
+- [x] Task: (TDD Green) Wire Fabric entrypoints to `chestlogger-common` 54682f1
+  - [x] Update `ChestLoggerMod`, `ChestLoggerLifecycleManager`, and `ChestLoggerCommands` to use `chestlogger-common`
+  - [x] Run `./gradlew :chestlogger-fabric:test` and verify zero regressions
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Cross-Platform Interoperability, Durability & Rollback Validation
 - [ ] Task: (TDD Red) Create cross-platform golden `.chlog` compatibility tests
