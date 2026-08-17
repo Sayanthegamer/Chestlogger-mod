@@ -64,14 +64,14 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: Automated Test Harnesses, CI Pipeline & Release Packaging
-- [ ] Task: Build automated Paper 26.2 headless dedicated server test harness
-  - [ ] Implement headless Paper 26.2 server test script validating plugin load, real container mutations, shutdown flush, and `.chlog` generation
-- [ ] Task: Build automated Fabric 26.2 dedicated server verification harness
-  - [ ] Implement Fabric 26.2 dedicated server test script validating mod load, container events, and `.chlog` output
-- [ ] Task: Update GitHub Actions CI workflow (`.github/workflows/ci.yml`)
-  - [ ] Configure multi-project build verification for `:chestlogger-common`, `:chestlogger-fabric`, and `:chestlogger-paper`
-  - [ ] Configure dual-artifact release packaging for `chestlogger-fabric-<version>.jar` and `chestlogger-paper-<version>.jar`
-- [ ] Task: Complete documentation & migration guides
-  - [ ] Document Paper installation, permissions, config options, and cross-platform log inspection
-  - [ ] Update `README.md` and conductor documentation
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Build automated Paper 26.2 headless dedicated server test harness b47df3d
+  - [x] Implement headless Paper 26.2 server test script validating plugin load, real container mutations, shutdown flush, and `.chlog` generation
+- [x] Task: Build automated Fabric 26.2 dedicated server verification harness b47df3d
+  - [x] Implement Fabric 26.2 dedicated server test script validating mod load, container events, and `.chlog` output
+- [x] Task: Update GitHub Actions CI workflow (`.github/workflows/ci.yml`) b47df3d
+  - [x] Configure multi-project build verification for `:chestlogger-common`, `:chestlogger-fabric`, and `:chestlogger-paper`
+  - [x] Configure dual-artifact release packaging for `chestlogger-fabric-<version>.jar` and `chestlogger-paper-<version>.jar`
+- [x] Task: Complete documentation & migration guides b47df3d
+  - [x] Document Paper installation, permissions, config options, and cross-platform log inspection
+  - [x] Update `README.md` and conductor documentation
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
