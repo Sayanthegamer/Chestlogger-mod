@@ -5,6 +5,7 @@ import com.chestlogger.event.TransactionEventQueue;
 import com.chestlogger.event.TransactionLogEntry;
 import com.chestlogger.index.IndexQueryFilter;
 import com.chestlogger.index.PersistentIndexManager;
+import com.chestlogger.inspect.InspectModeManager;
 import com.chestlogger.query.PagedResult;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.query.TransactionFormatter;
@@ -37,7 +38,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     private final TransactionEventQueue eventQueue;
     private final PaperRollbackExecutor rollbackExecutor;
     private final EmbeddedHttpServer webServer;
-    private final Set<UUID> inspectingPlayers = Collections.synchronizedSet(new HashSet<>());
+    private final InspectModeManager inspectModeManager;
 
     public PaperCommandExecutor(
             Plugin plugin,
@@ -45,7 +46,8 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             PersistentIndexManager indexManager,
             TransactionEventQueue eventQueue,
             PaperRollbackExecutor rollbackExecutor,
-            EmbeddedHttpServer webServer
+            EmbeddedHttpServer webServer,
+            InspectModeManager inspectModeManager
     ) {
         this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
         this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
@@ -53,15 +55,25 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         this.eventQueue = Objects.requireNonNull(eventQueue, "eventQueue cannot be null");
         this.rollbackExecutor = Objects.requireNonNull(rollbackExecutor, "rollbackExecutor cannot be null");
         this.webServer = webServer;
+        this.inspectModeManager = Objects.requireNonNull(inspectModeManager, "inspectModeManager cannot be null");
     }
 
     public boolean isInspecting(UUID playerUuid) {
-        return playerUuid != null && inspectingPlayers.contains(playerUuid);
+        return inspectModeManager.isInspectActive(playerUuid);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
+            if (sender instanceof Player player && (player.hasPermission("chestlogger.inspect") || player.hasPermission("chestlogger.admin"))) {
+                boolean active = inspectModeManager.toggleInspect(player.getUniqueId());
+                if (active) {
+                    player.sendMessage(ChatColor.GREEN + "[ChestLogger] Inspect mode enabled. Left-click a container to inspect chat, right-click to inspect GUI.");
+                } else {
+                    player.sendMessage(ChatColor.YELLOW + "[ChestLogger] Inspect mode disabled.");
+                }
+                return true;
+            }
             sendHelp(sender);
             return true;
         }
@@ -69,6 +81,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         String subCommand = args[0].toLowerCase(Locale.ROOT);
         switch (subCommand) {
             case "i", "inspect" -> handleInspect(sender, args);
+            case "wand" -> handleWand(sender);
             case "rb", "rollback" -> handleRollback(sender, args);
             case "stats" -> handleStats(sender);
             case "web" -> handleWeb(sender, args);
@@ -92,12 +105,11 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         if (targetBlock == null || !(targetBlock.getState() instanceof Container container)) {
             // Toggle inspection mode
             UUID uuid = player.getUniqueId();
-            if (inspectingPlayers.contains(uuid)) {
-                inspectingPlayers.remove(uuid);
-                player.sendMessage(ChatColor.YELLOW + "[ChestLogger] Inspection mode disabled.");
+            boolean active = inspectModeManager.toggleInspect(uuid);
+            if (active) {
+                player.sendMessage(ChatColor.GREEN + "[ChestLogger] Inspection mode enabled. Left-click container for chat, right-click for GUI.");
             } else {
-                inspectingPlayers.add(uuid);
-                player.sendMessage(ChatColor.GREEN + "[ChestLogger] Inspection mode enabled. Click or interact with containers to inspect.");
+                player.sendMessage(ChatColor.YELLOW + "[ChestLogger] Inspection mode disabled.");
             }
             return;
         }
@@ -271,9 +283,21 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         sender.sendMessage(ChatColor.YELLOW + "Secret Token: " + ChatColor.AQUA + config.getSecretToken());
     }
 
+    private void handleWand(CommandSender sender) {
+        if (!sender.hasPermission("chestlogger.inspect") && !sender.hasPermission("chestlogger.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use the inspection wand.");
+            return;
+        }
+        sender.sendMessage(ChatColor.GOLD + "=== [ChestLogger Wand Info] ===");
+        sender.sendMessage(ChatColor.YELLOW + "Wand Item: " + ChatColor.AQUA + inspectModeManager.getConfig().getWandItem());
+        sender.sendMessage(ChatColor.YELLOW + "Mode: " + ChatColor.WHITE + "Left-click container for Chat history, Right-click for GUI history.");
+        sender.sendMessage(ChatColor.YELLOW + "Tip: " + ChatColor.GRAY + "Use /chestlog i to toggle click-inspection without holding the wand.");
+    }
+
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== ChestLogger Commands ===");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog inspect [page]" + ChatColor.WHITE + " - Inspect targeted container logs");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [page]" + ChatColor.WHITE + " - Toggle inspect mode or inspect targeted container");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog rollback [seconds]" + ChatColor.WHITE + " - Revert container changes");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog stats" + ChatColor.WHITE + " - View queue and memory telemetry");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
@@ -282,7 +306,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("inspect", "rollback", "stats", "web");
+            return List.of("i", "inspect", "wand", "rollback", "stats", "web");
         }
         if (args.length == 2 && "web".equalsIgnoreCase(args[0])) {
             return List.of("start", "stop");

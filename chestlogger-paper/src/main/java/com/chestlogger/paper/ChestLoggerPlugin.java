@@ -45,6 +45,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
     private PaperRollbackExecutor rollbackExecutor;
     private EmbeddedHttpServer webServer;
     private WebConfig webConfig;
+    private com.chestlogger.inspect.InspectModeManager inspectModeManager;
 
     private BukkitTask workerTask;
     private final AtomicLong sequenceGenerator = new AtomicLong(0L);
@@ -144,8 +145,14 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         }
 
         // 6. Register Bukkit Events and Commands
+        this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
+
         getServer().getPluginManager().registerEvents(
                 new PaperChestEventListener(this, eventQueue, sequenceGenerator),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new PaperWandListener(this, inspectModeManager, queryEngine, indexManager),
                 this
         );
 
@@ -155,7 +162,8 @@ public final class ChestLoggerPlugin extends JavaPlugin {
                 indexManager,
                 eventQueue,
                 rollbackExecutor,
-                webServer
+                webServer,
+                inspectModeManager
         );
 
         PluginCommand command = getCommand("chestlog");
