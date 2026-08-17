@@ -1,0 +1,1 @@
+Task: Discord Webhook & Suspicious Activity Alert Engine. Implemented AlertConfig, DiscordEmbedBuilder, DiscordAlertDispatcher with non-blocking HttpClient, rate-limiting, and auto-configuration on Paper and Fabric.
