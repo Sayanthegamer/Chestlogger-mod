@@ -185,7 +185,7 @@ public final class ChestLoggerLifecycleManager {
         }
 
         this.theftEvaluator = new SmartTheftEvaluator(trustManager, alertConfig, new RaidVelocityTracker());
-        this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig);
+        this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig, alertDispatcher);
 
         running.set(true);
 
@@ -244,11 +244,6 @@ public final class ChestLoggerLifecycleManager {
     private void processBatch(List<TransactionLogEntry> records) {
         if (records.isEmpty()) return;
         try {
-            if (alertDispatcher != null) {
-                for (TransactionLogEntry entry : records) {
-                    alertDispatcher.evaluateAndDispatch(entry);
-                }
-            }
             if (securityBroadcaster != null) {
                 for (TransactionLogEntry entry : records) {
                     securityBroadcaster.processTransaction(entry);

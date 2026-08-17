@@ -33,13 +33,19 @@ public final class PaperSecurityAlertBroadcaster {
     private final Plugin plugin;
     private final SmartTheftEvaluator evaluator;
     private final AlertConfig alertConfig;
+    private final com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private final Map<Long, UUID> containerOwners = new ConcurrentHashMap<>();
     private final Map<Long, String> containerOwnerNames = new ConcurrentHashMap<>();
 
     public PaperSecurityAlertBroadcaster(Plugin plugin, SmartTheftEvaluator evaluator, AlertConfig alertConfig) {
+        this(plugin, evaluator, alertConfig, null);
+    }
+
+    public PaperSecurityAlertBroadcaster(Plugin plugin, SmartTheftEvaluator evaluator, AlertConfig alertConfig, com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher) {
         this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
         this.evaluator = Objects.requireNonNull(evaluator, "evaluator cannot be null");
         this.alertConfig = Objects.requireNonNull(alertConfig, "alertConfig cannot be null");
+        this.alertDispatcher = alertDispatcher;
     }
 
     /**
@@ -83,6 +89,9 @@ public final class PaperSecurityAlertBroadcaster {
             SecurityIncident incident = incidentOpt.get();
             if (incident.classification().isAlertWorthy()) {
                 broadcastAlert(incident);
+                if (alertDispatcher != null) {
+                    alertDispatcher.dispatchIncident(incident);
+                }
             }
         }
     }

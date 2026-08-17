@@ -62,13 +62,16 @@ jobs:
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            chestlogger-fabric/build/libs/*.jar
-            chestlogger-paper/build/libs/*.jar
-          generate_release_notes: true
-          draft: false
-          prerelease: false
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          if [ "$TAG_NAME" = "$GITHUB_REF" ]; then
+            TAG_NAME="v2.4.1"
+          fi
+          echo "Publishing release for tag: $TAG_NAME"
+          gh release create "$TAG_NAME" \
+            chestlogger-fabric/build/libs/*.jar \
+            chestlogger-paper/build/libs/*.jar \
+            --title "Release $TAG_NAME" \
+            --generate-notes || gh release upload "$TAG_NAME" chestlogger-fabric/build/libs/*.jar chestlogger-paper/build/libs/*.jar --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -174,7 +174,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         }
 
         this.theftEvaluator = new com.chestlogger.security.SmartTheftEvaluator(trustManager, alertConfig, new com.chestlogger.security.RaidVelocityTracker());
-        this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig);
+        this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig, alertDispatcher);
 
         // 7. Register Bukkit Events and Commands
         this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
@@ -280,11 +280,6 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             eventQueue.drain(batch, BATCH_SIZE);
 
             if (!batch.isEmpty()) {
-                if (alertDispatcher != null) {
-                    for (TransactionLogEntry entry : batch) {
-                        alertDispatcher.evaluateAndDispatch(entry);
-                    }
-                }
                 if (securityBroadcaster != null) {
                     for (TransactionLogEntry entry : batch) {
                         securityBroadcaster.processTransaction(entry);

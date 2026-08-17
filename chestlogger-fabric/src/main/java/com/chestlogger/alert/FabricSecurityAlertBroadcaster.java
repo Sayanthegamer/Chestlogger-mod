@@ -32,13 +32,19 @@ public final class FabricSecurityAlertBroadcaster {
     private final Supplier<MinecraftServer> serverSupplier;
     private final SmartTheftEvaluator evaluator;
     private final AlertConfig alertConfig;
+    private final com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private final Map<Long, UUID> containerOwners = new ConcurrentHashMap<>();
     private final Map<Long, String> containerOwnerNames = new ConcurrentHashMap<>();
 
     public FabricSecurityAlertBroadcaster(Supplier<MinecraftServer> serverSupplier, SmartTheftEvaluator evaluator, AlertConfig alertConfig) {
+        this(serverSupplier, evaluator, alertConfig, null);
+    }
+
+    public FabricSecurityAlertBroadcaster(Supplier<MinecraftServer> serverSupplier, SmartTheftEvaluator evaluator, AlertConfig alertConfig, com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher) {
         this.serverSupplier = Objects.requireNonNull(serverSupplier, "serverSupplier cannot be null");
         this.evaluator = Objects.requireNonNull(evaluator, "evaluator cannot be null");
         this.alertConfig = Objects.requireNonNull(alertConfig, "alertConfig cannot be null");
+        this.alertDispatcher = alertDispatcher;
     }
 
     /**
@@ -82,6 +88,9 @@ public final class FabricSecurityAlertBroadcaster {
             SecurityIncident incident = incidentOpt.get();
             if (incident.classification().isAlertWorthy()) {
                 broadcastAlert(server, incident);
+                if (alertDispatcher != null) {
+                    alertDispatcher.dispatchIncident(incident);
+                }
             }
         }
     }
