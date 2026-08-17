@@ -35,6 +35,7 @@ public class ChestLoggerMod implements ModInitializer {
     private static QuerySessionManager sessionManager = new QuerySessionManager();
     private static WebConfig webConfig;
     private static EmbeddedHttpServer httpServer;
+    private static com.chestlogger.inspect.InspectModeManager inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
 
     @Override
     public void onInitialize() {
@@ -59,6 +60,7 @@ public class ChestLoggerMod implements ModInitializer {
         ChestLogNetworking.init();
         lifecycleManager = new ChestLoggerLifecycleManager(eventQueue, compressor, profile);
         ChestLoggerLifecycleManager.registerServerEvents(lifecycleManager);
+        com.chestlogger.inspect.FabricWandListener.register();
         com.chestlogger.command.ChestLoggerCommands.register();
     }
 
@@ -121,5 +123,12 @@ public class ChestLoggerMod implements ModInitializer {
             );
         }
         return httpServer;
+    }
+
+    public static com.chestlogger.inspect.InspectModeManager getInspectModeManager() {
+        if (inspectModeManager == null) {
+            inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
+        }
+        return inspectModeManager;
     }
 }

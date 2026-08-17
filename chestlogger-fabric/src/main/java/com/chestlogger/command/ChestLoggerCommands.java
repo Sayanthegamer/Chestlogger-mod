@@ -48,21 +48,41 @@ public final class ChestLoggerCommands {
     }
 
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("chestlog")
-                .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
-                // --- INSPECT ---
-                .then(Commands.literal("inspect")
-                        .executes(ctx -> executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, 1))
+        var inspectNode = Commands.literal("inspect")
+                .executes(ctx -> {
+                    if (ctx.getSource().isPlayer()) {
+                        return executeToggleInspect(ctx.getSource());
+                    }
+                    return executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, 1);
+                })
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                        .executes(ctx -> executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, 1))
                         .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                                .executes(ctx -> executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
-                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
-                                .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, 1))
+                                .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), EntityArgument.getPlayer(ctx, "player").getUUID(), 0, 1))
                                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                                        .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
-                                .then(Commands.argument("player", EntityArgument.player())
-                                        .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), EntityArgument.getPlayer(ctx, "player").getUUID(), 0, 1))
-                                        .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                                                .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), EntityArgument.getPlayer(ctx, "player").getUUID(), 0, IntegerArgumentType.getInteger(ctx, "page")))))))
+                                        .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), EntityArgument.getPlayer(ctx, "player").getUUID(), 0, IntegerArgumentType.getInteger(ctx, "page"))))));
+
+        var iNode = Commands.literal("i")
+                .executes(ctx -> executeToggleInspect(ctx.getSource()))
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                        .executes(ctx -> executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, 1))
+                        .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                                .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, IntegerArgumentType.getInteger(ctx, "page")))));
+
+        var wandNode = Commands.literal("wand")
+                .executes(ctx -> executeWandInfo(ctx.getSource()));
+
+        var mainCommand = Commands.literal("chestlog")
+                .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
+                .then(inspectNode)
+                .then(iNode)
+                .then(wandNode)
                 // --- ROLLBACK ---
                 .then(Commands.literal("rollback")
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -81,8 +101,12 @@ public final class ChestLoggerCommands {
                         .then(Commands.argument("days", IntegerArgumentType.integer(1, 3650))
                                 .executes(ctx -> executePurgeRequest(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "days")))
                                 .then(Commands.argument("confirmToken", StringArgumentType.string())
-                                        .executes(ctx -> executePurgeConfirm(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "days"), StringArgumentType.getString(ctx, "confirmToken"))))))
-        );
+                                        .executes(ctx -> executePurgeConfirm(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "days"), StringArgumentType.getString(ctx, "confirmToken"))))));
+
+        dispatcher.register(mainCommand);
+        dispatcher.register(Commands.literal("cl")
+                .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
+                .redirect(dispatcher.getRoot().getChild("chestlog")));
     }
 
     private static int executeInspect(CommandSourceStack source, BlockPos pos, UUID filterPlayer, int durationSeconds, int page) {
@@ -282,6 +306,30 @@ public final class ChestLoggerCommands {
         }
 
         source.sendSuccess(() -> Component.literal(String.format("§aPurge confirmed. Trimming log segments older than %d days...", days)), true);
+        return 1;
+    }
+
+    private static int executeToggleInspect(CommandSourceStack source) {
+        try {
+            ServerPlayer player = source.getPlayerOrException();
+            boolean active = ChestLoggerMod.getInspectModeManager().toggleInspect(player.getUUID());
+            if (active) {
+                source.sendSuccess(() -> Component.literal("§a[ChestLogger] Inspect mode enabled. Left-click a container to inspect chat, right-click to inspect GUI."), false);
+            } else {
+                source.sendSuccess(() -> Component.literal("§e[ChestLogger] Inspect mode disabled."), false);
+            }
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Only players can toggle inspect mode."));
+            return 0;
+        }
+    }
+
+    private static int executeWandInfo(CommandSourceStack source) {
+        source.sendSuccess(() -> Component.literal("§6=== [ChestLogger Wand Info] ==="), false);
+        source.sendSuccess(() -> Component.literal("§eWand Item: §b" + ChestLoggerMod.getInspectModeManager().getConfig().getWandItem()), false);
+        source.sendSuccess(() -> Component.literal("§eMode: §fLeft-click container for Chat history, Right-click for GUI history."), false);
+        source.sendSuccess(() -> Component.literal("§7Tip: Use /chestlog i to toggle click-inspection without holding the wand."), false);
         return 1;
     }
 }
