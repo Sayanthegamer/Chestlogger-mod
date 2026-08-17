@@ -1,0 +1,3 @@
+Task: Create GitHub Actions workflow file .github/workflows/ci.yml
+
+Summary: Added GitHub Actions pipeline for push/PR/manual triggers, JDK 25 setup, Gradle caching, test verification (./gradlew check), and release binary artifact upload.
