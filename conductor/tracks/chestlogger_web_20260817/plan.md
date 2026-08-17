@@ -20,8 +20,8 @@
 - [x] Task: Implement responsive dark-theme dashboard with telemetry gauges, coordinate/player search, log table, and export triggers. (5cb96a8)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (5cb96a8)
 
-## Phase 4: Security Hardening, Edge Cases & End-to-End Regression
-- [~] Task: Write security test suite (path traversal prevention on static assets, brute-force auth rate limiting, invalid query params).
-- [ ] Task: Write concurrency and stress tests simulating simultaneous browser queries and game ticks.
-- [ ] Task: Run full regression test suite (All phases).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 4: Security Hardening, Edge Cases & End-to-End Regression [checkpoint: 4460a3e]
+- [x] Task: Write security test suite (path traversal prevention on static assets, brute-force auth rate limiting, invalid query params). (4460a3e)
+- [x] Task: Write concurrency and stress tests simulating simultaneous browser queries and game ticks. (4460a3e)
+- [x] Task: Run full regression test suite (All phases). (4460a3e)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (4460a3e)
