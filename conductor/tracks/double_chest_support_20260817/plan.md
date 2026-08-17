@@ -20,14 +20,14 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Fabric 26.2 Double Inventory Mixins & Rollback Adapter (`chestlogger-fabric`)
-- [ ] Task: (TDD Red) Create Fabric double inventory test suite
-  - [ ] Write tests for `DoubleInventory` screen handlers and partner block resolution (`ChestBlock.getDoubleBlockType()`)
-  - [ ] Write tests verifying slot boundary tracking (0–26 left vs 27–53 right)
-- [ ] Task: (TDD Green) Implement Fabric double chest mixins and rollback executor
-  - [ ] Update container mixins to capture `DoubleInventory` transactions
-  - [ ] Update `FabricRollbackExecutor` to restore across both `ChestBlockEntity` instances
-  - [ ] Run `:chestlogger-fabric:test` to verify
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create Fabric double inventory test suite 50082c9
+  - [x] Write tests for `DoubleInventory` screen handlers and partner block resolution (`ChestBlock.getDoubleBlockType()`)
+  - [x] Write tests verifying slot boundary tracking (0–26 left vs 27–53 right)
+- [x] Task: (TDD Green) Implement Fabric double chest mixins and rollback executor 50082c9
+  - [x] Update container mixins to capture `DoubleInventory` transactions
+  - [x] Update `FabricRollbackExecutor` to restore across both `ChestBlockEntity` instances
+  - [x] Run `:chestlogger-fabric:test` to verify
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Adaptive Rollback Engine & Cross-Platform Durability
 - [ ] Task: (TDD Red) Create cross-platform 54-slot interop and broken-half recovery tests
