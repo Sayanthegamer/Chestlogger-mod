@@ -13,12 +13,15 @@
         <!-- Top Navigation Header -->
         <header class="navbar">
             <div class="brand-group">
-                <div class="logo-box">
-                    <span class="logo-icon">📦</span>
+                <div class="brand-logo-wrap">
+                    <img src="/logo.svg" alt="ChestLogger Logo" class="brand-logo" width="34" height="34">
                 </div>
                 <div class="brand-text">
-                    <h1 class="brand-title">ChestLogger <span class="badge-version">Fabric 26.2</span></h1>
-                    <span class="brand-subtitle">Server Container Audit & Telemetry</span>
+                    <h1 class="brand-title">
+                        ChestLogger 
+                        <span class="badge-version">Fabric 26.2</span>
+                    </h1>
+                    <span class="brand-subtitle">High-Performance Container Audit &amp; Telemetry</span>
                 </div>
             </div>
 
@@ -28,80 +31,173 @@
                     <span id="status-text">Disconnected</span>
                 </div>
 
-                <button id="btn-open-auth" class="btn btn-secondary btn-icon" title="Authentication Settings">
-                    <span class="icon">🔑</span>
+                <button type="button" id="btn-open-auth" class="btn btn-secondary btn-icon" title="Authentication Settings">
+                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="7.5" cy="15.5" r="5.5"/>
+                        <path d="m21 2-9.6 9.6"/>
+                        <path d="m15.5 7.5 3 3L22 7l-2.5-2.5"/>
+                    </svg>
                     <span id="auth-status-label">Auth Token</span>
                 </button>
 
-                <button id="btn-refresh-all" class="btn btn-primary btn-icon" title="Refresh Telemetry and Results">
-                    <span class="icon">🔄</span>
+                <button type="button" id="btn-refresh-all" class="btn btn-primary btn-icon" title="Refresh Telemetry and Results">
+                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
                     <span>Refresh</span>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content Grid -->
+        <!-- Main Content Area -->
         <main class="dashboard-content">
-            <!-- Telemetry Stats Cards -->
-            <section class="telemetry-grid">
-                <div class="card stat-card">
-                    <div class="stat-header">
-                        <span class="stat-title">Ring Buffer Queue</span>
-                        <span class="stat-icon">⚡</span>
+            <!-- Compact Telemetry & Health Strip -->
+            <section class="telemetry-strip" aria-label="System Telemetry & Health">
+                <!-- Queue Saturation Item -->
+                <div class="telemetry-item queue-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        <span class="telemetry-label">Ring Buffer Queue</span>
                     </div>
-                    <div class="stat-value-group">
+                    <div class="telemetry-value-wrap">
                         <span id="stat-queue-depth" class="stat-value">0</span>
-                        <span class="stat-total">/ <span id="stat-queue-cap">65,536</span></span>
+                        <span class="stat-cap">/ <span id="stat-queue-cap">65,536</span></span>
                     </div>
-                    <div class="progress-bar-container">
-                        <div id="queue-progress-bar" class="progress-bar" style="width: 0%;"></div>
+                    <div class="mini-progress-bar" title="Queue Saturation">
+                        <div id="queue-progress-bar" class="progress-fill" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <div class="card stat-card">
-                    <div class="stat-header">
-                        <span class="stat-title">Total Enqueued</span>
-                        <span class="stat-icon">📥</span>
+                <!-- Enqueued Item -->
+                <div class="telemetry-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                        </svg>
+                        <span class="telemetry-label">Enqueued</span>
                     </div>
-                    <div class="stat-value-group">
+                    <div class="telemetry-value-wrap">
                         <span id="stat-enqueued" class="stat-value text-accent">0</span>
                     </div>
-                    <span class="stat-subtext">Events captured in RAM</span>
+                    <span class="telemetry-subtext">Events in memory</span>
                 </div>
 
-                <div class="card stat-card">
-                    <div class="stat-header">
-                        <span class="stat-title">Drained to Disk</span>
-                        <span class="stat-icon">💾</span>
+                <!-- Drained Item -->
+                <div class="telemetry-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="12" x2="2" y2="12"/>
+                            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                            <line x1="6" y1="16" x2="6.01" y2="16"/>
+                            <line x1="10" y1="16" x2="10.01" y2="16"/>
+                        </svg>
+                        <span class="telemetry-label">Drained to Disk</span>
                     </div>
-                    <div class="stat-value-group">
+                    <div class="telemetry-value-wrap">
                         <span id="stat-drained" class="stat-value text-success">0</span>
                     </div>
-                    <span class="stat-subtext">Dropped: <strong id="stat-dropped" class="text-danger">0</strong></span>
+                    <span class="telemetry-subtext">Persisted transactions</span>
                 </div>
 
-                <div class="card stat-card">
-                    <div class="stat-header">
-                        <span class="stat-title">Indexed Pointers</span>
-                        <span class="stat-icon">🗂️</span>
+                <!-- Dropped Item -->
+                <div class="telemetry-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span class="telemetry-label">Dropped</span>
                     </div>
-                    <div class="stat-value-group">
-                        <span id="stat-index-size" class="stat-value">0</span>
+                    <div class="telemetry-value-wrap">
+                        <span id="stat-dropped" class="stat-value text-danger">0</span>
                     </div>
-                    <span class="stat-subtext">Uptime: <span id="stat-uptime">0s</span></span>
+                    <span class="telemetry-subtext">Overflow loss</span>
+                </div>
+
+                <!-- Indexed Pointers Item -->
+                <div class="telemetry-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                        <span class="telemetry-label">Indexed Pointers</span>
+                    </div>
+                    <div class="telemetry-value-wrap">
+                        <span id="stat-index-size" class="stat-value text-info">0</span>
+                    </div>
+                    <span class="telemetry-subtext">Spatial index records</span>
+                </div>
+
+                <!-- Server Uptime Item -->
+                <div class="telemetry-item">
+                    <div class="telemetry-header">
+                        <svg class="svg-icon-sm text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span class="telemetry-label">Server Uptime</span>
+                    </div>
+                    <div class="telemetry-value-wrap">
+                        <span id="stat-uptime" class="stat-value text-muted-mono">0s</span>
+                    </div>
+                    <span class="telemetry-subtext">Runtime duration</span>
+                </div>
+
+                <!-- Live Auto-Tail Control -->
+                <div class="telemetry-item auto-tail-item">
+                    <div class="auto-tail-wrap">
+                        <div class="live-indicator" title="Live streaming auto-refresh status">
+                            <span class="pulse-ring"></span>
+                            <span class="pulse-dot"></span>
+                        </div>
+                        <div class="auto-tail-content">
+                            <label for="select-auto-tail" class="auto-tail-label">Live Stream</label>
+                            <select id="select-auto-tail" class="form-select-sm">
+                                <option value="0">Paused</option>
+                                <option value="1000">1s Interval</option>
+                                <option value="5000" selected>5s Interval</option>
+                                <option value="10000">10s Interval</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Search & Filter Controls Card -->
             <section class="card filter-card">
                 <div class="card-header">
-                    <h2 class="card-title">🔍 Search & Audit Filters</h2>
+                    <div class="card-title-group">
+                        <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                        </svg>
+                        <h2 class="card-title">Search &amp; Audit Query</h2>
+                    </div>
                     <div class="header-actions">
-                        <button id="btn-export-csv" class="btn btn-outline btn-sm" title="Export matching logs as RFC 4180 CSV">
-                            <span>📄 Export CSV</span>
+                        <button type="button" id="btn-export-csv" class="btn btn-outline btn-sm" title="Export matching logs as RFC 4180 CSV">
+                            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            <span>Export CSV</span>
                         </button>
-                        <button id="btn-export-json" class="btn btn-outline btn-sm" title="Export matching logs as JSON">
-                            <span>📋 Export JSON</span>
+                        <button type="button" id="btn-export-json" class="btn btn-outline btn-sm" title="Export matching logs as JSON">
+                            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6"/>
+                                <polyline points="8 6 2 12 8 18"/>
+                            </svg>
+                            <span>Export JSON</span>
                         </button>
                     </div>
                 </div>
@@ -109,15 +205,15 @@
                 <form id="filter-form" class="filter-form" onsubmit="return false;">
                     <div class="filter-grid">
                         <div class="input-group">
-                            <label for="input-x">Coordinate X</label>
+                            <label for="input-x">Coord X</label>
                             <input type="number" id="input-x" placeholder="e.g. -29" class="form-input">
                         </div>
                         <div class="input-group">
-                            <label for="input-y">Coordinate Y</label>
+                            <label for="input-y">Coord Y</label>
                             <input type="number" id="input-y" placeholder="e.g. -60" class="form-input">
                         </div>
                         <div class="input-group">
-                            <label for="input-z">Coordinate Z</label>
+                            <label for="input-z">Coord Z</label>
                             <input type="number" id="input-z" placeholder="e.g. 8" class="form-input">
                         </div>
 
@@ -131,12 +227,12 @@
                             </select>
                         </div>
 
-                        <div class="input-group">
+                        <div class="input-group input-group-wide">
                             <label for="input-player">Player / Actor</label>
-                            <input type="text" id="input-player" placeholder="Player name or UUID..." class="form-input">
+                            <input type="text" id="input-player" placeholder="Player username or UUID..." class="form-input">
                         </div>
 
-                        <div class="input-group">
+                        <div class="input-group input-group-wide">
                             <label for="input-item">Item Identifier</label>
                             <input type="text" id="input-item" placeholder="e.g. diamond, shulker_box..." class="form-input">
                         </div>
@@ -163,21 +259,58 @@
                         </div>
                     </div>
 
+                    <!-- Quick-Filter Chips Row -->
+                    <div class="quick-chips-row">
+                        <span class="chips-label">Quick Filters:</span>
+                        <div class="chips-group">
+                            <span class="chip-tag">Dimension</span>
+                            <button type="button" class="filter-chip" data-filter="dim" data-val="minecraft:overworld">Overworld</button>
+                            <button type="button" class="filter-chip" data-filter="dim" data-val="minecraft:the_nether">Nether</button>
+                            <button type="button" class="filter-chip" data-filter="dim" data-val="minecraft:the_end">End</button>
+                        </div>
+                        <div class="chips-group">
+                            <span class="chip-tag">Action</span>
+                            <button type="button" class="filter-chip chip-take" data-filter="action" data-val="TAKE">Takes</button>
+                            <button type="button" class="filter-chip chip-put" data-filter="action" data-val="PUT">Puts</button>
+                        </div>
+                        <div class="chips-group">
+                            <span class="chip-tag">Time</span>
+                            <button type="button" class="filter-chip" data-filter="time" data-val="900">15m</button>
+                            <button type="button" class="filter-chip" data-filter="time" data-val="3600">1h</button>
+                            <button type="button" class="filter-chip" data-filter="time" data-val="86400">24h</button>
+                        </div>
+                    </div>
+
                     <div class="filter-actions">
-                        <button type="submit" id="btn-search" class="btn btn-primary">
-                            <span>🔍 Search Logs</span>
-                        </button>
                         <button type="button" id="btn-clear-filters" class="btn btn-secondary">
+                            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
                             <span>Clear Filters</span>
+                        </button>
+                        <button type="submit" id="btn-search" class="btn btn-primary">
+                            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <span>Search Logs</span>
                         </button>
                     </div>
                 </form>
             </section>
 
-            <!-- Results Table Card -->
+            <!-- Results Stream Table Card -->
             <section class="card table-card">
                 <div class="table-header-row">
-                    <h2 class="card-title">Audit Log History</h2>
+                    <div class="table-title-group">
+                        <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                            <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+                        </svg>
+                        <h2 class="card-title">Audit Log Stream</h2>
+                    </div>
                     <span id="results-summary" class="results-summary">Showing 0 records</span>
                 </div>
 
@@ -185,23 +318,30 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th class="col-expand" aria-label="Expand details"></th>
                                 <th>Timestamp</th>
-                                <th>Position</th>
+                                <th>Position (XYZ)</th>
                                 <th>Dimension</th>
                                 <th>Actor</th>
                                 <th>Action</th>
                                 <th>Slot</th>
-                                <th>Item</th>
+                                <th>Item Identifier</th>
                                 <th class="text-right">Delta</th>
+                                <th class="col-helpers text-center">Helpers</th>
                             </tr>
                         </thead>
                         <tbody id="logs-tbody">
                             <!-- Populated dynamically by app.js -->
                             <tr>
-                                <td colspan="8" class="table-placeholder">
+                                <td colspan="10" class="table-placeholder">
                                     <div class="empty-state">
-                                        <span class="empty-icon">📂</span>
-                                        <p>No transaction records loaded. Apply filters or click Search Logs.</p>
+                                        <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                                            <path d="m3.3 7 8.7 5 8.7-5"/>
+                                            <path d="M12 22V12"/>
+                                        </svg>
+                                        <p class="empty-text-main">No transaction records loaded</p>
+                                        <p class="empty-text-sub">Apply query filters or click "Search Logs" to inspect container transactions.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -209,47 +349,185 @@
                     </table>
                 </div>
 
-                <!-- Pagination Bar -->
+                <!-- Pagination Footer -->
                 <div class="pagination-bar">
                     <div class="pagination-info">
                         Page <strong id="current-page">1</strong> of <strong id="total-pages">1</strong>
                     </div>
                     <div class="pagination-buttons">
-                        <button id="btn-page-first" class="btn btn-sm btn-secondary" disabled>|&lt;</button>
-                        <button id="btn-page-prev" class="btn btn-sm btn-secondary" disabled>&lt; Prev</button>
-                        <button id="btn-page-next" class="btn btn-sm btn-secondary" disabled>Next &gt;</button>
-                        <button id="btn-page-last" class="btn btn-sm btn-secondary" disabled>&gt;|</button>
+                        <button type="button" id="btn-page-first" class="btn btn-sm btn-secondary" title="First Page" disabled>
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="11 17 6 12 11 7"/>
+                                <polyline points="18 17 13 12 18 7"/>
+                            </svg>
+                        </button>
+                        <button type="button" id="btn-page-prev" class="btn btn-sm btn-secondary" title="Previous Page" disabled>
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                            <span>Prev</span>
+                        </button>
+                        <button type="button" id="btn-page-next" class="btn btn-sm btn-secondary" title="Next Page" disabled>
+                            <span>Next</span>
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                        <button type="button" id="btn-page-last" class="btn btn-sm btn-secondary" title="Last Page" disabled>
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="13 17 18 12 13 7"/>
+                                <polyline points="6 17 11 12 6 7"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </section>
         </main>
 
+        <!-- Expandable Row Detail Template -->
+        <template id="row-detail-template">
+            <tr class="row-detail-expanded">
+                <td colspan="10">
+                    <div class="detail-container">
+                        <div class="detail-grid">
+                            <!-- Container Metadata Column -->
+                            <div class="detail-panel">
+                                <h4 class="detail-panel-title">
+                                    <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="14" x="2" y="5" rx="2"/>
+                                        <line x1="2" y1="10" x2="22" y2="10"/>
+                                    </svg>
+                                    Transaction &amp; Spatial Metadata
+                                </h4>
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-label">Tx UUID</span>
+                                        <span class="kv-value mono" data-field="tx-uuid">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Sequence #</span>
+                                        <span class="kv-value mono" data-field="seq-num">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Container Pos</span>
+                                        <span class="kv-value mono" data-field="container-pos">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Dimension</span>
+                                        <span class="kv-value" data-field="dimension">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Actor UUID</span>
+                                        <span class="kv-value mono text-truncate" data-field="actor-uuid">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Inventory Slot Diff Column -->
+                            <div class="detail-panel">
+                                <h4 class="detail-panel-title">
+                                    <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                    </svg>
+                                    Slot Mutation State
+                                </h4>
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-label">Target Slot</span>
+                                        <span class="kv-value mono" data-field="slot-index">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Previous Item</span>
+                                        <span class="kv-value mono" data-field="prev-item">empty</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Current Item</span>
+                                        <span class="kv-value mono font-bold" data-field="curr-item">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Quantity Shift</span>
+                                        <span class="kv-value" data-field="delta-pill">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions & Commands Column -->
+                            <div class="detail-panel detail-panel-actions">
+                                <h4 class="detail-panel-title">
+                                    <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="4 17 10 11 4 5"/>
+                                        <line x1="12" y1="19" x2="20" y2="19"/>
+                                    </svg>
+                                    Inspector Helpers &amp; Shortcuts
+                                </h4>
+                                <div class="detail-actions-group">
+                                    <button type="button" class="btn btn-sm btn-outline btn-copy-cmd" title="Copy in-game rollback command">
+                                        <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                                        </svg>
+                                        <span>Copy /chestlog rollback</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline btn-copy-json" title="Copy raw transaction JSON">
+                                        <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="16 18 22 12 16 6"/>
+                                            <polyline points="8 6 2 12 8 18"/>
+                                        </svg>
+                                        <span>Copy Raw JSON</span>
+                                    </button>
+                                    <div class="filter-shortcuts">
+                                        <span class="shortcut-label">Filter Stream By:</span>
+                                        <button type="button" class="btn btn-xs btn-secondary btn-filter-actor">This Actor</button>
+                                        <button type="button" class="btn btn-xs btn-secondary btn-filter-pos">This Container</button>
+                                        <button type="button" class="btn btn-xs btn-secondary btn-filter-item">This Item</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </template>
+
         <!-- Authentication Modal -->
         <div id="auth-modal" class="modal-backdrop hidden">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h3 class="modal-title">🔐 Admin Authentication</h3>
-                    <button id="btn-close-modal" class="btn-close">&times;</button>
+                    <div class="modal-title-wrap">
+                        <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <h3 class="modal-title">Admin Authentication</h3>
+                    </div>
+                    <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal">
+                        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <p class="modal-desc">Enter the <code>secretToken</code> configured in your server's <code>config/chestlogger_web.json</code> file.</p>
                     
                     <div class="input-group">
                         <label for="input-secret-token">Secret Auth Token</label>
-                        <input type="password" id="input-secret-token" placeholder="Paste 32-character secret token..." class="form-input">
+                        <input type="password" id="input-secret-token" placeholder="Paste 32-character secret token..." class="form-input" autocomplete="off">
                     </div>
 
                     <div id="auth-feedback" class="auth-feedback hidden"></div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-test-auth" class="btn btn-secondary">Test Connection</button>
-                    <button id="btn-save-auth" class="btn btn-primary">Save & Connect</button>
+                    <button type="button" id="btn-test-auth" class="btn btn-secondary">Test Connection</button>
+                    <button type="button" id="btn-save-auth" class="btn btn-primary">Save &amp; Connect</button>
                 </div>
             </div>
         </div>
 
         <!-- Toast Notifications -->
-        <div id="toast-container" class="toast-container"></div>
+        <div id="toast-container" class="toast-container" aria-live="polite"></div>
     </div>
 
     <script src="/app.js"></script>
