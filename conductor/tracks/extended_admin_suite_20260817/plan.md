@@ -1,6 +1,6 @@
 # Implementation Plan: Interactive Wand, Paper GUI Parity, Extended Containers & Discord Alerting
 
-## Phase 1: Interactive Wand & Click Inspection Mode (Fabric & Paper)
+## Phase 1: Interactive Wand & Click Inspection Mode (Fabric & Paper) [checkpoint: d13cad8]
 - [x] Task: Phase 1 Test Harness - Mode Tracking & Wand Matcher Unit Tests [98ddffa]
   - [x] Write unit tests for `InspectModeManager` (player toggle state, timeouts, wand item matching) in `chestlogger-common` [98ddffa]
 - [x] Task: Implement `InspectModeManager` & Configuration in Common Core [98ddffa]
@@ -8,15 +8,15 @@
 - [x] Task: Implement Paper Click & Wand Interaction Interception [2e4e544]
   - [x] Write unit test for `PaperWandListener` [2e4e544]
   - [x] Implement `PlayerInteractEvent` and `BlockDamageEvent` interception in `chestlogger-paper` [2e4e544]
-- [~] Task: Implement Fabric Click & Wand Interaction Interception
-  - [~] Implement `UseBlockCallback` and `AttackBlockCallback` hooks in `chestlogger-fabric`
-- [ ] Task: Add Command Aliases & Ergonomics (`/chestlog i`, `/chestlog wand`)
-  - [ ] Register `/chestlog i` / `/chestlog wand` commands on both Fabric and Paper
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Implement Fabric Click & Wand Interaction Interception [d13cad8]
+  - [x] Implement `UseBlockCallback` and `AttackBlockCallback` hooks in `chestlogger-fabric` [d13cad8]
+- [x] Task: Add Command Aliases & Ergonomics (`/chestlog i`, `/chestlog wand`) [d13cad8]
+  - [x] Register `/chestlog i` / `/chestlog wand` commands on both Fabric and Paper [d13cad8]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [d13cad8]
 
 ## Phase 2: Paper In-Game Inspection GUI Parity
-- [ ] Task: Phase 2 Test Harness - Bukkit GUI View Model Unit Tests
-  - [ ] Write unit tests for `PaperChestHistoryView` layout, item metadata, and pagination slicing
+- [~] Task: Phase 2 Test Harness - Bukkit GUI View Model Unit Tests
+  - [~] Write unit tests for `PaperChestHistoryView` layout, item metadata, and pagination slicing
 - [ ] Task: Implement `PaperChestHistoryView` 54-Slot GUI Layout
   - [ ] Implement 54-slot custom Inventory builder with item icons, lore formatting, and half indicators (`L`/`R`)
 - [ ] Task: Implement Paper GUI Click Listener & Action Handlers
