@@ -1829,6 +1829,9 @@ kbd {
     .view-tabs-nav {
         flex-wrap: wrap;
     }
+    .rollback-summary-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1857,4 +1860,338 @@ kbd {
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+/* =========================================================================
+   Security & Alerts Incidents Feed Design System
+   ========================================================================= */
+
+.security-header-card {
+    margin-bottom: 20px;
+}
+
+.incident-filters-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+}
+
+.chip-critical.active {
+    background-color: #992d22 !important;
+    border-color: #e74c3c !important;
+    color: #fff !important;
+}
+
+.chip-offline.active {
+    background-color: #e74c3c !important;
+    border-color: #ff7675 !important;
+    color: #fff !important;
+}
+
+.chip-absent.active {
+    background-color: #e67e22 !important;
+    border-color: #f39c12 !important;
+    color: #fff !important;
+}
+
+.chip-consensual.active {
+    background-color: #27ae60 !important;
+    border-color: #2ecc71 !important;
+    color: #fff !important;
+}
+
+.incidents-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.incident-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.incident-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.incident-card.card-critical-raid {
+    border-left: 5px solid #992d22;
+    background: linear-gradient(90deg, rgba(153, 45, 34, 0.08) 0%, var(--bg-surface) 30%);
+}
+
+.incident-card.card-offline-theft {
+    border-left: 5px solid #e74c3c;
+    background: linear-gradient(90deg, rgba(231, 76, 60, 0.08) 0%, var(--bg-surface) 30%);
+}
+
+.incident-card.card-absent-theft {
+    border-left: 5px solid #e67e22;
+    background: linear-gradient(90deg, rgba(230, 126, 34, 0.08) 0%, var(--bg-surface) 30%);
+}
+
+.incident-card.card-info-incident {
+    border-left: 5px solid #f1c40f;
+    background: linear-gradient(90deg, rgba(241, 196, 15, 0.06) 0%, var(--bg-surface) 30%);
+}
+
+.incident-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.incident-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.incident-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-critical-raid {
+    background-color: rgba(153, 45, 34, 0.25);
+    border: 1px solid #992d22;
+    color: #ff7675;
+}
+
+.badge-offline-theft {
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid #e74c3c;
+    color: #ff8787;
+}
+
+.badge-absent-theft {
+    background-color: rgba(230, 126, 34, 0.2);
+    border: 1px solid #e67e22;
+    color: #f39c12;
+}
+
+.badge-info-incident {
+    background-color: rgba(241, 196, 15, 0.15);
+    border: 1px solid #f1c40f;
+    color: #f1c40f;
+}
+
+.badge-burst {
+    background-color: rgba(239, 68, 68, 0.25);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+    font-weight: 700;
+}
+
+.incident-time {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.incident-seq {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.incident-summary-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.incident-card-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    background-color: var(--bg-surface-elevated);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.incident-kv {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.incident-kv .kv-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.incident-kv .kv-val {
+    font-size: 13px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.presence-tag {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.incident-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+/* =========================================================================
+   Staged Rollback Confirmation Modal Design System
+   ========================================================================= */
+
+.modal-card-lg {
+    max-width: 620px;
+    width: 90%;
+}
+
+.safety-warning-banner {
+    display: flex;
+    gap: 14px;
+    background-color: rgba(244, 63, 94, 0.12);
+    border: 1px solid rgba(244, 63, 94, 0.35);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.warning-icon-wrap {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.warning-heading {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ff7675;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.warning-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.rollback-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.summary-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.summary-val {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.rollback-timeframe-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.cmd-preview-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.cmd-preview-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.cmd-snippet-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    gap: 10px;
+}
+
+.cmd-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-cyan);
+    word-break: break-all;
+}
+
+.rollback-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.btn-confirm {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+    color: #fff;
+    font-weight: 700;
+}
+
+.btn-confirm:hover {
+    background-color: #c0392b;
+    border-color: #a93226;
 }

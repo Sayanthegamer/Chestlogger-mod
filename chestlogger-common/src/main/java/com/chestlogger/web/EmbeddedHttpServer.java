@@ -1,5 +1,6 @@
 package com.chestlogger.web;
 
+import com.chestlogger.security.IncidentRingBuffer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
@@ -28,9 +29,10 @@ public class EmbeddedHttpServer {
     private final Supplier<com.chestlogger.index.PersistentIndexManager> indexManagerSupplier;
     private final Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier;
     private final Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier;
+    private final Supplier<IncidentRingBuffer> incidentBufferSupplier;
 
     public EmbeddedHttpServer(WebConfig config) {
-        this(config, () -> null, () -> null, () -> null, () -> null);
+        this(config, () -> null, () -> null, () -> null, () -> null, () -> null);
     }
 
     public EmbeddedHttpServer(
@@ -40,11 +42,23 @@ public class EmbeddedHttpServer {
             Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier,
             Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier
     ) {
+        this(config, queueSupplier, indexManagerSupplier, queryEngineSupplier, sessionManagerSupplier, () -> null);
+    }
+
+    public EmbeddedHttpServer(
+            WebConfig config,
+            Supplier<com.chestlogger.event.TransactionEventQueue> queueSupplier,
+            Supplier<com.chestlogger.index.PersistentIndexManager> indexManagerSupplier,
+            Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier,
+            Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier,
+            Supplier<IncidentRingBuffer> incidentBufferSupplier
+    ) {
         this.config = config != null ? config : new WebConfig();
         this.queueSupplier = queueSupplier != null ? queueSupplier : () -> null;
         this.indexManagerSupplier = indexManagerSupplier != null ? indexManagerSupplier : () -> null;
         this.queryEngineSupplier = queryEngineSupplier != null ? queryEngineSupplier : () -> null;
         this.sessionManagerSupplier = sessionManagerSupplier != null ? sessionManagerSupplier : () -> null;
+        this.incidentBufferSupplier = incidentBufferSupplier != null ? incidentBufferSupplier : () -> null;
     }
 
     public synchronized void start() {
@@ -155,10 +169,13 @@ public class EmbeddedHttpServer {
             server.createContext("/api/v1/stats", new StatsHttpHandler(config, queueSupplier, indexManagerSupplier, System.currentTimeMillis()));
         }
         if (!customContexts.containsKey("/api/v1/query")) {
-            server.createContext("/api/v1/query", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
+            server.createContext("/api/v1/query", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier, incidentBufferSupplier));
         }
         if (!customContexts.containsKey("/api/v1/provenance")) {
-            server.createContext("/api/v1/provenance", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
+            server.createContext("/api/v1/provenance", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier, incidentBufferSupplier));
+        }
+        if (!customContexts.containsKey("/api/v1/incidents")) {
+            server.createContext("/api/v1/incidents", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier, incidentBufferSupplier));
         }
         if (!customContexts.containsKey("/api/v1/export")) {
             server.createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));

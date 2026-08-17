@@ -34,7 +34,10 @@
         isRateLimited: false,
         autoTailInterval: 5000,
         isConnected: false,
-        rawRecords: []
+        rawRecords: [],
+        incidents: [],
+        incidentClassificationFilter: 'ALL',
+        stagedRollbackIncident: null
     };
 
     // DOM Elements Mapping
@@ -49,8 +52,26 @@
         // View Tabs
         tabBtnLogs: document.getElementById('tab-btn-logs'),
         tabBtnJourney: document.getElementById('tab-btn-journey'),
+        tabBtnIncidents: document.getElementById('tab-btn-incidents'),
         logsView: document.getElementById('logs-view'),
         journeyView: document.getElementById('journey-view'),
+        incidentsView: document.getElementById('incidents-view'),
+        incidentsCountBadge: document.getElementById('incidents-count-badge'),
+        btnRefreshIncidents: document.getElementById('btn-refresh-incidents'),
+        incidentsContainer: document.getElementById('incidents-container'),
+
+        // Rollback Modal Elements
+        rollbackModal: document.getElementById('rollback-modal'),
+        btnCloseRollbackModal: document.getElementById('btn-close-rollback-modal'),
+        btnCancelRollback: document.getElementById('btn-cancel-rollback'),
+        btnConfirmRollback: document.getElementById('btn-confirm-rollback'),
+        rbTargetPos: document.getElementById('rb-target-pos'),
+        rbTargetDim: document.getElementById('rb-target-dim'),
+        rbTargetActor: document.getElementById('rb-target-actor'),
+        rbTargetItems: document.getElementById('rb-target-items'),
+        selectRollbackWindow: document.getElementById('select-rollback-window'),
+        rbCmdPreview: document.getElementById('rb-cmd-preview'),
+        btnCopyRbCmd: document.getElementById('btn-copy-rb-cmd'),
 
         // Telemetry Strip
         statQueueDepth: document.getElementById('stat-queue-depth'),
@@ -163,8 +184,9 @@
         // Start auto-tail / polling timer based on default selection
         setupAutoTailTimer();
 
-        // Fetch initial log records
+        // Fetch initial log records and incidents
         fetchLogs(1);
+        fetchIncidents();
     }
 
     // Event Bindings
@@ -175,6 +197,9 @@
         }
         if (elements.tabBtnJourney) {
             elements.tabBtnJourney.addEventListener('click', () => switchTab('journey-view'));
+        }
+        if (elements.tabBtnIncidents) {
+            elements.tabBtnIncidents.addEventListener('click', () => switchTab('incidents-view'));
         }
 
         // Auth Modal
@@ -196,8 +221,44 @@
                     fetchLogs(state.currentPage);
                 } else if (state.activeTab === 'journey-view' && elements.journeyInputItem && elements.journeyInputItem.value.trim()) {
                     fetchProvenance();
+                } else if (state.activeTab === 'incidents-view') {
+                    fetchIncidents();
                 }
                 showToast('Refreshed telemetry and data.');
+            });
+        }
+
+        // Security Incidents Actions
+        if (elements.btnRefreshIncidents) {
+            elements.btnRefreshIncidents.addEventListener('click', () => {
+                fetchIncidents();
+                showToast('Refreshed security incident feed.');
+            });
+        }
+
+        // Incident Severity Filter Chips
+        document.querySelectorAll('#incident-filter-chips .filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('#incident-filter-chips .filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.incidentClassificationFilter = chip.dataset.classification || 'ALL';
+                renderIncidents(state.incidents);
+            });
+        });
+
+        // Staged Rollback Modal Bindings
+        if (elements.btnCloseRollbackModal) elements.btnCloseRollbackModal.addEventListener('click', closeRollbackModal);
+        if (elements.btnCancelRollback) elements.btnCancelRollback.addEventListener('click', closeRollbackModal);
+        if (elements.btnConfirmRollback) elements.btnConfirmRollback.addEventListener('click', confirmStagedRollback);
+        if (elements.selectRollbackWindow) elements.selectRollbackWindow.addEventListener('change', updateRollbackCmdPreview);
+        if (elements.btnCopyRbCmd) elements.btnCopyRbCmd.addEventListener('click', () => {
+            if (elements.rbCmdPreview) {
+                copyToClipboard(elements.rbCmdPreview.textContent, 'Copied rollback command');
+            }
+        });
+        if (elements.rollbackModal) {
+            elements.rollbackModal.addEventListener('click', (e) => {
+                if (e.target === elements.rollbackModal) closeRollbackModal();
             });
         }
 
@@ -323,8 +384,14 @@
         state.activeTab = tabId;
         if (elements.tabBtnLogs) elements.tabBtnLogs.classList.toggle('active', tabId === 'logs-view');
         if (elements.tabBtnJourney) elements.tabBtnJourney.classList.toggle('active', tabId === 'journey-view');
+        if (elements.tabBtnIncidents) elements.tabBtnIncidents.classList.toggle('active', tabId === 'incidents-view');
         if (elements.logsView) elements.logsView.classList.toggle('hidden', tabId !== 'logs-view');
         if (elements.journeyView) elements.journeyView.classList.toggle('hidden', tabId !== 'journey-view');
+        if (elements.incidentsView) elements.incidentsView.classList.toggle('hidden', tabId !== 'incidents-view');
+
+        if (tabId === 'incidents-view') {
+            fetchIncidents();
+        }
     }
 
     // Direct Trace Helper
@@ -445,6 +512,8 @@
             fetchStats();
             if (state.activeTab === 'logs-view' && state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
                 fetchLogsSilently(1);
+            } else if (state.activeTab === 'incidents-view') {
+                fetchIncidentsSilently();
             }
         }, state.autoTailInterval);
     }
@@ -488,6 +557,11 @@
 
                 if (elements.authModal && !elements.authModal.classList.contains('hidden')) {
                     closeAuthModal();
+                    handled = true;
+                }
+
+                if (elements.rollbackModal && !elements.rollbackModal.classList.contains('hidden')) {
+                    closeRollbackModal();
                     handled = true;
                 }
 
@@ -1591,7 +1665,266 @@
             fetchLogs(1);
         } else if (state.activeTab === 'journey-view') {
             fetchProvenance();
+        } else if (state.activeTab === 'incidents-view') {
+            fetchIncidents();
         }
+    }
+
+    // =========================================================================
+    // Security Incidents & Live Feed Implementation
+    // =========================================================================
+
+    async function fetchIncidents() {
+        try {
+            const resp = await fetch('/api/v1/incidents', {
+                headers: getAuthHeaders()
+            });
+
+            if (resp.status === 401) {
+                setConnectionStatus(false, 'Unauthorized');
+                return;
+            }
+
+            if (!resp.ok) {
+                setConnectionStatus(false, 'HTTP ' + resp.status);
+                return;
+            }
+
+            const data = await resp.json();
+            setConnectionStatus(true);
+            state.incidents = Array.isArray(data) ? data : [];
+            renderIncidents(state.incidents);
+        } catch (err) {
+            setConnectionStatus(false, 'Offline');
+        }
+    }
+
+    async function fetchIncidentsSilently() {
+        try {
+            const resp = await fetch('/api/v1/incidents', {
+                headers: getAuthHeaders()
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                state.incidents = Array.isArray(data) ? data : [];
+                renderIncidents(state.incidents);
+            }
+        } catch (ignored) {}
+    }
+
+    function renderIncidents(incidents) {
+        if (!elements.incidentsContainer) return;
+
+        const filter = state.incidentClassificationFilter || 'ALL';
+        const filtered = incidents.filter(inc => {
+            if (filter === 'ALL') return true;
+            return inc.classification === filter;
+        });
+
+        if (elements.incidentsCountBadge) {
+            elements.incidentsCountBadge.textContent = `${filtered.length} Detected`;
+        }
+
+        if (filtered.length === 0) {
+            elements.incidentsContainer.innerHTML = `
+                <div class="empty-state">
+                    <svg class="empty-icon-svg text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <polyline points="9 12 11 14 15 10"/>
+                    </svg>
+                    <p class="empty-text-main">${filter === 'ALL' ? 'No Security Incidents Detected' : 'No Incidents Matching ' + filter}</p>
+                    <p class="empty-text-sub">Container security policies active. Hostile withdrawals, offline thefts, and raid bursts will stream here in real-time.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach((inc, idx) => {
+            const severityClass = getIncidentSeverityClass(inc.classification);
+            const badgeClass = getIncidentBadgeClass(inc.classification);
+            const presStatus = (inc.ownerPresence && inc.ownerPresence.status) || inc.presenceStatus || '🔴 Offline';
+            const sign = inc.deltaQuantity > 0 ? '+' : '';
+            const isNegative = inc.deltaQuantity < 0;
+
+            html += `
+                <div class="incident-card ${severityClass}" data-incident-idx="${idx}">
+                    <div class="incident-card-header">
+                        <div class="incident-header-left">
+                            <span class="incident-badge ${badgeClass}">${escapeHtml(inc.classification)}</span>
+                            ${inc.isRaidBurst ? '<span class="badge-tag badge-burst">🔥 Raid Burst</span>' : ''}
+                            <span class="incident-time mono">${formatTimestamp(inc.timestampMs || inc.timestamp)}</span>
+                        </div>
+                        <span class="incident-seq mono">Seq #${inc.sequenceId}</span>
+                    </div>
+
+                    <div class="incident-summary-text">${escapeHtml(inc.summary)}</div>
+
+                    <div class="incident-card-body">
+                        <div class="incident-kv">
+                            <span class="kv-title">Actor:</span>
+                            <span class="kv-val font-bold">${escapeHtml(inc.actorName)} <code class="mono text-muted text-xs">${inc.actorUuid ? escapeHtml(inc.actorUuid) : 'N/A'}</code></span>
+                        </div>
+                        <div class="incident-kv">
+                            <span class="kv-title">Owner:</span>
+                            <span class="kv-val">${escapeHtml(inc.ownerName || 'Unclaimed')} <span class="presence-tag">${escapeHtml(presStatus)}</span></span>
+                        </div>
+                        <div class="incident-kv">
+                            <span class="kv-title">Location:</span>
+                            <span class="kv-val mono">${inc.x}, ${inc.y}, ${inc.z} <span class="text-muted">(${escapeHtml(inc.dimension)})</span></span>
+                        </div>
+                        <div class="incident-kv">
+                            <span class="kv-title">Item Delta:</span>
+                            <span class="kv-val mono font-bold ${isNegative ? 'text-danger' : 'text-success'}">${sign}${inc.deltaQuantity}x ${escapeHtml(inc.itemId || inc.item)}</span>
+                        </div>
+                    </div>
+
+                    <div class="incident-card-actions">
+                        <button type="button" class="btn btn-sm btn-danger btn-stage-rb" data-idx="${idx}">
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                <path d="M3 21v-5h5"/>
+                            </svg>
+                            <span>Stage Rollback</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline btn-inspect-inc-pos" data-x="${inc.x}" data-y="${inc.y}" data-z="${inc.z}" data-dim="${inc.dimension}">
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <span>Inspect Container</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary btn-trace-inc-item" data-item="${inc.itemId || inc.item}" data-x="${inc.x}" data-y="${inc.y}" data-z="${inc.z}" data-dim="${inc.dimension}">
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="6" cy="6" r="3"/>
+                                <circle cx="18" cy="18" r="3"/>
+                                <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                                <path d="m18 15 3 3-3 3"/>
+                            </svg>
+                            <span>Trace Journey</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        elements.incidentsContainer.innerHTML = html;
+
+        // Bind Card Action Buttons
+        elements.incidentsContainer.querySelectorAll('.btn-stage-rb').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx, 10);
+                if (filtered[idx]) {
+                    openRollbackModal(filtered[idx]);
+                }
+            });
+        });
+
+        elements.incidentsContainer.querySelectorAll('.btn-inspect-inc-pos').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const x = btn.dataset.x;
+                const y = btn.dataset.y;
+                const z = btn.dataset.z;
+                const dim = btn.dataset.dim;
+                switchTab('logs-view');
+                if (elements.inputX) elements.inputX.value = x;
+                if (elements.inputY) elements.inputY.value = y;
+                if (elements.inputZ) elements.inputZ.value = z;
+                if (elements.selectDim) elements.selectDim.value = dim;
+                syncChipsUI();
+                readFiltersFromUI();
+                state.activeQueryId = null;
+                fetchLogs(1);
+                showToast(`Filtering audit logs for container (${x}, ${y}, ${z})`);
+            });
+        });
+
+        elements.incidentsContainer.querySelectorAll('.btn-trace-inc-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.dataset.item;
+                const x = btn.dataset.x;
+                const y = btn.dataset.y;
+                const z = btn.dataset.z;
+                const dim = btn.dataset.dim;
+                traceItemJourney(item, x, y, z, dim, '0');
+            });
+        });
+    }
+
+    function getIncidentSeverityClass(classification) {
+        switch (classification) {
+            case 'CRITICAL_RAID': return 'card-critical-raid';
+            case 'OFFLINE_THEFT': return 'card-offline-theft';
+            case 'ABSENT_OWNER_THEFT': return 'card-absent-theft';
+            default: return 'card-info-incident';
+        }
+    }
+
+    function getIncidentBadgeClass(classification) {
+        switch (classification) {
+            case 'CRITICAL_RAID': return 'badge-critical-raid';
+            case 'OFFLINE_THEFT': return 'badge-offline-theft';
+            case 'ABSENT_OWNER_THEFT': return 'badge-absent-theft';
+            default: return 'badge-info-incident';
+        }
+    }
+
+    // =========================================================================
+    // Staged Rollback Preview Modal Implementation
+    // =========================================================================
+
+    function openRollbackModal(incident) {
+        if (!incident) return;
+        state.stagedRollbackIncident = incident;
+
+        if (elements.rbTargetPos) elements.rbTargetPos.textContent = `${incident.x}, ${incident.y}, ${incident.z}`;
+        if (elements.rbTargetDim) elements.rbTargetDim.textContent = incident.dimension || 'minecraft:overworld';
+        if (elements.rbTargetActor) elements.rbTargetActor.textContent = `${incident.actorName} (${incident.actorUuid || 'N/A'})`;
+        if (elements.rbTargetItems) {
+            const sign = incident.deltaQuantity > 0 ? '+' : '';
+            elements.rbTargetItems.textContent = `${sign}${incident.deltaQuantity}x ${incident.itemId || incident.item}`;
+        }
+
+        if (elements.selectRollbackWindow) {
+            elements.selectRollbackWindow.value = '300'; // default 5 minutes
+        }
+
+        updateRollbackCmdPreview();
+
+        if (elements.rollbackModal) {
+            elements.rollbackModal.classList.remove('hidden');
+        }
+    }
+
+    function closeRollbackModal() {
+        state.stagedRollbackIncident = null;
+        if (elements.rollbackModal) {
+            elements.rollbackModal.classList.add('hidden');
+        }
+    }
+
+    function updateRollbackCmdPreview() {
+        const inc = state.stagedRollbackIncident;
+        if (!inc || !elements.rbCmdPreview) return;
+        const windowSec = elements.selectRollbackWindow ? elements.selectRollbackWindow.value : '300';
+        elements.rbCmdPreview.textContent = `/chestlog rollback ${inc.x} ${inc.y} ${inc.z} ${windowSec}`;
+    }
+
+    function confirmStagedRollback() {
+        const inc = state.stagedRollbackIncident;
+        if (!inc) {
+            closeRollbackModal();
+            return;
+        }
+
+        const windowSec = elements.selectRollbackWindow ? elements.selectRollbackWindow.value : '300';
+        const cmd = `/chestlog rollback ${inc.x} ${inc.y} ${inc.z} ${windowSec}`;
+
+        copyToClipboard(cmd, `✓ Rollback Confirmed! In-game command copied: ${cmd}`);
+        showToast(`Staged rollback confirmed for container (${inc.x}, ${inc.y}, ${inc.z}) for ${windowSec}s.`, 'success');
+        closeRollbackModal();
     }
 
     // Utilities

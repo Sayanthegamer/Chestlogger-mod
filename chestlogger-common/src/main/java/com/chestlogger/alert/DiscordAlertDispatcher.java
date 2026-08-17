@@ -3,6 +3,7 @@ package com.chestlogger.alert;
 import com.chestlogger.event.ActionType;
 import com.chestlogger.event.SlotDelta;
 import com.chestlogger.event.TransactionLogEntry;
+import com.chestlogger.security.SecurityIncident;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -81,6 +82,45 @@ public final class DiscordAlertDispatcher implements AutoCloseable {
         }, 1, 1, TimeUnit.MINUTES);
     }
 
+    /**
+     * Evaluates and dispatches a security incident to Discord if alerts are enabled and rate limits permit.
+     *
+     * @param incident SecurityIncident to dispatch.
+     */
+    public void evaluateAndDispatch(SecurityIncident incident) {
+        if (incident == null || !config.enabled() || !running) {
+            return;
+        }
+
+        if (config.webhookUrl() == null || config.webhookUrl().isBlank()) {
+            return;
+        }
+
+        // Only alert-worthy incidents should trigger Discord webhook
+        if (!incident.classification().isAlertWorthy()) {
+            return;
+        }
+
+        // Rate limit check
+        int tokens = availableTokens.decrementAndGet();
+        if (tokens < 0) {
+            return;
+        }
+
+        String payload = DiscordEmbedBuilder.buildWebhookPayload(incident, config);
+        dispatchQueue.offer(payload);
+    }
+
+    /**
+     * Direct alias for evaluateAndDispatch(SecurityIncident).
+     */
+    public void dispatchIncident(SecurityIncident incident) {
+        evaluateAndDispatch(incident);
+    }
+
+    /**
+     * Legacy evaluation method for raw TransactionLogEntry.
+     */
     public void evaluateAndDispatch(TransactionLogEntry entry) {
         if (!config.enabled() || !running) {
             return;

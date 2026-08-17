@@ -1,5 +1,6 @@
 package com.chestlogger.web;
 
+import com.chestlogger.alert.DiscordEmbedBuilder;
 import com.chestlogger.event.ActionType;
 import com.chestlogger.event.ActorType;
 import com.chestlogger.event.BlockPosUtil;
@@ -14,6 +15,9 @@ import com.chestlogger.provenance.ItemProvenanceResolver;
 import com.chestlogger.provenance.ProvenanceEdge;
 import com.chestlogger.provenance.ProvenanceGraph;
 import com.chestlogger.provenance.ProvenanceNode;
+import com.chestlogger.security.IncidentRingBuffer;
+import com.chestlogger.security.OwnerPresenceState;
+import com.chestlogger.security.SecurityIncident;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -26,17 +30,19 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * Handles GET /api/v1/query and GET /api/v1/provenance.
- * Parses query and provenance parameters, searches transaction records using QueryEngine,
- * resolves item journey graphs via ItemProvenanceResolver, manages paginated sessions, and returns JSON.
+ * Handles GET /api/v1/query, GET /api/v1/provenance, and GET /api/v1/incidents.
+ * Parses query parameters, searches transaction records using QueryEngine,
+ * resolves item journey graphs via ItemProvenanceResolver, retrieves security incidents
+ * from IncidentRingBuffer, manages paginated sessions, and returns JSON.
  */
 public class QueryHttpHandler implements HttpHandler {
     private final WebConfig config;
     private final Supplier<QueryEngine> queryEngineSupplier;
     private final Supplier<QuerySessionManager> sessionManagerSupplier;
+    private final Supplier<IncidentRingBuffer> incidentBufferSupplier;
 
     public QueryHttpHandler(WebConfig config) {
-        this(config, () -> null, () -> null);
+        this(config, () -> null, () -> null, () -> null);
     }
 
     public QueryHttpHandler(
@@ -44,9 +50,19 @@ public class QueryHttpHandler implements HttpHandler {
             Supplier<QueryEngine> queryEngineSupplier,
             Supplier<QuerySessionManager> sessionManagerSupplier
     ) {
+        this(config, queryEngineSupplier, sessionManagerSupplier, () -> null);
+    }
+
+    public QueryHttpHandler(
+            WebConfig config,
+            Supplier<QueryEngine> queryEngineSupplier,
+            Supplier<QuerySessionManager> sessionManagerSupplier,
+            Supplier<IncidentRingBuffer> incidentBufferSupplier
+    ) {
         this.config = config != null ? config : new WebConfig();
         this.queryEngineSupplier = queryEngineSupplier != null ? queryEngineSupplier : () -> null;
         this.sessionManagerSupplier = sessionManagerSupplier != null ? sessionManagerSupplier : () -> null;
+        this.incidentBufferSupplier = incidentBufferSupplier != null ? incidentBufferSupplier : () -> null;
     }
 
     @Override
@@ -61,11 +77,117 @@ public class QueryHttpHandler implements HttpHandler {
         }
 
         String path = exchange.getRequestURI().getPath();
-        if (path != null && (path.endsWith("/provenance") || path.contains("/provenance"))) {
+        if (path != null && (path.endsWith("/incidents") || path.contains("/incidents"))) {
+            handleIncidents(exchange);
+        } else if (path != null && (path.endsWith("/provenance") || path.contains("/provenance"))) {
             handleProvenance(exchange);
         } else {
             handleQuery(exchange);
         }
+    }
+
+    private void handleIncidents(HttpExchange exchange) throws IOException {
+        try {
+            Map<String, String> params = parseQueryParams(exchange.getRequestURI());
+            int limit = parseIntParam(params, "limit", 200);
+            if (limit < 1) limit = 1;
+            if (limit > 200) limit = 200;
+
+            String classificationFilter = params.get("classification");
+            String actorFilter = params.get("actor");
+            if (actorFilter == null || actorFilter.isBlank()) {
+                actorFilter = params.get("player");
+            }
+
+            IncidentRingBuffer buffer = incidentBufferSupplier.get();
+            List<SecurityIncident> allIncidents = (buffer != null) ? buffer.getAll() : Collections.emptyList();
+
+            List<SecurityIncident> filtered = new ArrayList<>();
+            for (SecurityIncident inc : allIncidents) {
+                if (classificationFilter != null && !classificationFilter.isBlank()) {
+                    if (!inc.classification().name().equalsIgnoreCase(classificationFilter.trim())) {
+                        continue;
+                    }
+                }
+                if (actorFilter != null && !actorFilter.isBlank()) {
+                    String aName = inc.actorName();
+                    String aUuid = inc.actorUuid() != null ? inc.actorUuid().toString() : "";
+                    if (!aName.equalsIgnoreCase(actorFilter.trim()) && !aUuid.equalsIgnoreCase(actorFilter.trim())) {
+                        continue;
+                    }
+                }
+                filtered.add(inc);
+                if (filtered.size() >= limit) {
+                    break;
+                }
+            }
+
+            String jsonResponse = serializeIncidents(filtered);
+            byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(responseBytes);
+            }
+        } catch (Exception e) {
+            sendError(exchange, 500, "Internal Server Error: " + e.getMessage());
+        }
+    }
+
+    public static String serializeIncidents(List<SecurityIncident> incidents) {
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("[");
+        if (incidents != null) {
+            for (int i = 0; i < incidents.size(); i++) {
+                if (i > 0) sb.append(",");
+                SecurityIncident inc = incidents.get(i);
+                int x = BlockPosUtil.unpackX(inc.packedPos());
+                int y = BlockPosUtil.unpackY(inc.packedPos());
+                int z = BlockPosUtil.unpackZ(inc.packedPos());
+                OwnerPresenceState pres = inc.ownerPresence();
+                String presStatus = DiscordEmbedBuilder.formatOwnerPresence(pres);
+
+                sb.append("{");
+                sb.append("\"timestamp\":").append(inc.timestampMs()).append(",");
+                sb.append("\"timestampMs\":").append(inc.timestampMs()).append(",");
+                sb.append("\"sequenceId\":").append(inc.sequenceId()).append(",");
+                sb.append("\"classification\":\"").append(inc.classification().name()).append("\",");
+                if (inc.actorUuid() != null) {
+                    sb.append("\"actorUuid\":\"").append(inc.actorUuid()).append("\",");
+                } else {
+                    sb.append("\"actorUuid\":null,");
+                }
+                sb.append("\"actorName\":\"").append(escapeJson(inc.actorName())).append("\",");
+                if (inc.ownerUuid() != null) {
+                    sb.append("\"ownerUuid\":\"").append(inc.ownerUuid()).append("\",");
+                } else {
+                    sb.append("\"ownerUuid\":null,");
+                }
+                sb.append("\"ownerName\":\"").append(escapeJson(inc.ownerName())).append("\",");
+                sb.append("\"ownerPresence\":{");
+                sb.append("\"isOnline\":").append(pres.isOnline()).append(",");
+                sb.append("\"distance\":").append(pres.distanceBlocks()).append(",");
+                sb.append("\"isNearby\":").append(pres.isNearby()).append(",");
+                sb.append("\"status\":\"").append(escapeJson(presStatus)).append("\"");
+                sb.append("},");
+                sb.append("\"presenceStatus\":\"").append(escapeJson(presStatus)).append("\",");
+                sb.append("\"x\":").append(x).append(",");
+                sb.append("\"y\":").append(y).append(",");
+                sb.append("\"z\":").append(z).append(",");
+                sb.append("\"packedPos\":").append(inc.packedPos()).append(",");
+                sb.append("\"dimension\":\"").append(escapeJson(inc.dimension())).append("\",");
+                sb.append("\"itemId\":\"").append(escapeJson(inc.itemId())).append("\",");
+                sb.append("\"item\":\"").append(escapeJson(inc.itemId())).append("\",");
+                sb.append("\"deltaQuantity\":").append(inc.deltaQuantity()).append(",");
+                sb.append("\"delta\":").append(inc.deltaQuantity()).append(",");
+                sb.append("\"summary\":\"").append(escapeJson(inc.summary())).append("\",");
+                sb.append("\"isRaidBurst\":").append(inc.isRaidBurst());
+                sb.append("}");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     private void handleProvenance(HttpExchange exchange) throws IOException {
