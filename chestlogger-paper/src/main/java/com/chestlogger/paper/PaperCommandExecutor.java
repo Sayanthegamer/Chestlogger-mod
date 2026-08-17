@@ -85,6 +85,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             case "rb", "rollback" -> handleRollback(sender, args);
             case "stats" -> handleStats(sender);
             case "web" -> handleWeb(sender, args);
+            case "t", "trace" -> handleTrace(sender, args);
             default -> sendHelp(sender);
         }
         return true;
@@ -294,10 +295,122 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         sender.sendMessage(ChatColor.YELLOW + "Tip: " + ChatColor.GRAY + "Use /chestlog i to toggle click-inspection without holding the wand.");
     }
 
+    private void handleTrace(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("chestlogger.inspect") && !sender.hasPermission("chestlogger.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to trace items.");
+            return;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "Trace command is only available to in-game players.");
+            return;
+        }
+
+        if (args.length >= 4) {
+            int x, y, z;
+            try {
+                x = Integer.parseInt(args[1]);
+                y = Integer.parseInt(args[2]);
+                z = Integer.parseInt(args[3]);
+            } catch (NumberFormatException e) {
+                player.sendMessage(ChatColor.RED + "[ChestLogger] Invalid coordinates. Usage: /chestlog trace <x> <y> <z> [slot]");
+                return;
+            }
+
+            int slot = 0;
+            if (args.length >= 5) {
+                try {
+                    slot = Integer.parseInt(args[4]);
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ChatColor.RED + "[ChestLogger] Invalid slot index: " + args[4]);
+                    return;
+                }
+            }
+
+            Block block = player.getWorld().getBlockAt(x, y, z);
+            if (!(block.getState() instanceof Container container)) {
+                player.sendMessage(ChatColor.RED + "[ChestLogger] Block at (" + x + ", " + y + ", " + z + ") is not a container.");
+                return;
+            }
+
+            if (slot < 0 || slot >= container.getInventory().getSize()) {
+                player.sendMessage(ChatColor.RED + "[ChestLogger] Invalid slot " + slot + " for container of size " + container.getInventory().getSize() + ".");
+                return;
+            }
+
+            org.bukkit.inventory.ItemStack stack = container.getInventory().getItem(slot);
+            if (stack == null || stack.getType().isAir()) {
+                player.sendMessage(ChatColor.RED + "[ChestLogger] Slot " + slot + " in container at (" + x + ", " + y + ", " + z + ") is empty.");
+                return;
+            }
+
+            String itemId = PaperRollbackExecutor.resolveItemId(stack.getType());
+            long packedPos = BlockPosUtil.pack(x, y, z);
+            String dim = player.getWorld().getName();
+
+            player.sendMessage(ChatColor.GRAY + "[ChestLogger] Tracing provenance for " + itemId + " at (" + x + ", " + y + ", " + z + ") slot " + slot + "...");
+
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                try {
+                    com.chestlogger.provenance.ItemProvenanceResolver resolver = new com.chestlogger.provenance.ItemProvenanceResolver();
+                    com.chestlogger.provenance.ProvenanceGraph graph = resolver.resolveProvenance(packedPos, dim, itemId, queryEngine);
+
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (graph.isEmpty()) {
+                            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] No provenance history found for " + itemId + ".");
+                            return;
+                        }
+                        PaperProvenanceGuiView view = new PaperProvenanceGuiView(player, graph);
+                        view.open();
+                    });
+                } catch (Exception e) {
+                    plugin.getServer().getScheduler().runTask(plugin, () ->
+                            player.sendMessage(ChatColor.RED + "[ChestLogger] Trace resolution failed: " + e.getMessage())
+                    );
+                }
+            });
+            return;
+        }
+
+        // Trace main hand item
+        org.bukkit.inventory.ItemStack handItem = player.getInventory().getItemInMainHand();
+        if (handItem == null || handItem.getType().isAir()) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You must hold an item in your main hand to trace it, or specify: /chestlog trace <x> <y> <z> [slot]");
+            return;
+        }
+
+        String itemId = PaperRollbackExecutor.resolveItemId(handItem.getType());
+        String dim = player.getWorld().getName();
+
+        player.sendMessage(ChatColor.GRAY + "[ChestLogger] Tracing provenance for " + itemId + " in your main hand...");
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                com.chestlogger.provenance.ItemProvenanceResolver resolver = new com.chestlogger.provenance.ItemProvenanceResolver();
+                com.chestlogger.provenance.ProvenanceGraph graph = resolver.resolveProvenance(0L, dim, itemId, queryEngine);
+
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    if (graph.isEmpty()) {
+                        player.sendMessage(ChatColor.YELLOW + "[ChestLogger] No provenance history found for " + itemId + ".");
+                        return;
+                    }
+                    PaperProvenanceGuiView view = new PaperProvenanceGuiView(player, graph);
+                    view.open();
+                });
+            } catch (Exception e) {
+                plugin.getServer().getScheduler().runTask(plugin, () ->
+                        player.sendMessage(ChatColor.RED + "[ChestLogger] Trace resolution failed: " + e.getMessage())
+                );
+            }
+        });
+    }
+
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== ChestLogger Commands ===");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [page]" + ChatColor.WHITE + " - Toggle inspect mode or inspect targeted container");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog trace <x> <y> <z> [slot]" + ChatColor.WHITE + " - Trace item provenance at container slot");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog trace [hand]" + ChatColor.WHITE + " - Trace item provenance for item in hand");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog rollback [seconds]" + ChatColor.WHITE + " - Revert container changes");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog stats" + ChatColor.WHITE + " - View queue and memory telemetry");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
@@ -306,10 +419,13 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("i", "inspect", "wand", "rollback", "stats", "web");
+            return List.of("i", "inspect", "wand", "trace", "rollback", "stats", "web");
         }
         if (args.length == 2 && "web".equalsIgnoreCase(args[0])) {
             return List.of("start", "stop");
+        }
+        if (args.length == 2 && "trace".equalsIgnoreCase(args[0])) {
+            return List.of("hand");
         }
         return Collections.emptyList();
     }

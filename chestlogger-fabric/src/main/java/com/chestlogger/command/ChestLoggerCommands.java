@@ -28,7 +28,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import com.chestlogger.provenance.ItemProvenanceResolver;
+import com.chestlogger.provenance.ProvenanceGraph;
+import com.chestlogger.provenance.ProvenanceNode;
 
 /**
  * Administrative Brigadier command suite for ChestLogger.
@@ -78,11 +82,21 @@ public final class ChestLoggerCommands {
         var wandNode = Commands.literal("wand")
                 .executes(ctx -> executeWandInfo(ctx.getSource()));
 
+        var traceNode = Commands.literal("trace")
+                .executes(ctx -> executeTraceHand(ctx.getSource()))
+                .then(Commands.literal("hand")
+                        .executes(ctx -> executeTraceHand(ctx.getSource())))
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(ctx -> executeTracePos(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), 0))
+                        .then(Commands.argument("slot", IntegerArgumentType.integer(0, 54))
+                                .executes(ctx -> executeTracePos(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), IntegerArgumentType.getInteger(ctx, "slot")))));
+
         var mainCommand = Commands.literal("chestlog")
                 .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
                 .then(inspectNode)
                 .then(iNode)
                 .then(wandNode)
+                .then(traceNode)
                 // --- ROLLBACK ---
                 .then(Commands.literal("rollback")
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -331,5 +345,121 @@ public final class ChestLoggerCommands {
         source.sendSuccess(() -> Component.literal("§eMode: §fLeft-click container for Chat history, Right-click for GUI history."), false);
         source.sendSuccess(() -> Component.literal("§7Tip: Use /chestlog i to toggle click-inspection without holding the wand."), false);
         return 1;
+    }
+
+    private static int executeTraceHand(CommandSourceStack source) {
+        try {
+            ServerPlayer player = source.getPlayerOrException();
+            net.minecraft.world.item.ItemStack handStack = player.getMainHandItem();
+            if (handStack.isEmpty()) {
+                source.sendFailure(Component.literal("You must hold an item in your main hand to trace its provenance."));
+                return 0;
+            }
+
+            String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(handStack.getItem()).toString();
+            long fingerprint = com.chestlogger.event.MetadataFingerprint.EMPTY;
+            if (!handStack.getComponents().isEmpty()) {
+                fingerprint = com.chestlogger.event.MetadataFingerprint.compute(handStack.getComponents().toString().getBytes());
+            }
+            long finalFingerprint = fingerprint;
+            String dim = source.getLevel().dimension().identifier().toString();
+
+            source.sendSuccess(() -> Component.literal(String.format("§6[ChestLogger] Resolving provenance trace for §e%s§6...", itemId)), false);
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    ItemProvenanceResolver resolver = new ItemProvenanceResolver();
+                    ProvenanceGraph graph = resolver.resolveProvenance(0L, dim, itemId, finalFingerprint, ChestLoggerMod.getQueryEngine());
+
+                    source.getServer().execute(() -> {
+                        sendProvenanceResults(source, graph);
+                    });
+                } catch (Exception e) {
+                    source.getServer().execute(() -> {
+                        source.sendFailure(Component.literal("Trace resolution failed: " + e.getMessage()));
+                    });
+                }
+            });
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Only players can trace items in hand."));
+            return 0;
+        }
+    }
+
+    private static int executeTracePos(CommandSourceStack source, BlockPos pos, int slotIndex) {
+        try {
+            BlockEntity be = source.getLevel().getBlockEntity(pos);
+            if (!(be instanceof Container container)) {
+                source.sendFailure(Component.literal(String.format("Block at (%d, %d, %d) is not a container.", pos.getX(), pos.getY(), pos.getZ())));
+                return 0;
+            }
+
+            if (slotIndex < 0 || slotIndex >= container.getContainerSize()) {
+                source.sendFailure(Component.literal(String.format("Invalid slot %d for container of size %d.", slotIndex, container.getContainerSize())));
+                return 0;
+            }
+
+            net.minecraft.world.item.ItemStack stack = container.getItem(slotIndex);
+            if (stack.isEmpty()) {
+                source.sendFailure(Component.literal(String.format("Slot %d is empty in container at (%d, %d, %d).", slotIndex, pos.getX(), pos.getY(), pos.getZ())));
+                return 0;
+            }
+
+            String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+            long fingerprint = com.chestlogger.event.MetadataFingerprint.EMPTY;
+            if (!stack.getComponents().isEmpty()) {
+                fingerprint = com.chestlogger.event.MetadataFingerprint.compute(stack.getComponents().toString().getBytes());
+            }
+            long finalFingerprint = fingerprint;
+            long packedPos = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
+            String dim = source.getLevel().dimension().identifier().toString();
+
+            source.sendSuccess(() -> Component.literal(String.format("§6[ChestLogger] Resolving provenance trace for §e%s§6 at (%d, %d, %d) slot %d...",
+                    itemId, pos.getX(), pos.getY(), pos.getZ(), slotIndex)), false);
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    ItemProvenanceResolver resolver = new ItemProvenanceResolver();
+                    ProvenanceGraph graph = resolver.resolveProvenance(packedPos, dim, itemId, finalFingerprint, ChestLoggerMod.getQueryEngine());
+
+                    source.getServer().execute(() -> {
+                        sendProvenanceResults(source, graph);
+                    });
+                } catch (Exception e) {
+                    source.getServer().execute(() -> {
+                        source.sendFailure(Component.literal("Trace resolution failed: " + e.getMessage()));
+                    });
+                }
+            });
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Trace command failed: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static void sendProvenanceResults(CommandSourceStack source, ProvenanceGraph graph) {
+        if (graph == null || graph.isEmpty()) {
+            source.sendSuccess(() -> Component.literal(String.format("§eNo provenance records found for %s.", graph != null ? graph.targetItemId() : "item")), false);
+            return;
+        }
+
+        source.sendSuccess(() -> Component.literal(String.format("§6=== Provenance Trace: %s (%d steps, %s) ===",
+                graph.targetItemId(), graph.totalSteps(), graph.overallConfidence().name())), false);
+
+        for (ProvenanceNode node : graph.nodes()) {
+            int[] coords = BlockPosUtil.unpack(node.packedPos());
+            String confBadge = switch (node.confidence()) {
+                case EXACT_LINKAGE -> "§a[EXACT]";
+                case HIGH_CONFIDENCE -> "§e[HIGH]";
+                case PROBABLE -> "§6[PROB]";
+            };
+            String deltaStr = (node.deltaQuantity() > 0 ? "§a+" : "§c") + node.deltaQuantity();
+            String line = String.format("§e#%d %s §7%s %s §7by §e%s §7at §b[%d, %d, %d] §7(%s)",
+                    node.stepIndex() + 1, confBadge, node.actionType().name(), deltaStr,
+                    node.actorName(), coords[0], coords[1], coords[2], node.dimension());
+            source.sendSuccess(() -> Component.literal(line), false);
+        }
     }
 }
