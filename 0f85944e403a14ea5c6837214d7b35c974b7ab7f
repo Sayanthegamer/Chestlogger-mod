@@ -1,0 +1,1 @@
+Task: In-Game Trust Commands & Admin HUD Telemetry. Implemented /chestlog trust, /chestlog untrust, /chestlog trustlist on Paper and Fabric with dynamic tab completion, wired trust_data.json lifecycle persistence, and added real-time admin Action-Bar HUD notices and clickable [Teleport] and [Inspect] chat cards. 100% tests passing.
