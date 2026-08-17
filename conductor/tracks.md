@@ -14,7 +14,7 @@
 - [x] **Track: ChestLogger Professional Log Observability UI**
   *Link: [./tracks/chestlogger_web_ui_20260817/index.md](./tracks/chestlogger_web_ui_20260817/index.md)*
 
-- [ ] **Track: GitHub Actions CI Workflow & Build Verification**
+- [~] **Track: GitHub Actions CI Workflow & Build Verification**
   *Link: [./tracks/github_actions_ci_20260817/index.md](./tracks/github_actions_ci_20260817/index.md)*
 
 
