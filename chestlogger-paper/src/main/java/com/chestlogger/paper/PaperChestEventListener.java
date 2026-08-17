@@ -47,72 +47,71 @@ public final class PaperChestEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
-        Location loc = getInventoryLocation(event.getInventory());
-        if (loc == null || loc.getWorld() == null) {
-            return;
-        }
+        List<Location> locs = getInventoryLocations(event.getInventory());
+        if (locs.isEmpty()) return;
 
-        long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        String dim = loc.getWorld().getName();
         HumanEntity player = event.getPlayer();
+        UUID txId = UUID.randomUUID();
+        long now = System.currentTimeMillis();
 
-        TransactionLogEntry entry = new TransactionLogEntry(
-                sequenceGenerator.incrementAndGet(),
-                System.currentTimeMillis(),
-                UUID.randomUUID(),
-                ActionType.CONTAINER_OPEN,
-                ActorType.PLAYER,
-                player.getUniqueId(),
-                player.getName(),
-                dim,
-                pos,
-                List.of()
-        );
-        eventQueue.offer(entry);
+        for (Location loc : locs) {
+            if (loc == null || loc.getWorld() == null) continue;
+            long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            String dim = loc.getWorld().getName();
+
+            TransactionLogEntry entry = new TransactionLogEntry(
+                    sequenceGenerator.incrementAndGet(),
+                    now,
+                    txId,
+                    ActionType.CONTAINER_OPEN,
+                    ActorType.PLAYER,
+                    player.getUniqueId(),
+                    player.getName(),
+                    dim,
+                    pos,
+                    List.of()
+            );
+            eventQueue.offer(entry);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent event) {
-        Location loc = getInventoryLocation(event.getInventory());
-        if (loc == null || loc.getWorld() == null) {
-            return;
-        }
+        List<Location> locs = getInventoryLocations(event.getInventory());
+        if (locs.isEmpty()) return;
 
-        long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        String dim = loc.getWorld().getName();
         HumanEntity player = event.getPlayer();
+        UUID txId = UUID.randomUUID();
+        long now = System.currentTimeMillis();
 
-        TransactionLogEntry entry = new TransactionLogEntry(
-                sequenceGenerator.incrementAndGet(),
-                System.currentTimeMillis(),
-                UUID.randomUUID(),
-                ActionType.CONTAINER_CLOSE,
-                ActorType.PLAYER,
-                player.getUniqueId(),
-                player.getName(),
-                dim,
-                pos,
-                List.of()
-        );
-        eventQueue.offer(entry);
+        for (Location loc : locs) {
+            if (loc == null || loc.getWorld() == null) continue;
+            long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            String dim = loc.getWorld().getName();
+
+            TransactionLogEntry entry = new TransactionLogEntry(
+                    sequenceGenerator.incrementAndGet(),
+                    now,
+                    txId,
+                    ActionType.CONTAINER_CLOSE,
+                    ActorType.PLAYER,
+                    player.getUniqueId(),
+                    player.getName(),
+                    dim,
+                    pos,
+                    List.of()
+            );
+            eventQueue.offer(entry);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         Inventory topInv = event.getView().getTopInventory();
-        Location loc = getInventoryLocation(topInv);
-        if (loc == null || loc.getWorld() == null) {
-            return;
-        }
+        List<Location> locs = getInventoryLocations(topInv);
+        if (locs.isEmpty()) return;
 
-        // Snapshot slots of top inventory before scheduled tick comparison or analyze raw click
-        int rawSlot = event.getRawSlot();
-        boolean isTopInventorySlot = rawSlot >= 0 && rawSlot < topInv.getSize();
-
-        // If shift-clicking or interacting with the container, track the container mutation
         List<SlotSnapshot> beforeSlots = snapshotInventorySlots(topInv);
-        long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        String dim = loc.getWorld().getName();
         HumanEntity player = event.getWhoClicked();
         ActionType actionType = mapClickAction(event.getAction(), event.getClick());
 
@@ -122,19 +121,28 @@ public final class PaperChestEventListener implements Listener {
             List<SlotDelta> deltas = PaperInventoryDeltaCalculator.calculateSlotDiff(beforeSlots, afterSlots);
 
             if (!deltas.isEmpty()) {
-                TransactionLogEntry entry = new TransactionLogEntry(
-                        sequenceGenerator.incrementAndGet(),
-                        System.currentTimeMillis(),
-                        UUID.randomUUID(),
-                        actionType,
-                        ActorType.PLAYER,
-                        player.getUniqueId(),
-                        player.getName(),
-                        dim,
-                        pos,
-                        deltas
-                );
-                eventQueue.offer(entry);
+                UUID txId = UUID.randomUUID();
+                long now = System.currentTimeMillis();
+
+                for (Location loc : locs) {
+                    if (loc == null || loc.getWorld() == null) continue;
+                    long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+                    String dim = loc.getWorld().getName();
+
+                    TransactionLogEntry entry = new TransactionLogEntry(
+                            sequenceGenerator.incrementAndGet(),
+                            now,
+                            txId,
+                            actionType,
+                            ActorType.PLAYER,
+                            player.getUniqueId(),
+                            player.getName(),
+                            dim,
+                            pos,
+                            deltas
+                    );
+                    eventQueue.offer(entry);
+                }
             }
         });
     }
@@ -142,14 +150,10 @@ public final class PaperChestEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
         Inventory topInv = event.getView().getTopInventory();
-        Location loc = getInventoryLocation(topInv);
-        if (loc == null || loc.getWorld() == null) {
-            return;
-        }
+        List<Location> locs = getInventoryLocations(topInv);
+        if (locs.isEmpty()) return;
 
         List<SlotSnapshot> beforeSlots = snapshotInventorySlots(topInv);
-        long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        String dim = loc.getWorld().getName();
         HumanEntity player = event.getWhoClicked();
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -157,19 +161,28 @@ public final class PaperChestEventListener implements Listener {
             List<SlotDelta> deltas = PaperInventoryDeltaCalculator.calculateSlotDiff(beforeSlots, afterSlots);
 
             if (!deltas.isEmpty()) {
-                TransactionLogEntry entry = new TransactionLogEntry(
-                        sequenceGenerator.incrementAndGet(),
-                        System.currentTimeMillis(),
-                        UUID.randomUUID(),
-                        ActionType.PLACE,
-                        ActorType.PLAYER,
-                        player.getUniqueId(),
-                        player.getName(),
-                        dim,
-                        pos,
-                        deltas
-                );
-                eventQueue.offer(entry);
+                UUID txId = UUID.randomUUID();
+                long now = System.currentTimeMillis();
+
+                for (Location loc : locs) {
+                    if (loc == null || loc.getWorld() == null) continue;
+                    long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+                    String dim = loc.getWorld().getName();
+
+                    TransactionLogEntry entry = new TransactionLogEntry(
+                            sequenceGenerator.incrementAndGet(),
+                            now,
+                            txId,
+                            ActionType.PLACE,
+                            ActorType.PLAYER,
+                            player.getUniqueId(),
+                            player.getName(),
+                            dim,
+                            pos,
+                            deltas
+                    );
+                    eventQueue.offer(entry);
+                }
             }
         });
     }
@@ -268,17 +281,40 @@ public final class PaperChestEventListener implements Listener {
         }
     }
 
-    private static Location getInventoryLocation(Inventory inventory) {
-        if (inventory == null) return null;
-        Location loc = inventory.getLocation();
-        if (loc != null) return loc;
+    private static List<Location> getInventoryLocations(Inventory inventory) {
+        if (inventory == null) return List.of();
         InventoryHolder holder = inventory.getHolder();
-        if (holder instanceof Container container) {
-            return container.getLocation();
+        if (holder instanceof org.bukkit.block.DoubleChest doubleChest) {
+            List<Location> locs = new ArrayList<>(2);
+            if (doubleChest.getLeftSide() instanceof BlockState leftState) {
+                locs.add(leftState.getLocation());
+            } else if (doubleChest.getLeftSide() instanceof InventoryHolder leftHolder && leftHolder instanceof BlockState leftHolderState) {
+                locs.add(leftHolderState.getLocation());
+            }
+
+            if (doubleChest.getRightSide() instanceof BlockState rightState) {
+                locs.add(rightState.getLocation());
+            } else if (doubleChest.getRightSide() instanceof InventoryHolder rightHolder && rightHolder instanceof BlockState rightHolderState) {
+                locs.add(rightHolderState.getLocation());
+            }
+
+            if (locs.isEmpty()) {
+                Location loc = doubleChest.getLocation();
+                if (loc != null) locs.add(loc);
+            }
+            return locs;
+        } else if (holder instanceof Container container) {
+            return List.of(container.getLocation());
         } else if (holder instanceof BlockState blockState) {
-            return blockState.getLocation();
+            return List.of(blockState.getLocation());
         }
-        return null;
+        Location loc = inventory.getLocation();
+        return loc != null ? List.of(loc) : List.of();
+    }
+
+    private static Location getInventoryLocation(Inventory inventory) {
+        List<Location> locs = getInventoryLocations(inventory);
+        return locs.isEmpty() ? null : locs.get(0);
     }
 
     private static List<SlotSnapshot> snapshotInventorySlots(Inventory inventory) {
