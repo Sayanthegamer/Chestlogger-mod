@@ -1,17 +1,17 @@
 # Implementation Plan: Smart Theft & Raid Detection Engine (`smart_theft_raid_detection_20260817`)
 
-## Phase 1: Core Trust & Smart Heuristic Security Engine (`chestlogger-common`)
-- [ ] Task: Phase 1 Test Harness - Trust & Smart Theft Unit Tests
-  - [ ] Write unit tests for `TrustManager`, `RaidVelocityTracker`, and `SmartTheftEvaluator`
-- [ ] Task: Implement Trust & Ownership Domain Models
-  - [ ] Implement `TrustManager`, `IncidentClassification`, `SecurityIncident`, and `OwnerPresenceState`
-- [ ] Task: Implement `SmartTheftEvaluator` & `RaidVelocityTracker`
-  - [ ] Implement sliding 300s multi-container velocity tracking, `OFFLINE_THEFT` vs `ABSENT_OWNER_THEFT` separation, and proximity mitigation
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 1: Core Trust & Smart Heuristic Security Engine (`chestlogger-common`) [checkpoint: 20f6fb8]
+- [x] Task: Phase 1 Test Harness - Trust & Smart Theft Unit Tests [371baa9]
+  - [x] Write unit tests for `TrustManager`, `RaidVelocityTracker`, and `SmartTheftEvaluator` [371baa9]
+- [x] Task: Implement Trust & Ownership Domain Models [371baa9]
+  - [x] Implement `TrustManager`, `IncidentClassification`, `SecurityIncident`, and `OwnerPresenceState` [371baa9]
+- [x] Task: Implement `SmartTheftEvaluator` & `RaidVelocityTracker` [371baa9]
+  - [x] Implement sliding 300s multi-container velocity tracking, `OFFLINE_THEFT` vs `ABSENT_OWNER_THEFT` separation, and proximity mitigation [371baa9]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [20f6fb8]
 
 ## Phase 2: In-Game Trust Commands & Admin HUD Telemetry (`chestlogger-paper` & `chestlogger-fabric`)
-- [ ] Task: Phase 2 Test Harness - Trust Commands & Alert Listener Tests
-  - [ ] Write unit tests for trust command parsing and permission checks
+- [~] Task: Phase 2 Test Harness - Trust Commands & Alert Listener Tests
+  - [~] Write unit tests for trust command parsing and permission checks
 - [ ] Task: Implement Player Trust Commands
   - [ ] Support `/chestlog trust <player>`, `/chestlog untrust <player>`, and `/chestlog trustlist` on Paper and Fabric
 - [ ] Task: Implement Real-Time Admin Action-Bar & Clickable Chat Alerts
