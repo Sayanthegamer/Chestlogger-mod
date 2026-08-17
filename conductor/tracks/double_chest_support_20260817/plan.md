@@ -10,14 +10,14 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper 26.2 Double Chest Event Interception & Rollback Adapter (`chestlogger-paper`)
-- [ ] Task: (TDD Red) Create Paper double chest test suite
-  - [ ] Write unit tests simulating `DoubleChestInventory` mutations (pickup, shift-click across halves, hoppers)
-  - [ ] Write tests asserting partner block coordinate extraction from `DoubleChest.getLeftSide()` / `DoubleChest.getRightSide()`
-- [ ] Task: (TDD Green) Implement Paper double chest event capture and rollback
-  - [ ] Update `PaperChestEventListener` to detect `DoubleChest` and log both block coordinates
-  - [ ] Update `PaperRollbackExecutor` to restore items across both physical block locations
-  - [ ] Run `:chestlogger-paper:test` to verify
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD Red) Create Paper double chest test suite 34c71b7
+  - [x] Write unit tests simulating `DoubleChestInventory` mutations (pickup, shift-click across halves, hoppers)
+  - [x] Write tests asserting partner block coordinate extraction from `DoubleChest.getLeftSide()` / `DoubleChest.getRightSide()`
+- [x] Task: (TDD Green) Implement Paper double chest event capture and rollback 34c71b7
+  - [x] Update `PaperChestEventListener` to detect `DoubleChest` and log both block coordinates
+  - [x] Update `PaperRollbackExecutor` to restore items across both physical block locations
+  - [x] Run `:chestlogger-paper:test` to verify
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Fabric 26.2 Double Inventory Mixins & Rollback Adapter (`chestlogger-fabric`)
 - [ ] Task: (TDD Red) Create Fabric double inventory test suite
