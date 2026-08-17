@@ -67,16 +67,18 @@ public abstract class AbstractContainerMenuMixin implements MenuContainerAccesso
             ContainerSnapshot postSnapshot = ContainerTracker.capture(container);
             ActionType actionType = chestlogger$mapClickType(clickType, button);
 
-            ChestLoggerMod.getTracker().processTransaction(
-                    chestlogger$preSnapshot,
-                    postSnapshot,
-                    actionType,
-                    ActorType.PLAYER,
-                    serverPlayer.getUUID(),
-                    serverPlayer.getScoreboardName(),
-                    chestlogger$context.dimension(),
-                    chestlogger$context.packedBlockPos()
-            );
+            for (Long pos : chestlogger$context.allPositions()) {
+                ChestLoggerMod.getTracker().processTransaction(
+                        chestlogger$preSnapshot,
+                        postSnapshot,
+                        actionType,
+                        ActorType.PLAYER,
+                        serverPlayer.getUUID(),
+                        serverPlayer.getScoreboardName(),
+                        chestlogger$context.dimension(),
+                        pos
+                );
+            }
         }
         chestlogger$preSnapshot = null;
     }

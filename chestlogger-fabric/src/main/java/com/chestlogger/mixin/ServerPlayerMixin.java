@@ -28,8 +28,22 @@ public abstract class ServerPlayerMixin {
             if (menuProvider instanceof BlockEntity blockEntity) {
                 BlockPos pos = blockEntity.getBlockPos();
                 long packedPos = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
+                Long secondaryPackedPos = null;
+
+                if (blockEntity instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+                    net.minecraft.world.level.block.state.BlockState state = chest.getBlockState();
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
+                        net.minecraft.world.level.block.state.properties.ChestType chestType = state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE);
+                        if (chestType != net.minecraft.world.level.block.state.properties.ChestType.SINGLE) {
+                            net.minecraft.core.Direction connectedDir = net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state);
+                            BlockPos partnerPos = pos.relative(connectedDir);
+                            secondaryPackedPos = BlockPosUtil.pack(partnerPos.getX(), partnerPos.getY(), partnerPos.getZ());
+                        }
+                    }
+                }
+
                 ContainerType type = ContainerTracker.resolveType(blockEntity);
-                accessor.chestlogger$setContainerContext(new ContainerContext(dimKey, packedPos, type, menuProvider.getDisplayName().getString()));
+                accessor.chestlogger$setContainerContext(new ContainerContext(dimKey, packedPos, secondaryPackedPos, type, menuProvider.getDisplayName().getString()));
             }
         }
     }
