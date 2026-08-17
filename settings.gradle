@@ -4,9 +4,17 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        maven {
+            name = 'PaperMC'
+            url = 'https://repo.papermc.io/repository/maven-public/'
+        }
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
 rootProject.name = 'Chestlogger'
+
+include 'chestlogger-common'
+include 'chestlogger-fabric'
+include 'chestlogger-paper'
