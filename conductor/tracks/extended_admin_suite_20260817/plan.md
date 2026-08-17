@@ -1,12 +1,12 @@
 # Implementation Plan: Interactive Wand, Paper GUI Parity, Extended Containers & Discord Alerting
 
 ## Phase 1: Interactive Wand & Click Inspection Mode (Fabric & Paper)
-- [ ] Task: Phase 1 Test Harness - Mode Tracking & Wand Matcher Unit Tests
-  - [ ] Write unit tests for `InspectModeManager` (player toggle state, timeouts, wand item matching) in `chestlogger-common`
-- [ ] Task: Implement `InspectModeManager` & Configuration in Common Core
-  - [ ] Implement `InspectModeManager` with concurrent player session tracking and `WandConfig` parsing
-- [ ] Task: Implement Paper Click & Wand Interaction Interception
-  - [ ] Write unit test for `PaperWandListener`
+- [x] Task: Phase 1 Test Harness - Mode Tracking & Wand Matcher Unit Tests [98ddffa]
+  - [x] Write unit tests for `InspectModeManager` (player toggle state, timeouts, wand item matching) in `chestlogger-common` [98ddffa]
+- [x] Task: Implement `InspectModeManager` & Configuration in Common Core [98ddffa]
+  - [x] Implement `InspectModeManager` with concurrent player session tracking and `WandConfig` parsing [98ddffa]
+- [~] Task: Implement Paper Click & Wand Interaction Interception
+  - [~] Write unit test for `PaperWandListener`
   - [ ] Implement `PlayerInteractEvent` and `BlockDamageEvent` interception in `chestlogger-paper`
 - [ ] Task: Implement Fabric Click & Wand Interaction Interception
   - [ ] Implement `UseBlockCallback` and `AttackBlockCallback` hooks in `chestlogger-fabric`
