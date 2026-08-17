@@ -3,6 +3,7 @@ package com.chestlogger.index;
 import com.chestlogger.event.BlockPosUtil;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -11,6 +12,7 @@ import java.util.UUID;
 public final class IndexQueryFilter {
     private final String dimension;
     private final Long exactBlockPos;
+    private final Set<Long> exactBlockPositions;
     private final Long centerPos;
     private final int radius;
     private final UUID actorUuid;
@@ -22,6 +24,7 @@ public final class IndexQueryFilter {
     private IndexQueryFilter(
             String dimension,
             Long exactBlockPos,
+            Set<Long> exactBlockPositions,
             Long centerPos,
             int radius,
             UUID actorUuid,
@@ -32,6 +35,7 @@ public final class IndexQueryFilter {
     ) {
         this.dimension = dimension;
         this.exactBlockPos = exactBlockPos;
+        this.exactBlockPositions = exactBlockPositions != null ? Set.copyOf(exactBlockPositions) : null;
         this.centerPos = centerPos;
         this.radius = radius;
         this.actorUuid = actorUuid;
@@ -50,6 +54,9 @@ public final class IndexQueryFilter {
             return false;
         }
         if (exactBlockPos != null && ptr.packedBlockPos() != exactBlockPos) {
+            return false;
+        }
+        if (exactBlockPositions != null && !exactBlockPositions.contains(ptr.packedBlockPos())) {
             return false;
         }
         if (centerPos != null) {
@@ -88,6 +95,7 @@ public final class IndexQueryFilter {
     public static class Builder {
         private String dimension;
         private Long exactBlockPos;
+        private Set<Long> exactBlockPositions;
         private Long centerPos;
         private int radius = 0;
         private UUID actorUuid;
@@ -103,6 +111,11 @@ public final class IndexQueryFilter {
 
         public Builder exactBlockPos(long packedPos) {
             this.exactBlockPos = packedPos;
+            return this;
+        }
+
+        public Builder exactBlockPositions(Set<Long> packedPositions) {
+            this.exactBlockPositions = packedPositions;
             return this;
         }
 
@@ -134,7 +147,7 @@ public final class IndexQueryFilter {
         }
 
         public IndexQueryFilter build() {
-            return new IndexQueryFilter(dimension, exactBlockPos, centerPos, radius, actorUuid, itemId, minTimeMs, maxTimeMs, limit);
+            return new IndexQueryFilter(dimension, exactBlockPos, exactBlockPositions, centerPos, radius, actorUuid, itemId, minTimeMs, maxTimeMs, limit);
         }
     }
 }
