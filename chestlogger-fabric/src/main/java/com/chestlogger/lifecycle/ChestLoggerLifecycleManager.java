@@ -39,6 +39,7 @@ public final class ChestLoggerLifecycleManager {
     private StringTableDictionary stringDictionary;
 
     private Thread writerThread;
+    private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final CountDownLatch stopLatch = new CountDownLatch(1);
 
@@ -139,6 +140,22 @@ public final class ChestLoggerLifecycleManager {
         segmentWriter = new LogSegmentWriter(dataDir, "chestlog", activeSegIdx, nextSequenceId, compressor, profile, stringDictionary);
         queryEngine = new QueryEngine(dataDir, compressor, indexManager, () -> stringDictionary);
 
+        // Security Alerts Engine
+        File alertConfigFile = new File(dataDir, "chestlogger_alerts.json");
+        com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
+        if (alertConfigFile.exists()) {
+            try {
+                alertConfig = com.chestlogger.alert.AlertConfig.fromJson(java.nio.file.Files.readString(alertConfigFile.toPath()));
+            } catch (Exception e) {
+                LOGGER.warn("[ChestLogger] Failed to read alert config: {}", e.getMessage());
+            }
+        } else {
+            try {
+                java.nio.file.Files.writeString(alertConfigFile.toPath(), alertConfig.toJson());
+            } catch (Exception ignored) {}
+        }
+        this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
+
         running.set(true);
 
         // 4. Spawn dedicated background writer thread
@@ -196,6 +213,12 @@ public final class ChestLoggerLifecycleManager {
     private void processBatch(List<TransactionLogEntry> records) {
         if (records.isEmpty()) return;
         try {
+            if (alertDispatcher != null) {
+                for (TransactionLogEntry entry : records) {
+                    alertDispatcher.evaluateAndDispatch(entry);
+                }
+            }
+
             long currentBlockOffset = segmentWriter.getBytesWrittenToCurrentSegment();
             int currentSegIndex = segmentWriter.getSegmentIndex();
 
@@ -226,6 +249,11 @@ public final class ChestLoggerLifecycleManager {
     public synchronized void stop(long timeoutMs) {
         if (!running.compareAndSet(true, false)) {
             return;
+        }
+
+        if (alertDispatcher != null) {
+            alertDispatcher.close();
+            alertDispatcher = null;
         }
 
         if (writerThread != null) {

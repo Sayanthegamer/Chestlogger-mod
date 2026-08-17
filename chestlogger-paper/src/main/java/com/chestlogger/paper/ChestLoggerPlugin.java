@@ -46,6 +46,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
     private EmbeddedHttpServer webServer;
     private WebConfig webConfig;
     private com.chestlogger.inspect.InspectModeManager inspectModeManager;
+    private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
 
     private BukkitTask workerTask;
     private final AtomicLong sequenceGenerator = new AtomicLong(0L);
@@ -144,7 +145,23 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             webServer.start();
         }
 
-        // 6. Register Bukkit Events and Commands
+        // 6. Security Alerts Initialization
+        File alertConfigFile = new File(getDataFolder(), "chestlogger_alerts.json");
+        com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
+        if (alertConfigFile.exists()) {
+            try {
+                alertConfig = com.chestlogger.alert.AlertConfig.fromJson(java.nio.file.Files.readString(alertConfigFile.toPath()));
+            } catch (Exception e) {
+                getLogger().warning("[ChestLogger] Failed to read chestlogger_alerts.json: " + e.getMessage());
+            }
+        } else {
+            try {
+                java.nio.file.Files.writeString(alertConfigFile.toPath(), alertConfig.toJson());
+            } catch (Exception ignored) {}
+        }
+        this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
+
+        // 7. Register Bukkit Events and Commands
         this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
 
         getServer().getPluginManager().registerEvents(
@@ -196,6 +213,11 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             webServer = null;
         }
 
+        if (alertDispatcher != null) {
+            alertDispatcher.close();
+            alertDispatcher = null;
+        }
+
         // Synchronous final flush barrier on shutdown
         drainAndFlushAll();
 
@@ -229,6 +251,11 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             eventQueue.drain(batch, BATCH_SIZE);
 
             if (!batch.isEmpty()) {
+                if (alertDispatcher != null) {
+                    for (TransactionLogEntry entry : batch) {
+                        alertDispatcher.evaluateAndDispatch(entry);
+                    }
+                }
                 segmentWriter.writeBatch(batch);
                 for (TransactionLogEntry entry : batch) {
                     for (int s = 0; s < Math.max(1, entry.deltas().size()); s++) {
