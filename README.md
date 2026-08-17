@@ -43,8 +43,8 @@ ChestLogger provides two independent, native server platform releases sharing a 
 
 | Target Platform | Package Artifact | Subproject | Requirements |
 |---|---|---|---|
-| **Fabric 26.2 Mod** | `chestlogger-fabric-2.4.0.jar` | `:chestlogger-fabric` | Fabric Loader 0.19.3+, Fabric API, Java 25 |
-| **Paper 26.2 Plugin** | `chestlogger-paper-2.4.0.jar` | `:chestlogger-paper` | Paper 26.2 Server, Java 25 |
+| **Fabric 26.2 Mod** | `chestlogger-fabric-2.4.1.jar` | `:chestlogger-fabric` | Fabric Loader 0.19.3+, Fabric API, Java 25 |
+| **Paper 26.2 Plugin** | `chestlogger-paper-2.4.1.jar` | `:chestlogger-paper` | Paper 26.2 Server, Java 25 |
 
 Both platforms share identical binary `.clog` log formatting, spatial index layout (`.cidx`), recovery behavior, item provenance resolution, smart theft evaluation, and rollback compensation algorithms. Logs generated on a Paper server can be directly inspected or restored on a Fabric server and vice-versa.
 
@@ -76,7 +76,7 @@ Both platforms share identical binary `.clog` log formatting, spatial index layo
 
 ## 🛡️ Smart Theft & Raid Detection Engine
 
-ChestLogger 2.4.0 features an intelligent, context-aware anti-theft and raid detection engine that distinguishes legitimate cooperative gameplay from malicious griefing and looting in sub-20ms latency.
+ChestLogger 2.4.1 features an intelligent, context-aware anti-theft and raid detection engine that distinguishes legitimate cooperative gameplay from malicious griefing and looting in sub-20ms latency.
 
 ### Core Security Heuristics:
 - **Container Ownership Model**: Ground-truth container ownership is automatically established via `CONTAINER_PLACE` transactions. Unclaimed world-gen containers default to wilderness.
@@ -177,12 +177,12 @@ curl -H "X-ChestLogger-Auth: YOUR_SECRET_TOKEN" \
 ## 📦 Installation
 
 ### Fabric Server / Client
-1. Download `chestlogger-fabric-2.4.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
+1. Download `chestlogger-fabric-2.4.1.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
 2. Place into your server or client `mods/` directory.
 3. Requires Fabric API for 26.2.
 
 ### Paper Server
-1. Download `chestlogger-paper-2.4.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
+1. Download `chestlogger-paper-2.4.1.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
 2. Place into your server `plugins/` directory.
 3. Restart or reload Paper server.
 
@@ -203,8 +203,8 @@ curl -H "X-ChestLogger-Auth: YOUR_SECRET_TOKEN" \
 ```
 
 Compiled binaries are located in:
-- `chestlogger-fabric/build/libs/chestlogger-fabric-2.4.0.jar` (Fabric Mod)
-- `chestlogger-paper/build/libs/chestlogger-paper-2.4.0.jar` (Paper Plugin)
+- `chestlogger-fabric/build/libs/chestlogger-fabric-2.4.1.jar` (Fabric Mod)
+- `chestlogger-paper/build/libs/chestlogger-paper-2.4.1.jar` (Paper Plugin)
 
 ---
 
