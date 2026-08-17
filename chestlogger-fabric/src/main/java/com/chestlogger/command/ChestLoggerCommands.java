@@ -461,5 +461,49 @@ public final class ChestLoggerCommands {
                     node.actorName(), coords[0], coords[1], coords[2], node.dimension());
             source.sendSuccess(() -> Component.literal(line), false);
         }
+
+        // Open Screen GUI on player client
+        if (source.isPlayer()) {
+            try {
+                ServerPlayer player = source.getPlayer();
+                if (player != null && ChestLoggerMod.getSessionManager() != null) {
+                    List<TransactionLogEntry> txEntries = new java.util.ArrayList<>();
+                    for (ProvenanceNode node : graph.nodes()) {
+                        txEntries.add(new TransactionLogEntry(
+                                node.sequenceId(),
+                                node.timestampMs(),
+                                UUID.randomUUID(),
+                                node.actionType(),
+                                node.actorType(),
+                                node.actorUuid(),
+                                node.actorName(),
+                                node.dimension(),
+                                node.packedPos(),
+                                List.of(new com.chestlogger.event.SlotDelta(0, node.itemId(), node.deltaQuantity(), 0, Math.abs(node.deltaQuantity()), node.metadataFingerprint()))
+                        ));
+                    }
+
+                    UUID queryId = UUID.randomUUID();
+                    String containerTitle = "Trace: " + graph.targetItemId() + " (" + graph.overallConfidence().name() + ")";
+                    String dim = source.getLevel().dimension().identifier().toString();
+                    var sessionPage = ChestLoggerMod.getSessionManager().createSession(
+                            queryId, containerTitle, dim, graph.targetPackedPos(), txEntries, 1
+                    );
+
+                    List<com.chestlogger.network.DisplayRecord> netRecords = sessionPage.items().stream()
+                            .map(r -> new com.chestlogger.network.DisplayRecord(
+                                    r.sequenceId(), r.timestampMs(), r.actorUuid(), r.actorName(),
+                                    r.actorType(), r.actionType(), r.slotIndex(), r.itemId(),
+                                    r.quantityDelta(), r.metadataFingerprint(), r.dimension(), r.packedBlockPos()
+                            )).toList();
+
+                    ChestLogPagePayload pagePayload = new ChestLogPagePayload(
+                            queryId, sessionPage.pageNumber(), sessionPage.totalPages(), sessionPage.totalElements(),
+                            containerTitle, dim, graph.targetPackedPos(), netRecords
+                    );
+                    ServerPlayNetworking.send(player, pagePayload);
+                }
+            } catch (Exception ignored) {}
+        }
     }
 }
