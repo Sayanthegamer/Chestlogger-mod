@@ -1,0 +1,1 @@
+Task: Implement Paper Click & Wand Interaction Interception. Implemented PaperWandListener for PlayerInteractEvent and BlockDamageEvent, connected InspectModeManager to PaperCommandExecutor.
