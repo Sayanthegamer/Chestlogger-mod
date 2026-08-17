@@ -17,6 +17,5 @@
 - [x] **Track: GitHub Actions CI Workflow & Build Verification**
   *Link: [./tracks/github_actions_ci_20260817/index.md](./tracks/github_actions_ci_20260817/index.md)*
 
-
-
-
+- [ ] **Track: Multi-Platform Server Releases (Fabric 26.2 & Paper 26.2)**
+  *Link: [./tracks/multiplatform_release_20260817/index.md](./tracks/multiplatform_release_20260817/index.md)*
