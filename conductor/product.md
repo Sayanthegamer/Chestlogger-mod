@@ -21,3 +21,4 @@ ChestLogger is a production-quality, server-authoritative container transaction 
 6. **Compensation-based Rollback**: Non-destructive, append-only rollback mechanism with inventory state pre-validation, no item duplication, and full audit logging.
 7. **Commands & Permissions**: `/chestlog inspect`, `/chestlog rollback`, `/chestlog purge`, `/chestlog stats` with permission safeguards.
 8. **Integrated Server Lifecycle**: Clean lifecycle hook binding for singleplayer worlds, per-world data separation, and deterministic background thread shutdown.
+9. **Embedded Web Admin Dashboard & REST API**: Zero-dependency embedded HTTP server (`com.sun.net.httpserver`) providing live telemetry stats, spatial/player queries, downloadable CSV/JSON exports, and a modern dark-theme single-page dashboard for external browser-based administration.

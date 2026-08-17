@@ -17,6 +17,12 @@
 - **Encoding**: Variable-length VarInt/VarLong integers, bitmasks, string/item dictionary table
 - **I/O Pipelines**: Bounded MPSC event queues, dedicated background worker thread, profile-tuned batch flushers (`balanced`, `hdd`, `ssd`)
 
+## Embedded Web Administration & REST API
+- **HTTP Server**: Embedded `com.sun.net.httpserver.HttpServer` (Zero external dependencies, daemon thread pool)
+- **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) embedded directly in mod resources
+- **Security**: Token-based authentication (`X-ChestLogger-Auth`, Bearer token, query param), IP-based rate limiting (HTTP 429), timing-safe token validation, strict path traversal blocking
+- **Export Engine**: RFC 4180 streaming CSV and structured JSON attachment exporters
+
 ## Testing & Quality Assurance
 - **Unit & Property Tests**: JUnit 5 (Jupiter), AssertJ, fuzz/property generators
 - **Integration Testing**: Fabric GameTest / Fabric Server Test runner
