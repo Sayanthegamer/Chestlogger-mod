@@ -1,0 +1,3 @@
+Task: Implement Live Auto-Tail streaming, keyboard shortcuts, and UI polish
+
+Summary: Integrated auto-tail interval control with background tab throttle and 429 rate limit backoff, global shortcut navigation (/ search, r refresh, Esc modal close, arrows page nav), and micro-styled shortcut badges.
