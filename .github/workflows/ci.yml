@@ -55,14 +55,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chestlogger-binaries
-          path: build/libs/*.jar
+          path: |
+            chestlogger-fabric/build/libs/*.jar
+            chestlogger-paper/build/libs/*.jar
           retention-days: 30
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
         uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/*.jar
+          files: |
+            chestlogger-fabric/build/libs/*.jar
+            chestlogger-paper/build/libs/*.jar
           generate_release_notes: true
           draft: false
           prerelease: false

@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation project(':chestlogger-common')
+    include project(':chestlogger-common')
     testImplementation testFixtures(project(':chestlogger-common'))
 
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -30,7 +31,9 @@ dependencies {
 
     // High performance compression & buffers
     implementation "org.lz4:lz4-java:1.8.0"
+    include "org.lz4:lz4-java:1.8.0"
     implementation "com.github.luben:zstd-jni:1.5.7-1"
+    include "com.github.luben:zstd-jni:1.5.7-1"
     
     // Testing
     testImplementation "org.junit.jupiter:junit-jupiter:5.12.0"
