@@ -1,0 +1,29 @@
+name: ChestLogger
+version: '${version}'
+main: com.chestlogger.paper.ChestLoggerPlugin
+api-version: '1.21'
+author: Sayanthegamer
+description: Zero-overhead asynchronous container transaction logging and audit engine
+commands:
+  chestlog:
+    description: Primary command for inspecting, querying, and rolling back container events.
+    permission: chestlogger.admin
+    aliases:
+      - clog
+      - chestlogger
+permissions:
+  chestlogger.admin:
+    description: Full administrative access to ChestLogger commands and data
+    default: op
+  chestlogger.inspect:
+    description: Access to inspect containers and view transaction history
+    default: op
+  chestlogger.rollback:
+    description: Access to perform non-destructive inventory rollbacks
+    default: op
+  chestlogger.stats:
+    description: Access to view memory, queue, and index telemetry
+    default: op
+  chestlogger.web:
+    description: Access to web dashboard authentication tokens and controls
+    default: op

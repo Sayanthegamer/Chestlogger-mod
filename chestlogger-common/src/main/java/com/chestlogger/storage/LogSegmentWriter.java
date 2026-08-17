@@ -206,6 +206,14 @@ public final class LogSegmentWriter implements Closeable {
         return segmentIndex;
     }
 
+    public int getActiveSegmentIndex() {
+        return segmentIndex;
+    }
+
+    public long getCurrentBlockOffset() {
+        return bytesWrittenToCurrentSegment;
+    }
+
     public long getCurrentSeqId() {
         return currentSeqId;
     }

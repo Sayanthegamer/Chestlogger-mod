@@ -86,6 +86,10 @@ public final class TransactionEventQueue {
         return depth.get();
     }
 
+    public boolean isEmpty() {
+        return depth.get() == 0;
+    }
+
     public long getEnqueuedCount() {
         return enqueuedCount.get();
     }
