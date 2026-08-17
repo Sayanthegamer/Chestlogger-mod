@@ -23,5 +23,5 @@
 - [x] **Track: Double Chest (54-Slot) Linked Container Support**
   *Link: [./tracks/double_chest_support_20260817/index.md](./tracks/double_chest_support_20260817/index.md)*
 
-- [ ] **Track: Interactive Wand, Paper GUI Parity, Extended Containers & Discord Alerting**
+- [~] **Track: Interactive Wand, Paper GUI Parity, Extended Containers & Discord Alerting**
   *Link: [./tracks/extended_admin_suite_20260817/index.md](./tracks/extended_admin_suite_20260817/index.md)*
