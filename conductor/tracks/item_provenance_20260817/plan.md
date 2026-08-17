@@ -9,18 +9,18 @@
   - [x] Implement temporal lookahead/lookbehind search across indexed `.clog` streams, component fingerprint equality, visited event safeguards, and confidence computation [fd1a194]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [fd1a194]
 
-## Phase 2: In-Game Provenance GUI (`chestlogger-paper` & `chestlogger-fabric`)
-- [~] Task: Phase 2 Test Harness - In-Game GUI Layout & Slot Paging Tests
-  - [~] Write unit tests for `PaperProvenanceGuiModel` item icons, lore formatting, and confidence badges
-- [ ] Task: Implement 54-Slot In-Game Provenance View & Click Listener
-  - [ ] Implement `PaperProvenanceGuiView` and `PaperProvenanceGuiListener` on Paper
-- [ ] Task: Register `/chestlog trace` and `/cl trace` Commands
-  - [ ] Support `/chestlog trace <x> <y> <z> [slot]` and `/chestlog trace hand` on Paper and Fabric
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 2: In-Game Provenance GUI (`chestlogger-paper` & `chestlogger-fabric`) [checkpoint: b549286]
+- [x] Task: Phase 2 Test Harness - In-Game GUI Layout & Slot Paging Tests [1ef2167]
+  - [x] Write unit tests for `PaperProvenanceGuiModel` item icons, lore formatting, and confidence badges [1ef2167]
+- [x] Task: Implement 54-Slot In-Game Provenance View & Click Listener [1ef2167]
+  - [x] Implement `PaperProvenanceGuiView` and `PaperProvenanceGuiListener` on Paper [1ef2167]
+- [x] Task: Register `/chestlog trace` and `/cl trace` Commands [b549286]
+  - [x] Support `/chestlog trace <x> <y> <z> [slot]` and `/chestlog trace hand` on Paper and Fabric [b549286]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [b549286]
 
 ## Phase 3: Web REST API & Interactive Observability Graph (`chestlogger-common`)
-- [ ] Task: Phase 3 Test Harness - Provenance REST API Tests
-  - [ ] Write unit tests for `/api/v1/provenance` JSON responses
+- [~] Task: Phase 3 Test Harness - Provenance REST API Tests
+  - [~] Write unit tests for `/api/v1/provenance` JSON responses
 - [ ] Task: Implement `/api/v1/provenance` in Embedded HTTP Server
   - [ ] Serialize `ProvenanceGraph` into structured JSON nodes and links
 - [ ] Task: Implement Web UI Visual Node-Link Graph & Timeline Drawer
