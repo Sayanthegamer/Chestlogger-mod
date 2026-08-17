@@ -41,8 +41,8 @@ ChestLogger provides two independent, native server platform releases sharing a 
 
 | Target Platform | Package Artifact | Subproject | Requirements |
 |---|---|---|---|
-| **Fabric 26.2 Mod** | `chestlogger-fabric-1.0.0.jar` | `:chestlogger-fabric` | Fabric Loader 0.19.3+, Fabric API, Java 25 |
-| **Paper 26.2 Plugin** | `chestlogger-paper-1.0.0.jar` | `:chestlogger-paper` | Paper 26.2 Server, Java 25 |
+| **Fabric 26.2 Mod** | `chestlogger-fabric-2.2.0.jar` | `:chestlogger-fabric` | Fabric Loader 0.19.3+, Fabric API, Java 25 |
+| **Paper 26.2 Plugin** | `chestlogger-paper-2.2.0.jar` | `:chestlogger-paper` | Paper 26.2 Server, Java 25 |
 
 Both platforms share identical binary `.clog` log formatting, spatial index layout (`.cidx`), recovery behavior, and rollback compensation algorithms. Logs generated on a Paper server can be directly inspected or restored on a Fabric server and vice-versa.
 
@@ -52,15 +52,45 @@ Both platforms share identical binary `.clog` log formatting, spatial index layo
 
 > 🔒 *On Fabric: All commands require Operator Level 2+.*  
 > 🔒 *On Paper: Commands are protected via Bukkit permission nodes.*
+> 💡 *Aliased as `/cl` or `/chestlog`.*
 
 | Command | Permission (Paper) | Description |
 |---|---|---|
+| `/chestlog i` (or `/chestlog inspect`) | `chestlogger.inspect` | Toggle click inspection mode (Left-click for chat, Right-click for GUI) |
+| `/chestlog wand` | `chestlogger.inspect` | Displays wand item info and quick usage instructions |
 | `/chestlog inspect <X> <Y> <Z> [page]` | `chestlogger.inspect` | Inspect container transaction history at target coords |
 | `/chestlog inspect <X> <Y> <Z> <player> [page]` | `chestlogger.inspect` | Filter inspection results by player |
 | `/chestlog rollback <X> <Y> <Z> <seconds> [player]` | `chestlogger.rollback` | Calculate and preview rollback compensation plan |
 | `/chestlog rollback <X> <Y> <Z> <sec> confirm <token>` | `chestlogger.rollback` | Execute live non-destructive rollback compensation |
 | `/chestlog stats` | `chestlogger.stats` | Display real-time queue depth, throughput, and index size |
 | `/chestlog purge <days> [confirmToken]` | `chestlogger.purge` | Safe two-step segment cleanup of old audit logs |
+
+---
+
+## 🔔 Discord Webhook Security Alerts
+
+ChestLogger features real-time, non-blocking suspicious activity detection with Discord webhook rich embed dispatch.
+
+1. Automatically generates `config/chestlogger_alerts.json` (or plugin data folder).
+2. Configure your webhook URL and thresholds:
+```json
+{
+  "enabled": true,
+  "webhookUrl": "https://discord.com/api/webhooks/...",
+  "botUsername": "ChestLogger Alerts",
+  "quantityThreshold": 64,
+  "alertOnContainerBreak": true,
+  "alertOnValuableTheft": true,
+  "rateLimitPerMinute": 30,
+  "valuableItems": [
+    "minecraft:diamond",
+    "minecraft:netherite_ingot",
+    "minecraft:elytra",
+    "minecraft:beacon"
+  ]
+}
+```
+3. Rate-limited off-thread using asynchronous `HttpClient` — **0 ms impact** on server tick rate.
 
 ---
 
@@ -90,12 +120,12 @@ curl -H "X-ChestLogger-Auth: YOUR_SECRET_TOKEN" \
 ## 📦 Installation
 
 ### Fabric Server / Client
-1. Download `chestlogger-fabric-1.0.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
+1. Download `chestlogger-fabric-2.2.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
 2. Place into your server or client `mods/` directory.
 3. Requires Fabric API for 26.2.
 
 ### Paper Server
-1. Download `chestlogger-paper-1.0.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
+1. Download `chestlogger-paper-2.2.0.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
 2. Place into your server `plugins/` directory.
 3. Restart or reload Paper server.
 
@@ -116,8 +146,8 @@ curl -H "X-ChestLogger-Auth: YOUR_SECRET_TOKEN" \
 ```
 
 Compiled binaries are located in:
-- `chestlogger-fabric/build/libs/chestlogger-fabric-1.0.0.jar` (Fabric Mod)
-- `chestlogger-paper/build/libs/chestlogger-paper-1.0.0.jar` (Paper Plugin)
+- `chestlogger-fabric/build/libs/chestlogger-fabric-2.2.0.jar` (Fabric Mod)
+- `chestlogger-paper/build/libs/chestlogger-paper-2.2.0.jar` (Paper Plugin)
 
 ---
 
