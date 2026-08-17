@@ -40,4 +40,8 @@ public final class BlockPosUtil {
         // Sign extend from 26 bits
         return (z << 6) >> 6;
     }
+
+    public static int[] unpack(long packed) {
+        return new int[]{unpackX(packed), unpackY(packed), unpackZ(packed)};
+    }
 }

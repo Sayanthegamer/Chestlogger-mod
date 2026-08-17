@@ -155,8 +155,46 @@ public final class PaperWandListener implements Listener {
     }
 
     private void performGuiOrChatInspection(Player player, Location loc, Block block) {
-        // In Phase 1, right-click performs detailed inspection; in Phase 2 it triggers PaperChestHistoryView
-        performChatInspection(player, loc, block);
+        String dim = loc.getWorld() != null ? loc.getWorld().getName() : "minecraft:overworld";
+        int x = loc.getBlockX();
+        int y = loc.getBlockY();
+        int z = loc.getBlockZ();
+        long pos = BlockPosUtil.pack(x, y, z);
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                IndexQueryFilter filter = IndexQueryFilter.builder()
+                        .exactBlockPos(pos)
+                        .dimension(dim)
+                        .limit(500)
+                        .build();
+
+                List<TransactionLogEntry> matches = queryEngine.fetchRecords(filter);
+                int capacity = 27;
+                if (block.getState() instanceof org.bukkit.block.DoubleChest) {
+                    capacity = 54;
+                } else if (block.getState() instanceof Container c) {
+                    capacity = c.getInventory().getSize();
+                }
+
+                int finalCapacity = capacity;
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    PaperChestHistoryView view = new PaperChestHistoryView(
+                            player,
+                            matches,
+                            block.getType().name(),
+                            finalCapacity,
+                            pos,
+                            dim
+                    );
+                    view.open();
+                });
+            } catch (Exception e) {
+                plugin.getServer().getScheduler().runTask(plugin, () ->
+                        player.sendMessage(ChatColor.RED + "[ChestLogger] GUI load failed: " + e.getMessage())
+                );
+            }
+        });
     }
 
     public static String resolveItemId(ItemStack item) {

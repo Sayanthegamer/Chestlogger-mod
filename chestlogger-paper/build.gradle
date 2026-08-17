@@ -24,6 +24,7 @@ dependencies {
 
     // Pinned Paper API / Dev Dependency
     compileOnly "io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"
+    testImplementation "io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"
 
     // High performance compression & buffers
     implementation "org.lz4:lz4-java:1.8.0"
