@@ -1,10 +1,10 @@
 # Implementation Plan: Multi-Platform Server Releases (Fabric 26.2 & Paper 26.2)
 
 ## Phase 1: Multi-Module Architecture & Common Core Extraction
-- [ ] Task: Configure root multi-project Gradle build (`chestlogger-common`, `chestlogger-fabric`, `chestlogger-paper`)
-  - [ ] Update `settings.gradle` with subproject declarations and centralized plugin repositories
-  - [ ] Create `chestlogger-common/build.gradle` (pure Java 25, LZ4, Zstandard, JUnit 5, AssertJ, zero platform dependencies)
-  - [ ] Configure root build orchestration and task dependencies
+- [x] Task: Configure root multi-project Gradle build (`chestlogger-common`, `chestlogger-fabric`, `chestlogger-paper`) 4b94d7e
+  - [x] Update `settings.gradle` with subproject declarations and centralized plugin repositories
+  - [x] Create `chestlogger-common/build.gradle` (pure Java 25, LZ4, Zstandard, JUnit 5, AssertJ, zero platform dependencies)
+  - [x] Configure root build orchestration and task dependencies
 - [ ] Task: (TDD Red) Create test fixtures & golden `.chlog` format test harness in `chestlogger-common`
   - [ ] Create byte-for-byte valid and truncated/corrupted golden `.chlog` test fixtures in common test resources
   - [ ] Write unit tests for `BinaryRecordCodec`, `LZ4BlockCompressor`, `TransactionEventQueue`, `RollbackPlanner`, and `TailRecoveryEngine`
