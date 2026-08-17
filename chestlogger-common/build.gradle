@@ -16,6 +16,9 @@ repositories {
 }
 
 dependencies {
+    // Logging API
+    api 'org.slf4j:slf4j-api:2.0.17'
+
     // High performance compression & buffers
     api 'org.lz4:lz4-java:1.8.0'
     api 'com.github.luben:zstd-jni:1.5.7-1'
