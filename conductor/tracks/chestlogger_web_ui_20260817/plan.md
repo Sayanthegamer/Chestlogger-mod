@@ -22,13 +22,13 @@
   - [x] Wire chips directly to query state and trigger instant log queries
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2a57d59]
 
-## Phase 3: Live Auto-Tail Polling, Keyboard Ergonomics & Integration Testing
-- [ ] Task: Implement Live Auto-Tail streaming engine in `app.js`
-  - [ ] Add interval selector (1s, 5s, 10s, Paused) with visual live pulse indicator
-  - [ ] Implement smart polling with rate-limit safety and background tab throttle
-- [ ] Task: Add keyboard shortcuts & usability polish
-  - [ ] Bind `/` to focus search, `r` to manual refresh, `Esc` to close inspector/modals
-  - [ ] Add copy-to-clipboard toast feedback
-- [ ] Task: Verify static asset delivery and run full test suite
-  - [ ] Execute `./gradlew test` to ensure all existing web server tests and mod test suites pass with 100% success
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Live Auto-Tail Polling, Keyboard Ergonomics & Integration Testing [checkpoint: ce23f1d]
+- [x] Task: Implement Live Auto-Tail streaming engine in `app.js` [ce23f1d]
+  - [x] Add interval selector (1s, 5s, 10s, Paused) with visual live pulse indicator
+  - [x] Implement smart polling with rate-limit safety and background tab throttle
+- [x] Task: Add keyboard shortcuts & usability polish [ce23f1d]
+  - [x] Bind `/` to focus search, `r` to manual refresh, `Esc` to close inspector/modals
+  - [x] Add copy-to-clipboard toast feedback
+- [x] Task: Verify static asset delivery and run full test suite [ce23f1d]
+  - [x] Execute `./gradlew test` to ensure all existing web server tests and mod test suites pass with 100% success
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [ce23f1d]
