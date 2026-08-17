@@ -27,11 +27,11 @@
   - [x] Add live incidents feed and staged rollback confirmation dialog in `index.html` [52c619e]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [52c619e]
 
-## Phase 4: Cross-Platform Regression, Concurrent Stress Tests & CI Release
-- [~] Task: Concurrent Heuristic Stress Test
-  - [~] Implement `SmartTheftConcurrencyTest` verifying zero memory leaks under 500 simultaneous player actions
-- [ ] Task: Cross-Platform Regression Test Suite
-  - [ ] Run full test suite across common, fabric, and paper
-- [ ] Task: Documentation & Release Bump to `2.4.0`
-  - [ ] Update `README.md`, `product.md`, `tech-stack.md`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 4: Cross-Platform Regression, Concurrent Stress Tests & CI Release [checkpoint: 147897e]
+- [x] Task: Concurrent Heuristic Stress Test [147897e]
+  - [x] Implement `SmartTheftConcurrencyTest` verifying zero memory leaks under 500 simultaneous player actions [147897e]
+- [x] Task: Cross-Platform Regression Test Suite [147897e]
+  - [x] Run full test suite across common, fabric, and paper [147897e]
+- [x] Task: Documentation & Release Bump to `2.4.0` [147897e]
+  - [x] Update `README.md`, `product.md`, `tech-stack.md` [147897e]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [147897e]

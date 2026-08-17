@@ -29,5 +29,5 @@
 - [x] **Track: Item Provenance & Chain-of-Custody Engine**
   *Link: [./tracks/item_provenance_20260817/index.md](./tracks/item_provenance_20260817/index.md)*
 
-- [~] **Track: Smart Theft & Raid Detection Engine**
+- [x] **Track: Smart Theft & Raid Detection Engine**
   *Link: [./tracks/smart_theft_raid_detection_20260817/index.md](./tracks/smart_theft_raid_detection_20260817/index.md)*
