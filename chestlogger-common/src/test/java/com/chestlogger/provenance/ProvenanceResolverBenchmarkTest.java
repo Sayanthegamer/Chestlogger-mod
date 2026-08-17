@@ -312,39 +312,39 @@ class ProvenanceResolverBenchmarkTest {
     }
 
     // =========================================================================
-    // Benchmark 1: Non-Fungible Resolution Latency (< 50ms)
+    // Benchmark 1: Non-Fungible Resolution Latency (p95 < 50ms, p99 < 100ms)
     // =========================================================================
     @Test
     @Order(1)
     @DisplayName("Benchmark: Sub-50ms Non-Fungible Provenance Resolution on 100k+ Transactions")
     void testNonFungibleResolutionLatency() throws IOException {
         // Warmup iterations
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             resolver.resolveProvenance(targetSwordPos, DIMENSION, SWORD_ITEM_ID, SWORD_FINGERPRINT, queryEngine);
         }
 
-        int iterations = 30;
-        long totalDurationNs = 0L;
-        long minDurationNs = Long.MAX_VALUE;
-        long maxDurationNs = 0L;
+        int iterations = 100;
+        List<Double> latenciesMs = new ArrayList<>(iterations);
 
         ProvenanceGraph graph = null;
         for (int i = 0; i < iterations; i++) {
             long startNs = System.nanoTime();
             graph = resolver.resolveProvenance(targetSwordPos, DIMENSION, SWORD_ITEM_ID, SWORD_FINGERPRINT, queryEngine);
             long elapsedNs = System.nanoTime() - startNs;
-
-            totalDurationNs += elapsedNs;
-            minDurationNs = Math.min(minDurationNs, elapsedNs);
-            maxDurationNs = Math.max(maxDurationNs, elapsedNs);
+            latenciesMs.add(elapsedNs / 1_000_000.0);
         }
 
-        double avgMs = (totalDurationNs / (double) iterations) / 1_000_000.0;
-        double minMs = minDurationNs / 1_000_000.0;
-        double maxMs = maxDurationNs / 1_000_000.0;
+        latenciesMs.sort(Double::compareTo);
+        double avgMs = latenciesMs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        double minMs = latenciesMs.get(0);
+        double p50Ms = latenciesMs.get((int) (iterations * 0.50));
+        double p95Ms = latenciesMs.get((int) (iterations * 0.95));
+        double p99Ms = latenciesMs.get(Math.min((int) (iterations * 0.99), iterations - 1));
+        double maxMs = latenciesMs.get(iterations - 1);
 
-        System.out.printf("[BENCHMARK-1] Non-Fungible Resolution (%d runs): Avg = %.3f ms | Min = %.3f ms | Max = %.3f ms (Nodes: %d, Edges: %d)%n",
-                iterations, avgMs, minMs, maxMs, graph.nodes().size(), graph.edges().size());
+        System.out.printf("[BENCHMARK-1] Non-Fungible Resolution (%d runs):%n", iterations);
+        System.out.printf("  - Avg: %.3f ms | Min: %.3f ms | p50: %.3f ms | p95: %.3f ms | p99: %.3f ms | Max: %.3f ms%n",
+                avgMs, minMs, p50Ms, p95Ms, p99Ms, maxMs);
 
         // Assert Graph Accuracy
         assertThat(graph).isNotNull();
@@ -354,45 +354,46 @@ class ProvenanceResolverBenchmarkTest {
         assertThat(graph.edges()).hasSize(8);
         assertThat(graph.overallConfidence()).isEqualTo(ConfidenceLevel.EXACT_LINKAGE);
 
-        // Assert Sub-50ms Performance Requirement
-        assertThat(avgMs).isLessThan(50.0);
-        assertThat(maxMs).isLessThan(100.0);
+        // Assert Strict Latency SLAs on Percentiles
+        assertThat(p50Ms).isLessThan(25.0);
+        assertThat(p95Ms).isLessThan(50.0);
+        assertThat(p99Ms).isLessThan(100.0);
     }
 
     // =========================================================================
-    // Benchmark 2: Commodity Temporal Flow Resolution Latency (< 50ms)
+    // Benchmark 2: Commodity Temporal Flow Resolution Latency (p95 < 50ms, p99 < 100ms)
     // =========================================================================
     @Test
     @Order(2)
     @DisplayName("Benchmark: Sub-50ms Commodity Provenance Resolution on 100k+ Transactions")
     void testCommodityResolutionLatency() throws IOException {
         // Warmup iterations
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             resolver.resolveProvenance(targetDiamondPos, DIMENSION, DIAMOND_ITEM_ID, 0L, queryEngine);
         }
 
-        int iterations = 30;
-        long totalDurationNs = 0L;
-        long minDurationNs = Long.MAX_VALUE;
-        long maxDurationNs = 0L;
+        int iterations = 100;
+        List<Double> latenciesMs = new ArrayList<>(iterations);
 
         ProvenanceGraph graph = null;
         for (int i = 0; i < iterations; i++) {
             long startNs = System.nanoTime();
             graph = resolver.resolveProvenance(targetDiamondPos, DIMENSION, DIAMOND_ITEM_ID, 0L, queryEngine);
             long elapsedNs = System.nanoTime() - startNs;
-
-            totalDurationNs += elapsedNs;
-            minDurationNs = Math.min(minDurationNs, elapsedNs);
-            maxDurationNs = Math.max(maxDurationNs, elapsedNs);
+            latenciesMs.add(elapsedNs / 1_000_000.0);
         }
 
-        double avgMs = (totalDurationNs / (double) iterations) / 1_000_000.0;
-        double minMs = minDurationNs / 1_000_000.0;
-        double maxMs = maxDurationNs / 1_000_000.0;
+        latenciesMs.sort(Double::compareTo);
+        double avgMs = latenciesMs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        double minMs = latenciesMs.get(0);
+        double p50Ms = latenciesMs.get((int) (iterations * 0.50));
+        double p95Ms = latenciesMs.get((int) (iterations * 0.95));
+        double p99Ms = latenciesMs.get(Math.min((int) (iterations * 0.99), iterations - 1));
+        double maxMs = latenciesMs.get(iterations - 1);
 
-        System.out.printf("[BENCHMARK-2] Commodity Flow Resolution (%d runs): Avg = %.3f ms | Min = %.3f ms | Max = %.3f ms (Nodes: %d, Edges: %d)%n",
-                iterations, avgMs, minMs, maxMs, graph.nodes().size(), graph.edges().size());
+        System.out.printf("[BENCHMARK-2] Commodity Flow Resolution (%d runs):%n", iterations);
+        System.out.printf("  - Avg: %.3f ms | Min: %.3f ms | p50: %.3f ms | p95: %.3f ms | p99: %.3f ms | Max: %.3f ms%n",
+                avgMs, minMs, p50Ms, p95Ms, p99Ms, maxMs);
 
         // Assert Graph Accuracy
         assertThat(graph).isNotNull();
@@ -401,9 +402,10 @@ class ProvenanceResolverBenchmarkTest {
         assertThat(graph.nodes()).isNotEmpty();
         assertThat(graph.edges()).isNotEmpty();
 
-        // Assert Sub-50ms Performance Requirement
-        assertThat(avgMs).isLessThan(50.0);
-        assertThat(maxMs).isLessThan(100.0);
+        // Assert Strict Latency SLAs on Percentiles
+        assertThat(p50Ms).isLessThan(25.0);
+        assertThat(p95Ms).isLessThan(50.0);
+        assertThat(p99Ms).isLessThan(100.0);
     }
 
     // =========================================================================
