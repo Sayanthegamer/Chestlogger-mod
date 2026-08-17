@@ -36,20 +36,20 @@
   - [x] Implement Mixins and callbacks for extended block entities and block destruction with inventory contents [6581c8d]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [6581c8d]
 
-## Phase 4: Discord Webhook & Suspicious Activity Alert Engine
-- [~] Task: Phase 4 Test Harness - Alert Config & Discord Embed Builder Tests
-  - [~] Write unit tests for `AlertConfig`, suspicious threshold evaluations, and JSON embed payload formatting
-- [ ] Task: Implement `DiscordAlertDispatcher` with Non-Blocking `HttpClient`
-  - [ ] Implement asynchronous queue worker, rate limiting, and webhook HTTP dispatch in `chestlogger-common`
-- [ ] Task: Wire Transaction Stream to Alert Dispatcher
-  - [ ] Hook `TransactionEventQueue` flush listeners to evaluate suspicious rules and trigger alerts off-thread
-- [ ] Task: Add Platform Lifecycle Binding & Configuration
-  - [ ] Load `config/chestlogger_alerts.json` on startup in Fabric and Paper, ensure clean daemon shutdown
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 4: Discord Webhook & Suspicious Activity Alert Engine [checkpoint: 150a7f4]
+- [x] Task: Phase 4 Test Harness - Alert Config & Discord Embed Builder Tests [150a7f4]
+  - [x] Write unit tests for `AlertConfig`, suspicious threshold evaluations, and JSON embed payload formatting [150a7f4]
+- [x] Task: Implement `DiscordAlertDispatcher` with Non-Blocking `HttpClient` [150a7f4]
+  - [x] Implement asynchronous queue worker, rate limiting, and webhook HTTP dispatch in `chestlogger-common` [150a7f4]
+- [x] Task: Wire Transaction Stream to Alert Dispatcher [150a7f4]
+  - [x] Hook `TransactionEventQueue` flush listeners to evaluate suspicious rules and trigger alerts off-thread [150a7f4]
+- [x] Task: Add Platform Lifecycle Binding & Configuration [150a7f4]
+  - [x] Load `config/chestlogger_alerts.json` on startup in Fabric and Paper, ensure clean daemon shutdown [150a7f4]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [150a7f4]
 
 ## Phase 5: Cross-Platform End-to-End Integration & CI Verification
-- [ ] Task: Cross-Platform Regression & Integration Test Suite
-  - [ ] Run and verify complete integration tests across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper`
+- [~] Task: Cross-Platform Regression & Integration Test Suite
+  - [~] Run and verify complete integration tests across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper`
 - [ ] Task: Documentation & Release Version Bump
   - [ ] Update `README.md`, `product.md`, `tech-stack.md`, and bump version to `2.2.0`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
