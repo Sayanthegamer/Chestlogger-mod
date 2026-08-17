@@ -25,3 +25,6 @@
 
 - [x] **Track: Interactive Wand, Paper GUI Parity, Extended Containers & Discord Alerting**
   *Link: [./tracks/extended_admin_suite_20260817/index.md](./tracks/extended_admin_suite_20260817/index.md)*
+
+- [~] **Track: Item Provenance & Chain-of-Custody Engine**
+  *Link: [./tracks/item_provenance_20260817/index.md](./tracks/item_provenance_20260817/index.md)*
