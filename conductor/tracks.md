@@ -20,5 +20,5 @@
 - [x] **Track: Multi-Platform Server Releases (Fabric 26.2 & Paper 26.2)**
   *Link: [./tracks/multiplatform_release_20260817/index.md](./tracks/multiplatform_release_20260817/index.md)*
 
-- [ ] **Track: Double Chest (54-Slot) Linked Container Support**
+- [~] **Track: Double Chest (54-Slot) Linked Container Support**
   *Link: [./tracks/double_chest_support_20260817/index.md](./tracks/double_chest_support_20260817/index.md)*
