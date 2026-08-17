@@ -1,17 +1,17 @@
 # Implementation Plan: Item Provenance & Chain-of-Custody Engine (`item_provenance_20260817`)
 
-## Phase 1: Core Provenance Domain Model & Graph Resolver (`chestlogger-common`)
-- [ ] Task: Phase 1 Test Harness - Graph Cycle & Confidence Scoring Unit Tests
-  - [ ] Write unit tests for `ProvenanceGraph`, `ConfidenceLevel`, and cycle-safe graph traversal
-- [ ] Task: Implement Domain Models in Common Core
-  - [ ] Implement `ProvenanceNode`, `ProvenanceEdge`, `ConfidenceLevel`, and `ProvenanceGraph`
-- [ ] Task: Implement `ItemProvenanceResolver` Engine
-  - [ ] Implement temporal lookahead/lookbehind search across indexed `.clog` streams, component fingerprint equality, visited event safeguards, and confidence computation
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 1: Core Provenance Domain Model & Graph Resolver (`chestlogger-common`) [checkpoint: fd1a194]
+- [x] Task: Phase 1 Test Harness - Graph Cycle & Confidence Scoring Unit Tests [fd1a194]
+  - [x] Write unit tests for `ProvenanceGraph`, `ConfidenceLevel`, and cycle-safe graph traversal [fd1a194]
+- [x] Task: Implement Domain Models in Common Core [fd1a194]
+  - [x] Implement `ProvenanceNode`, `ProvenanceEdge`, `ConfidenceLevel`, and `ProvenanceGraph` [fd1a194]
+- [x] Task: Implement `ItemProvenanceResolver` Engine [fd1a194]
+  - [x] Implement temporal lookahead/lookbehind search across indexed `.clog` streams, component fingerprint equality, visited event safeguards, and confidence computation [fd1a194]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [fd1a194]
 
 ## Phase 2: In-Game Provenance GUI (`chestlogger-paper` & `chestlogger-fabric`)
-- [ ] Task: Phase 2 Test Harness - In-Game GUI Layout & Slot Paging Tests
-  - [ ] Write unit tests for `PaperProvenanceGuiModel` item icons, lore formatting, and confidence badges
+- [~] Task: Phase 2 Test Harness - In-Game GUI Layout & Slot Paging Tests
+  - [~] Write unit tests for `PaperProvenanceGuiModel` item icons, lore formatting, and confidence badges
 - [ ] Task: Implement 54-Slot In-Game Provenance View & Click Listener
   - [ ] Implement `PaperProvenanceGuiView` and `PaperProvenanceGuiListener` on Paper
 - [ ] Task: Register `/chestlog trace` and `/cl trace` Commands
