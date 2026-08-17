@@ -862,9 +862,8 @@
         const posY = (rec.y !== undefined && rec.y !== null) ? rec.y : '-';
         const posZ = (rec.z !== undefined && rec.z !== null) ? rec.z : '-';
         const containerPos = `X: ${posX}, Y: ${posY}, Z: ${posZ}`;
-        const dimension = rec.dimension || 'minecraft:overworld';
-        const actorUuid = rec.actorUuid || rec.playerUuid || 'N/A';
-        const slotIndex = '#' + (rec.slot != null ? (rec.slot < 10 ? '0' + rec.slot : rec.slot) : '-');
+        const slotNum = rec.slot != null ? (rec.slot < 10 ? '0' + rec.slot : rec.slot) : null;
+        const slotIndex = slotNum != null ? (rec.slot >= 27 ? `#${slotNum} (Right)` : `#${slotNum} (Left)`) : '#-';
         const prevItem = rec.prevItem || (rec.delta < 0 ? (rec.itemId || rec.item || 'empty') : 'empty');
         const currItem = rec.itemId || rec.item || 'empty';
 

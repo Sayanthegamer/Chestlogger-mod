@@ -353,7 +353,9 @@ public class ChestLogScreen extends Screen {
             graphics.text(font, "§7" + actionName, getColumnX(2), textY, 0xFFAAAAAA);
 
             // 4. Slot Column
-            String slotStr = String.format("§8#%02d", record.slotIndex());
+            String slotStr = record.slotIndex() >= 27
+                    ? String.format("§8#%02d§7R", record.slotIndex())
+                    : String.format("§8#%02d§8L", record.slotIndex());
             graphics.text(font, slotStr, getColumnX(3), textY, 0xFF777777);
 
             // 5. Item Column (Icon + Name)
