@@ -47,9 +47,9 @@
   - [x] Load `config/chestlogger_alerts.json` on startup in Fabric and Paper, ensure clean daemon shutdown [150a7f4]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [150a7f4]
 
-## Phase 5: Cross-Platform End-to-End Integration & CI Verification
-- [~] Task: Cross-Platform Regression & Integration Test Suite
-  - [~] Run and verify complete integration tests across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper`
-- [ ] Task: Documentation & Release Version Bump
-  - [ ] Update `README.md`, `product.md`, `tech-stack.md`, and bump version to `2.2.0`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 5: Cross-Platform End-to-End Integration & CI Verification [checkpoint: e4cf684]
+- [x] Task: Cross-Platform Regression & Integration Test Suite [e4cf684]
+  - [x] Run and verify complete integration tests across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper` [e4cf684]
+- [x] Task: Documentation & Release Version Bump [e4cf684]
+  - [x] Update `README.md`, `product.md`, `tech-stack.md`, and bump version to `2.2.0` [e4cf684]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [e4cf684]
