@@ -9,8 +9,13 @@ import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.recovery.RecoveryReport;
 import com.chestlogger.recovery.TailRecoveryEngine;
+import com.chestlogger.alert.FabricSecurityAlertBroadcaster;
+import com.chestlogger.security.RaidVelocityTracker;
+import com.chestlogger.security.SmartTheftEvaluator;
+import com.chestlogger.security.TrustManager;
 import com.chestlogger.storage.*;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class ChestLoggerLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChestLogger-Lifecycle");
+    private static MinecraftServer currentServer;
 
     private final TransactionEventQueue eventQueue;
     private final BlockCompressor compressor;
@@ -40,6 +46,9 @@ public final class ChestLoggerLifecycleManager {
 
     private Thread writerThread;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
+    private TrustManager trustManager;
+    private SmartTheftEvaluator theftEvaluator;
+    private FabricSecurityAlertBroadcaster securityBroadcaster;
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final CountDownLatch stopLatch = new CountDownLatch(1);
 
@@ -49,8 +58,17 @@ public final class ChestLoggerLifecycleManager {
         this.profile = Objects.requireNonNull(profile, "profile cannot be null");
     }
 
+    public static void setServer(MinecraftServer server) {
+        currentServer = server;
+    }
+
+    public static MinecraftServer getServer() {
+        return currentServer;
+    }
+
     public static void registerServerEvents(ChestLoggerLifecycleManager lifecycleManager) {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            setServer(server);
             Path worldDir = server.getWorldPath(LevelResource.ROOT).resolve("chestlogger");
             File storageDir = worldDir.toFile();
             try {
@@ -74,6 +92,7 @@ public final class ChestLoggerLifecycleManager {
                 LOGGER.warn("[ChestLogger] Error stopping optional web server: {}", t.getMessage());
             }
             lifecycleManager.stop(10000);
+            setServer(null);
         });
     }
 
@@ -140,7 +159,7 @@ public final class ChestLoggerLifecycleManager {
         segmentWriter = new LogSegmentWriter(dataDir, "chestlog", activeSegIdx, nextSequenceId, compressor, profile, stringDictionary);
         queryEngine = new QueryEngine(dataDir, compressor, indexManager, () -> stringDictionary);
 
-        // Security Alerts Engine
+        // Security Alerts & Trust Engine
         File alertConfigFile = new File(dataDir, "chestlogger_alerts.json");
         com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
         if (alertConfigFile.exists()) {
@@ -155,6 +174,18 @@ public final class ChestLoggerLifecycleManager {
             } catch (Exception ignored) {}
         }
         this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
+
+        File trustFile = new File(dataDir, "trust_data.json");
+        this.trustManager = new TrustManager(trustFile.toPath());
+        try {
+            this.trustManager.load();
+            LOGGER.info("[ChestLogger] Loaded trust database with {} owner trust mappings.", trustManager.getOwnerCount());
+        } catch (Exception e) {
+            LOGGER.warn("[ChestLogger] Failed to load trust_data.json: {}", e.getMessage());
+        }
+
+        this.theftEvaluator = new SmartTheftEvaluator(trustManager, alertConfig, new RaidVelocityTracker());
+        this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig);
 
         running.set(true);
 
@@ -218,6 +249,11 @@ public final class ChestLoggerLifecycleManager {
                     alertDispatcher.evaluateAndDispatch(entry);
                 }
             }
+            if (securityBroadcaster != null) {
+                for (TransactionLogEntry entry : records) {
+                    securityBroadcaster.processTransaction(entry);
+                }
+            }
 
             long currentBlockOffset = segmentWriter.getBytesWrittenToCurrentSegment();
             int currentSegIndex = segmentWriter.getSegmentIndex();
@@ -256,6 +292,15 @@ public final class ChestLoggerLifecycleManager {
             alertDispatcher = null;
         }
 
+        if (trustManager != null) {
+            try {
+                trustManager.save();
+                LOGGER.info("[ChestLogger] Saved trust database successfully.");
+            } catch (Exception e) {
+                LOGGER.error("Failed to save trust_data.json on shutdown: {}", e.getMessage());
+            }
+        }
+
         if (writerThread != null) {
             writerThread.interrupt();
             try {
@@ -279,5 +324,17 @@ public final class ChestLoggerLifecycleManager {
 
     public LogSegmentWriter getSegmentWriter() {
         return segmentWriter;
+    }
+
+    public TrustManager getTrustManager() {
+        return trustManager;
+    }
+
+    public SmartTheftEvaluator getTheftEvaluator() {
+        return theftEvaluator;
+    }
+
+    public FabricSecurityAlertBroadcaster getSecurityBroadcaster() {
+        return securityBroadcaster;
     }
 }

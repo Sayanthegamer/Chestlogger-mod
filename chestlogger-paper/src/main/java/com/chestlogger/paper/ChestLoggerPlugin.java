@@ -47,6 +47,9 @@ public final class ChestLoggerPlugin extends JavaPlugin {
     private WebConfig webConfig;
     private com.chestlogger.inspect.InspectModeManager inspectModeManager;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
+    private com.chestlogger.security.TrustManager trustManager;
+    private com.chestlogger.security.SmartTheftEvaluator theftEvaluator;
+    private PaperSecurityAlertBroadcaster securityBroadcaster;
 
     private BukkitTask workerTask;
     private final AtomicLong sequenceGenerator = new AtomicLong(0L);
@@ -145,7 +148,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             webServer.start();
         }
 
-        // 6. Security Alerts Initialization
+        // 6. Security Alerts & Trust Engine Initialization
         File alertConfigFile = new File(getDataFolder(), "chestlogger_alerts.json");
         com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
         if (alertConfigFile.exists()) {
@@ -160,6 +163,18 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             } catch (Exception ignored) {}
         }
         this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
+
+        File trustFile = new File(getDataFolder(), "trust_data.json");
+        this.trustManager = new com.chestlogger.security.TrustManager(trustFile.toPath());
+        try {
+            this.trustManager.load();
+            getLogger().info("[ChestLogger] Loaded trust database with " + trustManager.getOwnerCount() + " player trust entries.");
+        } catch (IOException e) {
+            getLogger().warning("[ChestLogger] Failed to load trust_data.json: " + e.getMessage());
+        }
+
+        this.theftEvaluator = new com.chestlogger.security.SmartTheftEvaluator(trustManager, alertConfig, new com.chestlogger.security.RaidVelocityTracker());
+        this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig);
 
         // 7. Register Bukkit Events and Commands
         this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
@@ -188,7 +203,8 @@ public final class ChestLoggerPlugin extends JavaPlugin {
                 eventQueue,
                 rollbackExecutor,
                 webServer,
-                inspectModeManager
+                inspectModeManager,
+                trustManager
         );
 
         PluginCommand command = getCommand("chestlog");
@@ -197,7 +213,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             command.setTabCompleter(commandExecutor);
         }
 
-        // 7. Start Async Background Flush Worker
+        // 8. Start Async Background Flush Worker
         this.workerTask = getServer().getScheduler().runTaskTimerAsynchronously(this, this::flushQueueBatch, 10L, 10L);
 
         getLogger().info("[ChestLogger] Paper 26.2 plugin enabled successfully.");
@@ -220,6 +236,15 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         if (alertDispatcher != null) {
             alertDispatcher.close();
             alertDispatcher = null;
+        }
+
+        if (trustManager != null) {
+            try {
+                trustManager.save();
+                getLogger().info("[ChestLogger] Saved trust database successfully.");
+            } catch (IOException e) {
+                getLogger().severe("[ChestLogger] Error saving trust_data.json: " + e.getMessage());
+            }
         }
 
         // Synchronous final flush barrier on shutdown
@@ -258,6 +283,11 @@ public final class ChestLoggerPlugin extends JavaPlugin {
                 if (alertDispatcher != null) {
                     for (TransactionLogEntry entry : batch) {
                         alertDispatcher.evaluateAndDispatch(entry);
+                    }
+                }
+                if (securityBroadcaster != null) {
+                    for (TransactionLogEntry entry : batch) {
+                        securityBroadcaster.processTransaction(entry);
                     }
                 }
                 segmentWriter.writeBatch(batch);
@@ -331,5 +361,17 @@ public final class ChestLoggerPlugin extends JavaPlugin {
 
     public QueryEngine getQueryEngine() {
         return queryEngine;
+    }
+
+    public com.chestlogger.security.TrustManager getTrustManager() {
+        return trustManager;
+    }
+
+    public com.chestlogger.security.SmartTheftEvaluator getTheftEvaluator() {
+        return theftEvaluator;
+    }
+
+    public PaperSecurityAlertBroadcaster getSecurityBroadcaster() {
+        return securityBroadcaster;
     }
 }

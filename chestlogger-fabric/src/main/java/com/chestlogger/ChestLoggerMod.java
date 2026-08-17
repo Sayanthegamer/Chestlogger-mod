@@ -131,4 +131,16 @@ public class ChestLoggerMod implements ModInitializer {
         }
         return inspectModeManager;
     }
+
+    public static com.chestlogger.security.TrustManager getTrustManager() {
+        return lifecycleManager != null ? lifecycleManager.getTrustManager() : null;
+    }
+
+    public static com.chestlogger.security.SmartTheftEvaluator getTheftEvaluator() {
+        return lifecycleManager != null ? lifecycleManager.getTheftEvaluator() : null;
+    }
+
+    public static com.chestlogger.alert.FabricSecurityAlertBroadcaster getSecurityBroadcaster() {
+        return lifecycleManager != null ? lifecycleManager.getSecurityBroadcaster() : null;
+    }
 }

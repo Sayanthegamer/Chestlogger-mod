@@ -13,6 +13,7 @@ import com.chestlogger.rollback.RollbackPlan;
 import com.chestlogger.rollback.RollbackResult;
 import com.chestlogger.web.EmbeddedHttpServer;
 import com.chestlogger.web.WebConfig;
+import com.chestlogger.security.TrustManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -25,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -39,6 +41,27 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     private final PaperRollbackExecutor rollbackExecutor;
     private final EmbeddedHttpServer webServer;
     private final InspectModeManager inspectModeManager;
+    private final TrustManager trustManager;
+
+    public PaperCommandExecutor(
+            Plugin plugin,
+            QueryEngine queryEngine,
+            PersistentIndexManager indexManager,
+            TransactionEventQueue eventQueue,
+            PaperRollbackExecutor rollbackExecutor,
+            EmbeddedHttpServer webServer,
+            InspectModeManager inspectModeManager,
+            TrustManager trustManager
+    ) {
+        this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
+        this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
+        this.indexManager = Objects.requireNonNull(indexManager, "indexManager cannot be null");
+        this.eventQueue = Objects.requireNonNull(eventQueue, "eventQueue cannot be null");
+        this.rollbackExecutor = Objects.requireNonNull(rollbackExecutor, "rollbackExecutor cannot be null");
+        this.webServer = webServer;
+        this.inspectModeManager = Objects.requireNonNull(inspectModeManager, "inspectModeManager cannot be null");
+        this.trustManager = trustManager != null ? trustManager : new TrustManager();
+    }
 
     public PaperCommandExecutor(
             Plugin plugin,
@@ -49,13 +72,11 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             EmbeddedHttpServer webServer,
             InspectModeManager inspectModeManager
     ) {
-        this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
-        this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
-        this.indexManager = Objects.requireNonNull(indexManager, "indexManager cannot be null");
-        this.eventQueue = Objects.requireNonNull(eventQueue, "eventQueue cannot be null");
-        this.rollbackExecutor = Objects.requireNonNull(rollbackExecutor, "rollbackExecutor cannot be null");
-        this.webServer = webServer;
-        this.inspectModeManager = Objects.requireNonNull(inspectModeManager, "inspectModeManager cannot be null");
+        this(plugin, queryEngine, indexManager, eventQueue, rollbackExecutor, webServer, inspectModeManager, new TrustManager());
+    }
+
+    public TrustManager getTrustManager() {
+        return trustManager;
     }
 
     public boolean isInspecting(UUID playerUuid) {
@@ -86,6 +107,9 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             case "stats" -> handleStats(sender);
             case "web" -> handleWeb(sender, args);
             case "t", "trace" -> handleTrace(sender, args);
+            case "trust" -> handleTrust(sender, args);
+            case "untrust" -> handleUntrust(sender, args);
+            case "trustlist" -> handleTrustList(sender);
             default -> sendHelp(sender);
         }
         return true;
@@ -405,12 +429,175 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         });
     }
 
+    private void handleTrust(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("chestlogger.trust") && !sender.hasPermission("chestlogger.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to manage trust lists.");
+            return;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "Trust commands can only be executed by in-game players.");
+            return;
+        }
+
+        if (args.length < 2 || args[1].isBlank()) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Usage: /chestlog trust <player>");
+            return;
+        }
+
+        String targetName = args[1].trim();
+        if (targetName.equalsIgnoreCase(player.getName())) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You cannot trust yourself!");
+            return;
+        }
+
+        UUID targetUuid = resolvePlayerUuid(targetName);
+        String finalTargetName = resolvePlayerName(targetUuid, targetName);
+
+        if (player.getUniqueId().equals(targetUuid)) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You cannot trust yourself!");
+            return;
+        }
+
+        if (trustManager.isTrusted(player.getUniqueId(), targetUuid)) {
+            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] " + finalTargetName + " is already in your trust list.");
+            return;
+        }
+
+        boolean added = trustManager.trust(player.getUniqueId(), targetUuid);
+        if (added) {
+            try {
+                trustManager.save();
+            } catch (Exception e) {
+                if (plugin != null && plugin.getLogger() != null) {
+                    plugin.getLogger().warning("[ChestLogger] Failed to save trust_data.json: " + e.getMessage());
+                }
+            }
+            player.sendMessage(ChatColor.GREEN + "[ChestLogger] Successfully trusted " + finalTargetName + ". They can now access your containers without triggering alerts.");
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] " + finalTargetName + " is already in your trust list.");
+        }
+    }
+
+    private void handleUntrust(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("chestlogger.trust") && !sender.hasPermission("chestlogger.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to manage trust lists.");
+            return;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "Trust commands can only be executed by in-game players.");
+            return;
+        }
+
+        if (args.length < 2 || args[1].isBlank()) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Usage: /chestlog untrust <player>");
+            return;
+        }
+
+        String targetName = args[1].trim();
+        UUID targetUuid = null;
+        String finalTargetName = targetName;
+
+        // Check already trusted players first to match exact UUID
+        Set<UUID> trusted = trustManager.getTrustList(player.getUniqueId());
+        for (UUID u : trusted) {
+            String name = resolvePlayerName(u, null);
+            if (name.equalsIgnoreCase(targetName)) {
+                targetUuid = u;
+                finalTargetName = name;
+                break;
+            }
+        }
+
+        if (targetUuid == null) {
+            targetUuid = resolvePlayerUuid(targetName);
+            finalTargetName = resolvePlayerName(targetUuid, targetName);
+        }
+
+        boolean removed = trustManager.untrust(player.getUniqueId(), targetUuid);
+        if (removed) {
+            try {
+                trustManager.save();
+            } catch (Exception e) {
+                if (plugin != null && plugin.getLogger() != null) {
+                    plugin.getLogger().warning("[ChestLogger] Failed to save trust_data.json: " + e.getMessage());
+                }
+            }
+            player.sendMessage(ChatColor.GREEN + "[ChestLogger] Successfully untrusted " + finalTargetName + ".");
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] " + finalTargetName + " is not in your trust list.");
+        }
+    }
+
+    private void handleTrustList(CommandSender sender) {
+        if (!sender.hasPermission("chestlogger.trust") && !sender.hasPermission("chestlogger.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to manage trust lists.");
+            return;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "Trust commands can only be executed by in-game players.");
+            return;
+        }
+
+        Set<UUID> trusted = trustManager.getTrustList(player.getUniqueId());
+        if (trusted.isEmpty()) {
+            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] You have not trusted any players yet. Use /chestlog trust <player> to add someone.");
+            return;
+        }
+
+        List<String> names = new ArrayList<>();
+        for (UUID uuid : trusted) {
+            names.add(resolvePlayerName(uuid, null));
+        }
+        Collections.sort(names, String.CASE_INSENSITIVE_ORDER);
+
+        player.sendMessage(ChatColor.GOLD + "=== Trusted Players (" + trusted.size() + ") ===");
+        player.sendMessage(ChatColor.WHITE + String.join(", ", names));
+    }
+
+    private UUID resolvePlayerUuid(String name) {
+        try {
+            if (org.bukkit.Bukkit.getServer() != null) {
+                Player online = org.bukkit.Bukkit.getPlayerExact(name);
+                if (online != null) {
+                    return online.getUniqueId();
+                }
+                org.bukkit.OfflinePlayer offline = org.bukkit.Bukkit.getOfflinePlayer(name);
+                if (offline.hasPlayedBefore() || offline.isOnline() || offline.getName() != null) {
+                    return offline.getUniqueId();
+                }
+            }
+        } catch (Exception ignored) {}
+        return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name.toLowerCase(Locale.ROOT)).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String resolvePlayerName(UUID uuid, String defaultFallback) {
+        try {
+            if (org.bukkit.Bukkit.getServer() != null) {
+                Player online = org.bukkit.Bukkit.getPlayer(uuid);
+                if (online != null) {
+                    return online.getName();
+                }
+                org.bukkit.OfflinePlayer offline = org.bukkit.Bukkit.getOfflinePlayer(uuid);
+                if (offline.getName() != null) {
+                    return offline.getName();
+                }
+            }
+        } catch (Exception ignored) {}
+        return defaultFallback != null ? defaultFallback : uuid.toString();
+    }
+
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== ChestLogger Commands ===");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [page]" + ChatColor.WHITE + " - Toggle inspect mode or inspect targeted container");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trace <x> <y> <z> [slot]" + ChatColor.WHITE + " - Trace item provenance at container slot");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trace [hand]" + ChatColor.WHITE + " - Trace item provenance for item in hand");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog trust <player>" + ChatColor.WHITE + " - Trust a player to access your containers");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog untrust <player>" + ChatColor.WHITE + " - Revoke trust from a player");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog trustlist" + ChatColor.WHITE + " - View your list of trusted players");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog rollback [seconds]" + ChatColor.WHITE + " - Revert container changes");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog stats" + ChatColor.WHITE + " - View queue and memory telemetry");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
@@ -419,13 +606,47 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return List.of("i", "inspect", "wand", "trace", "rollback", "stats", "web");
+            String current = args[0].toLowerCase(Locale.ROOT);
+            List<String> subcommands = List.of("i", "inspect", "wand", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web");
+            return subcommands.stream().filter(s -> s.startsWith(current)).toList();
         }
         if (args.length == 2 && "web".equalsIgnoreCase(args[0])) {
-            return List.of("start", "stop");
+            String current = args[1].toLowerCase(Locale.ROOT);
+            return List.of("start", "stop").stream().filter(s -> s.startsWith(current)).toList();
         }
         if (args.length == 2 && "trace".equalsIgnoreCase(args[0])) {
             return List.of("hand");
+        }
+        if (args.length == 2 && "trust".equalsIgnoreCase(args[0])) {
+            String current = args[1].toLowerCase(Locale.ROOT);
+            List<String> suggestions = new ArrayList<>();
+            try {
+                if (org.bukkit.Bukkit.getServer() != null) {
+                    for (Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+                        if (sender instanceof Player sp && sp.getUniqueId().equals(p.getUniqueId())) {
+                            continue;
+                        }
+                        if (p.getName().toLowerCase(Locale.ROOT).startsWith(current)) {
+                            suggestions.add(p.getName());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+            return suggestions;
+        }
+        if (args.length == 2 && "untrust".equalsIgnoreCase(args[0])) {
+            String current = args[1].toLowerCase(Locale.ROOT);
+            List<String> suggestions = new ArrayList<>();
+            if (sender instanceof Player player) {
+                Set<UUID> list = trustManager.getTrustList(player.getUniqueId());
+                for (UUID u : list) {
+                    String name = resolvePlayerName(u, null);
+                    if (name.toLowerCase(Locale.ROOT).startsWith(current)) {
+                        suggestions.add(name);
+                    }
+                }
+            }
+            return suggestions;
         }
         return Collections.emptyList();
     }

@@ -26,7 +26,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -91,14 +95,57 @@ public final class ChestLoggerCommands {
                         .then(Commands.argument("slot", IntegerArgumentType.integer(0, 54))
                                 .executes(ctx -> executeTracePos(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), IntegerArgumentType.getInteger(ctx, "slot")))));
 
+        var trustNode = Commands.literal("trust")
+                .then(Commands.argument("player", StringArgumentType.word())
+                        .suggests((ctx, builder) -> {
+                            var server = ctx.getSource().getServer();
+                            if (server != null) {
+                                for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                                    if (ctx.getSource().getEntity() instanceof ServerPlayer senderPlayer && p.getUUID().equals(senderPlayer.getUUID())) {
+                                        continue;
+                                    }
+                                    String name = p.getGameProfile().name();
+                                    if (name.toLowerCase(Locale.ROOT).startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(name);
+                                    }
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
+                        .executes(ctx -> executeTrust(ctx.getSource(), StringArgumentType.getString(ctx, "player"))));
+
+        var untrustNode = Commands.literal("untrust")
+                .then(Commands.argument("player", StringArgumentType.word())
+                        .suggests((ctx, builder) -> {
+                            var server = ctx.getSource().getServer();
+                            if (server != null && ctx.getSource().getEntity() instanceof ServerPlayer senderPlayer && ChestLoggerMod.getTrustManager() != null) {
+                                Set<UUID> list = ChestLoggerMod.getTrustManager().getTrustList(senderPlayer.getUUID());
+                                for (UUID uuid : list) {
+                                    ServerPlayer onlineP = server.getPlayerList().getPlayer(uuid);
+                                    String name = onlineP != null ? onlineP.getGameProfile().name() : uuid.toString();
+                                    if (name.toLowerCase(Locale.ROOT).startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(name);
+                                    }
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
+                        .executes(ctx -> executeUntrust(ctx.getSource(), StringArgumentType.getString(ctx, "player"))));
+
+        var trustlistNode = Commands.literal("trustlist")
+                .executes(ctx -> executeTrustList(ctx.getSource()));
+
         var mainCommand = Commands.literal("chestlog")
-                .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
                 .then(inspectNode)
                 .then(iNode)
                 .then(wandNode)
                 .then(traceNode)
+                .then(trustNode)
+                .then(untrustNode)
+                .then(trustlistNode)
                 // --- ROLLBACK ---
                 .then(Commands.literal("rollback")
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .then(Commands.argument("seconds", IntegerArgumentType.integer(1, 864000))
                                         .executes(ctx -> executeRollbackPreview(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), IntegerArgumentType.getInteger(ctx, "seconds"), null))
@@ -109,9 +156,11 @@ public final class ChestLoggerCommands {
                                                 .executes(ctx -> executeRollbackPreview(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), IntegerArgumentType.getInteger(ctx, "seconds"), EntityArgument.getPlayer(ctx, "targetPlayer").getUUID()))))))
                 // --- STATS ---
                 .then(Commands.literal("stats")
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                         .executes(ctx -> executeStats(ctx.getSource())))
                 // --- PURGE ---
                 .then(Commands.literal("purge")
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                         .then(Commands.argument("days", IntegerArgumentType.integer(1, 3650))
                                 .executes(ctx -> executePurgeRequest(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "days")))
                                 .then(Commands.argument("confirmToken", StringArgumentType.string())
@@ -119,7 +168,6 @@ public final class ChestLoggerCommands {
 
         dispatcher.register(mainCommand);
         dispatcher.register(Commands.literal("cl")
-                .requires(source -> !source.isPlayer() || source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())))
                 .redirect(dispatcher.getRoot().getChild("chestlog")));
     }
 
@@ -505,5 +553,144 @@ public final class ChestLoggerCommands {
                 }
             } catch (Exception ignored) {}
         }
+    }
+
+    private static int executeTrust(CommandSourceStack source, String targetName) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("Trust commands can only be executed by players."));
+            return 0;
+        }
+
+        if (targetName.equalsIgnoreCase(player.getGameProfile().name())) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You cannot trust yourself!"));
+            return 0;
+        }
+
+        var server = source.getServer();
+        ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(targetName);
+        UUID targetUuid;
+        String finalTargetName;
+        if (targetPlayer != null) {
+            targetUuid = targetPlayer.getUUID();
+            finalTargetName = targetPlayer.getGameProfile().name();
+        } else {
+            targetUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetName.toLowerCase(Locale.ROOT)).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            finalTargetName = targetName;
+        }
+
+        if (player.getUUID().equals(targetUuid)) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You cannot trust yourself!"));
+            return 0;
+        }
+
+        var trustManager = ChestLoggerMod.getTrustManager();
+        if (trustManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Trust manager is not initialized."));
+            return 0;
+        }
+
+        if (trustManager.isTrusted(player.getUUID(), targetUuid)) {
+            source.sendSuccess(() -> Component.literal("§e[ChestLogger] " + finalTargetName + " is already in your trust list."), false);
+            return 1;
+        }
+
+        boolean added = trustManager.trust(player.getUUID(), targetUuid);
+        if (added) {
+            try {
+                trustManager.save();
+            } catch (Exception e) {
+                ChestLoggerMod.LOGGER.warn("Failed to save trust_data.json: {}", e.getMessage());
+            }
+            source.sendSuccess(() -> Component.literal("§a[ChestLogger] Successfully trusted " + finalTargetName + ". They can now access your containers without triggering alerts."), false);
+        } else {
+            source.sendSuccess(() -> Component.literal("§e[ChestLogger] " + finalTargetName + " is already in your trust list."), false);
+        }
+        return 1;
+    }
+
+    private static int executeUntrust(CommandSourceStack source, String targetName) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("Trust commands can only be executed by players."));
+            return 0;
+        }
+
+        var trustManager = ChestLoggerMod.getTrustManager();
+        if (trustManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Trust manager is not initialized."));
+            return 0;
+        }
+
+        var server = source.getServer();
+        UUID targetUuid = null;
+        String resolvedName = targetName;
+
+        Set<UUID> trusted = trustManager.getTrustList(player.getUUID());
+        for (UUID u : trusted) {
+            ServerPlayer onlineP = server.getPlayerList().getPlayer(u);
+            if (onlineP != null && onlineP.getGameProfile().name().equalsIgnoreCase(targetName)) {
+                targetUuid = u;
+                resolvedName = onlineP.getGameProfile().name();
+                break;
+            }
+        }
+
+        if (targetUuid == null) {
+            ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(targetName);
+            if (targetPlayer != null) {
+                targetUuid = targetPlayer.getUUID();
+                resolvedName = targetPlayer.getGameProfile().name();
+            } else {
+                targetUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetName.toLowerCase(Locale.ROOT)).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        }
+
+        final String targetDisplayName = resolvedName;
+        boolean removed = trustManager.untrust(player.getUUID(), targetUuid);
+        if (removed) {
+            try {
+                trustManager.save();
+            } catch (Exception e) {
+                ChestLoggerMod.LOGGER.warn("Failed to save trust_data.json: {}", e.getMessage());
+            }
+            source.sendSuccess(() -> Component.literal("§a[ChestLogger] Successfully untrusted " + targetDisplayName + "."), false);
+        } else {
+            source.sendSuccess(() -> Component.literal("§e[ChestLogger] " + targetDisplayName + " is not in your trust list."), false);
+        }
+        return 1;
+    }
+
+    private static int executeTrustList(CommandSourceStack source) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("Trust commands can only be executed by players."));
+            return 0;
+        }
+
+        var trustManager = ChestLoggerMod.getTrustManager();
+        if (trustManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Trust manager is not initialized."));
+            return 0;
+        }
+
+        Set<UUID> list = trustManager.getTrustList(player.getUUID());
+        if (list.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("§e[ChestLogger] You have not trusted any players yet. Use /chestlog trust <player> to add someone."), false);
+            return 1;
+        }
+
+        var server = source.getServer();
+        List<String> names = new ArrayList<>();
+        for (UUID u : list) {
+            ServerPlayer targetOnline = server.getPlayerList().getPlayer(u);
+            if (targetOnline != null) {
+                names.add(targetOnline.getGameProfile().name());
+            } else {
+                names.add(u.toString());
+            }
+        }
+        Collections.sort(names, String.CASE_INSENSITIVE_ORDER);
+
+        source.sendSuccess(() -> Component.literal("§6=== Trusted Players (" + list.size() + ") ==="), false);
+        source.sendSuccess(() -> Component.literal("§f" + String.join(", ", names)), false);
+        return 1;
     }
 }

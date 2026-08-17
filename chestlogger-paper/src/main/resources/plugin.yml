@@ -7,14 +7,17 @@ description: Zero-overhead asynchronous container transaction logging and audit 
 commands:
   chestlog:
     description: Primary command for inspecting, querying, and rolling back container events.
-    permission: chestlogger.admin
     aliases:
+      - cl
       - clog
       - chestlogger
 permissions:
   chestlogger.admin:
     description: Full administrative access to ChestLogger commands and data
     default: op
+  chestlogger.trust:
+    description: Access to trust, untrust, and view trusted players list
+    default: true
   chestlogger.inspect:
     description: Access to inspect containers and view transaction history
     default: op
