@@ -173,8 +173,32 @@
                 </div>
             </section>
 
-            <!-- Search & Filter Controls Card -->
-            <section class="card filter-card">
+            <!-- View Mode Tabs Navigation -->
+            <nav class="view-tabs-nav" aria-label="Main View Navigation">
+                <button type="button" id="tab-btn-logs" class="view-tab-btn active" data-tab="logs-view">
+                    <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                        <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+                    </svg>
+                    <span>Audit Log Stream</span>
+                </button>
+                <button type="button" id="tab-btn-journey" class="view-tab-btn" data-tab="journey-view">
+                    <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="6" cy="6" r="3"/>
+                        <circle cx="18" cy="18" r="3"/>
+                        <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                        <path d="m18 15 3 3-3 3"/>
+                    </svg>
+                    <span>Item Journey / Provenance</span>
+                    <span class="badge-feature">PHASE 3</span>
+                </button>
+            </nav>
+
+            <!-- 1. Audit Logs View Panel -->
+            <div id="logs-view" class="view-panel active">
+                <!-- Search & Filter Controls Card -->
+                <section class="card filter-card">
                 <div class="card-header">
                     <div class="card-title-group">
                         <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -386,6 +410,243 @@
                     </div>
                 </div>
             </section>
+            </div>
+
+            <!-- 2. Item Journey / Provenance View Panel -->
+            <div id="journey-view" class="view-panel hidden">
+                <!-- Journey Search & Filter Card -->
+                <section class="card journey-filter-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="6" cy="6" r="3"/>
+                                <circle cx="18" cy="18" r="3"/>
+                                <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                                <path d="m18 15 3 3-3 3"/>
+                            </svg>
+                            <h2 class="card-title">Item Journey &amp; Chain of Custody Tracer</h2>
+                        </div>
+                        <div class="header-actions">
+                            <span class="badge-tag">Graph Traversal Resolver</span>
+                        </div>
+                    </div>
+
+                    <form id="journey-form" class="filter-form" onsubmit="return false;">
+                        <div class="filter-grid">
+                            <div class="input-group input-group-wide">
+                                <label for="journey-input-item">
+                                    Target Item Identifier <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="journey-input-item" placeholder="e.g. minecraft:diamond, diamond_sword..." class="form-input font-bold" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="journey-input-x">Coord X (Optional)</label>
+                                <input type="number" id="journey-input-x" placeholder="e.g. 100" class="form-input">
+                            </div>
+                            <div class="input-group">
+                                <label for="journey-input-y">Coord Y (Optional)</label>
+                                <input type="number" id="journey-input-y" placeholder="e.g. 64" class="form-input">
+                            </div>
+                            <div class="input-group">
+                                <label for="journey-input-z">Coord Z (Optional)</label>
+                                <input type="number" id="journey-input-z" placeholder="e.g. -200" class="form-input">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="journey-select-dim">Dimension</label>
+                                <select id="journey-select-dim" class="form-select">
+                                    <option value="minecraft:overworld" selected>Overworld</option>
+                                    <option value="minecraft:the_nether">The Nether</option>
+                                    <option value="minecraft:the_end">The End</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group input-group-wide">
+                                <label for="journey-input-fp">64-Bit Metadata Component Fingerprint (Optional)</label>
+                                <input type="text" id="journey-input-fp" placeholder="0 or 64-bit component fingerprint..." class="form-input mono">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="journey-select-hops">Max Traversal Hops</label>
+                                <select id="journey-select-hops" class="form-select">
+                                    <option value="10">10 hops</option>
+                                    <option value="25">25 hops</option>
+                                    <option value="50" selected>50 hops (Default)</option>
+                                    <option value="100">100 hops</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="button" id="btn-journey-reset" class="btn btn-secondary">
+                                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                <span>Reset Tracer</span>
+                            </button>
+                            <button type="submit" id="btn-journey-trace" class="btn btn-primary">
+                                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                                <span>Trace Item Journey</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Journey Visualizer & Inspector Split Grid -->
+                <section class="journey-main-section">
+                    <!-- Graph Visualizer Card -->
+                    <div class="card journey-graph-card">
+                        <div class="card-header journey-graph-header">
+                            <div class="journey-summary-group">
+                                <div class="journey-target-item">
+                                    <span class="journey-label">Target Item:</span>
+                                    <span id="journey-target-id" class="journey-val font-bold">None</span>
+                                </div>
+                                <div class="journey-metric-pill">
+                                    <span class="metric-label">Total Steps:</span>
+                                    <span id="journey-total-steps" class="metric-value">0</span>
+                                </div>
+                                <div class="journey-metric-pill">
+                                    <span class="metric-label">Overall Confidence:</span>
+                                    <span id="journey-overall-confidence" class="confidence-badge confidence-exact">EXACT</span>
+                                </div>
+                            </div>
+                            <div class="header-actions">
+                                <button type="button" id="btn-export-graph-json" class="btn btn-outline btn-sm" title="Export resolved journey graph as JSON">
+                                    <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="16 18 22 12 16 6"/>
+                                        <polyline points="8 6 2 12 8 18"/>
+                                    </svg>
+                                    <span>Export Graph</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Graph Canvas Wrapper -->
+                        <div class="journey-canvas-wrapper" id="journey-canvas-wrapper">
+                            <!-- Empty / Placeholder State -->
+                            <div id="journey-empty-state" class="empty-state">
+                                <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="6" cy="6" r="3"/>
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                                    <path d="m18 15 3 3-3 3"/>
+                                </svg>
+                                <p class="empty-text-main">No Item Provenance Graph Loaded</p>
+                                <p class="empty-text-sub">Enter an item identifier above or click "Trace Journey" on any transaction row to visualize its timeline across containers and players.</p>
+                            </div>
+
+                            <!-- SVG Render Container -->
+                            <div id="journey-svg-container" class="journey-svg-container hidden">
+                                <svg id="journey-svg" class="journey-svg" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Populated dynamically by app.js -->
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Graph Legend Bar -->
+                        <div class="journey-legend-bar">
+                            <span class="legend-title">Confidence Scale:</span>
+                            <div class="legend-item">
+                                <span class="legend-dot dot-exact"></span>
+                                <span>Exact Linkage (<code class="mono text-exact">#2ecc71</code>)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot dot-high"></span>
+                                <span>High Confidence (<code class="mono text-high">#f1c40f</code>)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot dot-probable"></span>
+                                <span>Probable Flow (<code class="mono text-probable">#e67e22</code>)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step Inspector Drawer / Card -->
+                    <div class="card step-inspector-card" id="step-inspector-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <svg class="svg-icon text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <h3 class="card-title" id="inspector-step-title">Step Inspector</h3>
+                            </div>
+                            <span id="inspector-confidence-badge" class="confidence-badge confidence-exact">EXACT</span>
+                        </div>
+
+                        <div class="inspector-body" id="inspector-body">
+                            <div class="inspector-placeholder" id="inspector-placeholder">
+                                <p class="text-muted">Click any step node in the journey graph above to inspect its full custody details, timestamps, coordinates, and actor metadata.</p>
+                            </div>
+
+                            <div class="inspector-details hidden" id="inspector-details">
+                                <div class="kv-list">
+                                    <div class="kv-row">
+                                        <span class="kv-label">Step / Sequence</span>
+                                        <span class="kv-value mono" id="insp-step-seq">Step #0 (Seq #1)</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Timestamp</span>
+                                        <span class="kv-value mono" id="insp-timestamp">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Action / Actor</span>
+                                        <span class="kv-value" id="insp-action-actor">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Actor UUID</span>
+                                        <span class="kv-value mono text-truncate" id="insp-actor-uuid">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Container Coord</span>
+                                        <span class="kv-value mono" id="insp-container-coord">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Dimension</span>
+                                        <span class="kv-value" id="insp-dimension">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Quantity Shift</span>
+                                        <span class="kv-value" id="insp-delta">-</span>
+                                    </div>
+                                    <div class="kv-row">
+                                        <span class="kv-label">Fingerprint</span>
+                                        <span class="kv-value mono" id="insp-fingerprint">0L (Commodity)</span>
+                                    </div>
+                                    <div class="kv-row kv-notes-row">
+                                        <span class="kv-label">Custody Notes</span>
+                                        <span class="kv-value notes-text" id="insp-notes">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="inspector-actions">
+                                    <button type="button" id="btn-insp-filter-audit" class="btn btn-sm btn-outline">
+                                        <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                            <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                                            <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+                                        </svg>
+                                        <span>View Container Logs</span>
+                                    </button>
+                                    <button type="button" id="btn-insp-copy-step-json" class="btn btn-sm btn-secondary">
+                                        <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="16 18 22 12 16 6"/>
+                                            <polyline points="8 6 2 12 8 18"/>
+                                        </svg>
+                                        <span>Copy Step JSON</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <!-- Expandable Row Detail Template -->
@@ -467,6 +728,15 @@
                                     Inspector Helpers &amp; Shortcuts
                                 </h4>
                                 <div class="detail-actions-group">
+                                    <button type="button" class="btn btn-sm btn-accent btn-trace-row-item" title="Trace this item's journey and provenance graph across containers">
+                                        <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="6" cy="6" r="3"/>
+                                            <circle cx="18" cy="18" r="3"/>
+                                            <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                                            <path d="m18 15 3 3-3 3"/>
+                                        </svg>
+                                        <span>Trace Item Journey</span>
+                                    </button>
                                     <button type="button" class="btn btn-sm btn-outline btn-copy-cmd" title="Copy in-game rollback command">
                                         <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>

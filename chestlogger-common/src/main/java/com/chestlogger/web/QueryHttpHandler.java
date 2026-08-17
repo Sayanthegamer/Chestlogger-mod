@@ -9,6 +9,11 @@ import com.chestlogger.query.DisplayRecord;
 import com.chestlogger.query.PagedResult;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.query.QuerySessionManager;
+import com.chestlogger.provenance.ConfidenceLevel;
+import com.chestlogger.provenance.ItemProvenanceResolver;
+import com.chestlogger.provenance.ProvenanceEdge;
+import com.chestlogger.provenance.ProvenanceGraph;
+import com.chestlogger.provenance.ProvenanceNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -21,9 +26,9 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * Handles GET /api/v1/query.
- * Parses query parameters, searches transaction records using QueryEngine,
- * manages paginated GUI/API sessions via QuerySessionManager, and returns JSON.
+ * Handles GET /api/v1/query and GET /api/v1/provenance.
+ * Parses query and provenance parameters, searches transaction records using QueryEngine,
+ * resolves item journey graphs via ItemProvenanceResolver, manages paginated sessions, and returns JSON.
  */
 public class QueryHttpHandler implements HttpHandler {
     private final WebConfig config;
@@ -55,6 +60,104 @@ public class QueryHttpHandler implements HttpHandler {
             return;
         }
 
+        String path = exchange.getRequestURI().getPath();
+        if (path != null && (path.endsWith("/provenance") || path.contains("/provenance"))) {
+            handleProvenance(exchange);
+        } else {
+            handleQuery(exchange);
+        }
+    }
+
+    private void handleProvenance(HttpExchange exchange) throws IOException {
+        try {
+            Map<String, String> params = parseQueryParams(exchange.getRequestURI());
+
+            String item = params.get("item");
+            if (item == null || item.isBlank()) {
+                item = params.get("itemId");
+            }
+            if (item == null || item.isBlank()) {
+                sendError(exchange, 400, "Bad Request: Missing required parameter 'item' or 'itemId'");
+                return;
+            }
+            String itemId = item.trim();
+
+            Integer x;
+            Integer y;
+            Integer z;
+            try {
+                x = parseCoordinateParam(params, "x");
+                y = parseCoordinateParam(params, "y");
+                z = parseCoordinateParam(params, "z");
+            } catch (IllegalArgumentException e) {
+                sendError(exchange, 400, e.getMessage());
+                return;
+            }
+
+            if ((x != null || y != null || z != null) && (x == null || y == null || z == null)) {
+                sendError(exchange, 400, "Bad Request: Coordinates must include all of x, y, and z if specified.");
+                return;
+            }
+
+            long packedPos = (x != null && y != null && z != null) ? BlockPosUtil.pack(x, y, z) : 0L;
+
+            String dim = params.get("dim");
+            if (dim == null || dim.isBlank()) {
+                dim = params.get("dimension");
+            }
+            String dimensionStr = (dim != null && !dim.isBlank()) ? dim.trim() : "minecraft:overworld";
+
+            long fingerprint = 0L;
+            if (params.containsKey("fingerprint")) {
+                String fpStr = params.get("fingerprint");
+                if (fpStr != null && !fpStr.isBlank()) {
+                    try {
+                        fingerprint = Long.parseLong(fpStr.trim());
+                    } catch (NumberFormatException e) {
+                        sendError(exchange, 400, "Bad Request: Invalid numeric value for parameter 'fingerprint': " + fpStr);
+                        return;
+                    }
+                }
+            }
+
+            int maxHops = ItemProvenanceResolver.DEFAULT_MAX_HOPS;
+            if (params.containsKey("maxHops")) {
+                String hopsStr = params.get("maxHops");
+                if (hopsStr != null && !hopsStr.isBlank()) {
+                    try {
+                        maxHops = Integer.parseInt(hopsStr.trim());
+                        if (maxHops < 1) maxHops = 1;
+                        if (maxHops > 200) maxHops = 200;
+                    } catch (NumberFormatException e) {
+                        sendError(exchange, 400, "Bad Request: Invalid numeric value for parameter 'maxHops': " + hopsStr);
+                        return;
+                    }
+                }
+            }
+
+            QueryEngine engine = queryEngineSupplier.get();
+            ProvenanceGraph graph;
+            if (engine != null) {
+                ItemProvenanceResolver resolver = new ItemProvenanceResolver();
+                graph = resolver.resolveProvenance(packedPos, dimensionStr, itemId, fingerprint, engine, maxHops, ItemProvenanceResolver.DEFAULT_MAX_TIME_WINDOW_MS);
+            } else {
+                graph = ProvenanceGraph.empty(itemId, packedPos);
+            }
+
+            String jsonResponse = serializeProvenanceGraph(graph);
+            byte[] responseBytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(200, responseBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(responseBytes);
+            }
+        } catch (Exception e) {
+            sendError(exchange, 500, "Internal Server Error: " + e.getMessage());
+        }
+    }
+
+    private void handleQuery(HttpExchange exchange) throws IOException {
         try {
             Map<String, String> params = parseQueryParams(exchange.getRequestURI());
 
@@ -236,6 +339,66 @@ public class QueryHttpHandler implements HttpHandler {
         }
 
         sb.append("]}");
+        return sb.toString();
+    }
+
+    public static String serializeProvenanceGraph(ProvenanceGraph graph) {
+        StringBuilder sb = new StringBuilder(2048);
+        sb.append("{");
+        sb.append("\"targetItemId\":\"").append(escapeJson(graph.targetItemId())).append("\",");
+        sb.append("\"targetPackedPos\":").append(graph.targetPackedPos()).append(",");
+        sb.append("\"totalSteps\":").append(graph.totalSteps()).append(",");
+        sb.append("\"overallConfidence\":\"").append(graph.overallConfidence().name()).append("\",");
+
+        sb.append("\"nodes\":[");
+        List<ProvenanceNode> nodes = graph.nodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            if (i > 0) sb.append(",");
+            ProvenanceNode node = nodes.get(i);
+            int x = BlockPosUtil.unpackX(node.packedPos());
+            int y = BlockPosUtil.unpackY(node.packedPos());
+            int z = BlockPosUtil.unpackZ(node.packedPos());
+
+            sb.append("{");
+            sb.append("\"stepIndex\":").append(node.stepIndex()).append(",");
+            sb.append("\"sequenceId\":").append(node.sequenceId()).append(",");
+            sb.append("\"timestampMs\":").append(node.timestampMs()).append(",");
+            sb.append("\"actionType\":\"").append(node.actionType().name()).append("\",");
+            sb.append("\"actorType\":\"").append(node.actorType().name()).append("\",");
+            if (node.actorUuid() != null) {
+                sb.append("\"actorUuid\":\"").append(node.actorUuid()).append("\",");
+            } else {
+                sb.append("\"actorUuid\":null,");
+            }
+            sb.append("\"actorName\":\"").append(escapeJson(node.actorName())).append("\",");
+            sb.append("\"dimension\":\"").append(escapeJson(node.dimension())).append("\",");
+            sb.append("\"x\":").append(x).append(",");
+            sb.append("\"y\":").append(y).append(",");
+            sb.append("\"z\":").append(z).append(",");
+            sb.append("\"itemId\":\"").append(escapeJson(node.itemId())).append("\",");
+            sb.append("\"deltaQuantity\":").append(node.deltaQuantity()).append(",");
+            sb.append("\"confidence\":\"").append(node.confidence().name()).append("\",");
+            sb.append("\"notes\":\"").append(escapeJson(node.notes())).append("\"");
+            sb.append("}");
+        }
+        sb.append("],");
+
+        sb.append("\"edges\":[");
+        List<ProvenanceEdge> edges = graph.edges();
+        for (int i = 0; i < edges.size(); i++) {
+            if (i > 0) sb.append(",");
+            ProvenanceEdge edge = edges.get(i);
+            sb.append("{");
+            sb.append("\"fromIndex\":").append(edge.from().stepIndex()).append(",");
+            sb.append("\"toIndex\":").append(edge.to().stepIndex()).append(",");
+            sb.append("\"timeDeltaMs\":").append(edge.timeDeltaMs()).append(",");
+            sb.append("\"confidence\":\"").append(edge.confidence().name()).append("\",");
+            sb.append("\"transitionType\":\"").append(escapeJson(edge.transitionType())).append("\"");
+            sb.append("}");
+        }
+        sb.append("]");
+
+        sb.append("}");
         return sb.toString();
     }
 

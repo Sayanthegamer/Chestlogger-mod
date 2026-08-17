@@ -14,6 +14,8 @@ import com.chestlogger.storage.LZ4BlockCompressor;
 import com.chestlogger.storage.LogSegmentWriter;
 import com.chestlogger.storage.StorageProfile;
 import com.chestlogger.storage.StringTableDictionary;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,6 +63,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WebConcurrencyStressTest {
 
     private static final String AUTH_TOKEN = "stress_test_auth_secret_token_123456789";
+
+    @BeforeEach
+    void setUp() {
+        HttpAuthValidator.resetRateLimiter();
+    }
+
+    @AfterEach
+    void tearDown() {
+        HttpAuthValidator.resetRateLimiter();
+    }
 
     private static int findFreePort() {
         try (ServerSocket socket = new ServerSocket(0)) {

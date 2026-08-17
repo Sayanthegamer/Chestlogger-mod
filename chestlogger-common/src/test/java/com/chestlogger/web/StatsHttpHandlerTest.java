@@ -26,6 +26,7 @@ class StatsHttpHandlerTest {
 
     @BeforeEach
     void setUp(@TempDir File tempDir) {
+        HttpAuthValidator.resetRateLimiter();
         queue = new TransactionEventQueue(1024);
         indexManager = new PersistentIndexManager(tempDir);
 
@@ -45,6 +46,7 @@ class StatsHttpHandlerTest {
         if (server != null) {
             server.stop();
         }
+        HttpAuthValidator.resetRateLimiter();
     }
 
     @Test

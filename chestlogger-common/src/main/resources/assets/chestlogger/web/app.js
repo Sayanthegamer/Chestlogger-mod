@@ -1,7 +1,8 @@
 /**
  * ChestLogger Web Admin Dashboard - Single Page Application Client
  * Pure Vanilla ES6 JavaScript (Zero external dependencies)
- * Phase 2: Interactive Log Stream, Row Inspector, and Quick-Filter Chips
+ * Phase 3: Interactive Log Stream, Row Inspector, Quick-Filter Chips,
+ * and Item Provenance Journey Graph Visualizer with Step Inspector
  */
 
 (function () {
@@ -10,6 +11,7 @@
     // Application State
     const state = {
         token: localStorage.getItem('chestlogger_auth_token') || '',
+        activeTab: 'logs-view',
         activeQueryId: null,
         currentPage: 1,
         totalPages: 1,
@@ -25,6 +27,8 @@
             limit: '25',
             action: ''
         },
+        provenanceGraph: null,
+        selectedStepIndex: null,
         statsTimer: null,
         rateLimitTimer: null,
         isRateLimited: false,
@@ -42,6 +46,12 @@
         btnOpenAuth: document.getElementById('btn-open-auth'),
         btnRefreshAll: document.getElementById('btn-refresh-all'),
 
+        // View Tabs
+        tabBtnLogs: document.getElementById('tab-btn-logs'),
+        tabBtnJourney: document.getElementById('tab-btn-journey'),
+        logsView: document.getElementById('logs-view'),
+        journeyView: document.getElementById('journey-view'),
+
         // Telemetry Strip
         statQueueDepth: document.getElementById('stat-queue-depth'),
         statQueueCap: document.getElementById('stat-queue-cap'),
@@ -54,7 +64,7 @@
         selectAutoTail: document.getElementById('select-auto-tail'),
         liveIndicator: document.querySelector('.live-indicator'),
 
-        // Filter Form Controls
+        // Filter Form Controls (Audit View)
         filterForm: document.getElementById('filter-form'),
         inputX: document.getElementById('input-x'),
         inputY: document.getElementById('input-y'),
@@ -69,7 +79,7 @@
         btnExportCsv: document.getElementById('btn-export-csv'),
         btnExportJson: document.getElementById('btn-export-json'),
 
-        // Table & Pagination
+        // Table & Pagination (Audit View)
         resultsSummary: document.getElementById('results-summary'),
         logsTbody: document.getElementById('logs-tbody'),
         rowDetailTemplate: document.getElementById('row-detail-template'),
@@ -79,6 +89,46 @@
         btnPagePrev: document.getElementById('btn-page-prev'),
         btnPageNext: document.getElementById('btn-page-next'),
         btnPageLast: document.getElementById('btn-page-last'),
+
+        // Journey / Provenance Elements
+        journeyForm: document.getElementById('journey-form'),
+        journeyInputItem: document.getElementById('journey-input-item'),
+        journeyInputX: document.getElementById('journey-input-x'),
+        journeyInputY: document.getElementById('journey-input-y'),
+        journeyInputZ: document.getElementById('journey-input-z'),
+        journeySelectDim: document.getElementById('journey-select-dim'),
+        journeyInputFp: document.getElementById('journey-input-fp'),
+        journeySelectHops: document.getElementById('journey-select-hops'),
+        btnJourneyReset: document.getElementById('btn-journey-reset'),
+        btnJourneyTrace: document.getElementById('btn-journey-trace'),
+        btnExportGraphJson: document.getElementById('btn-export-graph-json'),
+
+        // Journey Header & Canvas
+        journeyTargetId: document.getElementById('journey-target-id'),
+        journeyTotalSteps: document.getElementById('journey-total-steps'),
+        journeyOverallConfidence: document.getElementById('journey-overall-confidence'),
+        journeyCanvasWrapper: document.getElementById('journey-canvas-wrapper'),
+        journeyEmptyState: document.getElementById('journey-empty-state'),
+        journeySvgContainer: document.getElementById('journey-svg-container'),
+        journeySvg: document.getElementById('journey-svg'),
+
+        // Step Inspector Elements
+        stepInspectorCard: document.getElementById('step-inspector-card'),
+        inspectorStepTitle: document.getElementById('inspector-step-title'),
+        inspectorConfidenceBadge: document.getElementById('inspector-confidence-badge'),
+        inspectorPlaceholder: document.getElementById('inspector-placeholder'),
+        inspectorDetails: document.getElementById('inspector-details'),
+        inspStepSeq: document.getElementById('insp-step-seq'),
+        inspTimestamp: document.getElementById('insp-timestamp'),
+        inspActionActor: document.getElementById('insp-action-actor'),
+        inspActorUuid: document.getElementById('insp-actor-uuid'),
+        inspContainerCoord: document.getElementById('insp-container-coord'),
+        inspDimension: document.getElementById('insp-dimension'),
+        inspDelta: document.getElementById('insp-delta'),
+        inspFingerprint: document.getElementById('insp-fingerprint'),
+        inspNotes: document.getElementById('insp-notes'),
+        btnInspFilterAudit: document.getElementById('btn-insp-filter-audit'),
+        btnInspCopyStepJson: document.getElementById('btn-insp-copy-step-json'),
 
         // Auth Modal
         authModal: document.getElementById('auth-modal'),
@@ -119,6 +169,14 @@
 
     // Event Bindings
     function bindEvents() {
+        // Tab Navigation
+        if (elements.tabBtnLogs) {
+            elements.tabBtnLogs.addEventListener('click', () => switchTab('logs-view'));
+        }
+        if (elements.tabBtnJourney) {
+            elements.tabBtnJourney.addEventListener('click', () => switchTab('journey-view'));
+        }
+
         // Auth Modal
         if (elements.btnOpenAuth) elements.btnOpenAuth.addEventListener('click', openAuthModal);
         if (elements.btnCloseModal) elements.btnCloseModal.addEventListener('click', closeAuthModal);
@@ -134,8 +192,12 @@
         if (elements.btnRefreshAll) {
             elements.btnRefreshAll.addEventListener('click', () => {
                 fetchStats();
-                fetchLogs(state.currentPage);
-                showToast('Refreshed telemetry and transaction records.');
+                if (state.activeTab === 'logs-view') {
+                    fetchLogs(state.currentPage);
+                } else if (state.activeTab === 'journey-view' && elements.journeyInputItem && elements.journeyInputItem.value.trim()) {
+                    fetchProvenance();
+                }
+                showToast('Refreshed telemetry and data.');
             });
         }
 
@@ -148,7 +210,7 @@
             });
         }
 
-        // Search & Filter Form
+        // Search & Filter Form (Audit View)
         if (elements.filterForm) {
             elements.filterForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -164,14 +226,10 @@
 
         // Form Select Changes Sync Chips
         if (elements.selectDim) {
-            elements.selectDim.addEventListener('change', () => {
-                syncChipsUI();
-            });
+            elements.selectDim.addEventListener('change', () => syncChipsUI());
         }
         if (elements.selectTimeframe) {
-            elements.selectTimeframe.addEventListener('change', () => {
-                syncChipsUI();
-            });
+            elements.selectTimeframe.addEventListener('change', () => syncChipsUI());
         }
 
         // Quick-Filter Query Chips
@@ -183,20 +241,73 @@
         if (elements.btnPageNext) elements.btnPageNext.addEventListener('click', () => fetchLogs(state.currentPage + 1));
         if (elements.btnPageLast) elements.btnPageLast.addEventListener('click', () => fetchLogs(state.totalPages));
 
+        // Journey Form & Actions
+        if (elements.journeyForm) {
+            elements.journeyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                fetchProvenance();
+            });
+        }
+
+        if (elements.btnJourneyReset) {
+            elements.btnJourneyReset.addEventListener('click', resetJourneyForm);
+        }
+
+        if (elements.btnExportGraphJson) {
+            elements.btnExportGraphJson.addEventListener('click', () => {
+                if (state.provenanceGraph) {
+                    copyToClipboard(JSON.stringify(state.provenanceGraph, null, 2), 'Copied full journey graph JSON');
+                } else {
+                    showToast('No active journey graph to export', 'warning');
+                }
+            });
+        }
+
+        // Step Inspector Actions
+        if (elements.btnInspFilterAudit) {
+            elements.btnInspFilterAudit.addEventListener('click', () => {
+                if (state.provenanceGraph && state.selectedStepIndex !== null && state.provenanceGraph.nodes) {
+                    const node = state.provenanceGraph.nodes[state.selectedStepIndex];
+                    if (node) {
+                        switchTab('logs-view');
+                        if (elements.inputX) elements.inputX.value = node.x;
+                        if (elements.inputY) elements.inputY.value = node.y;
+                        if (elements.inputZ) elements.inputZ.value = node.z;
+                        if (elements.selectDim) elements.selectDim.value = node.dimension || '';
+                        if (elements.inputItem) elements.inputItem.value = node.itemId || '';
+                        syncChipsUI();
+                        readFiltersFromUI();
+                        state.activeQueryId = null;
+                        fetchLogs(1);
+                        showToast(`Filtering audit logs for container (${node.x}, ${node.y}, ${node.z})`);
+                    }
+                }
+            });
+        }
+
+        if (elements.btnInspCopyStepJson) {
+            elements.btnInspCopyStepJson.addEventListener('click', () => {
+                if (state.provenanceGraph && state.selectedStepIndex !== null && state.provenanceGraph.nodes) {
+                    const node = state.provenanceGraph.nodes[state.selectedStepIndex];
+                    if (node) {
+                        copyToClipboard(JSON.stringify(node, null, 2), `Copied Step #${node.stepIndex + 1} JSON`);
+                    }
+                }
+            });
+        }
+
         // Tab Visibility Lifecycle Management
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // Background tab: stop polling interval
                 if (state.statsTimer) {
                     clearInterval(state.statsTimer);
                     state.statsTimer = null;
                 }
                 updateLiveIndicatorUI();
             } else {
-                // Tab focused again: resume polling if enabled and not rate-limited
                 if (!state.isRateLimited && state.autoTailInterval > 0) {
                     fetchStats();
-                    if (state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
+                    if (state.activeTab === 'logs-view' && state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
                         fetchLogsSilently(1);
                     }
                     setupAutoTailTimer();
@@ -205,6 +316,31 @@
                 }
             }
         });
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+        state.activeTab = tabId;
+        if (elements.tabBtnLogs) elements.tabBtnLogs.classList.toggle('active', tabId === 'logs-view');
+        if (elements.tabBtnJourney) elements.tabBtnJourney.classList.toggle('active', tabId === 'journey-view');
+        if (elements.logsView) elements.logsView.classList.toggle('hidden', tabId !== 'logs-view');
+        if (elements.journeyView) elements.journeyView.classList.toggle('hidden', tabId !== 'journey-view');
+    }
+
+    // Direct Trace Helper
+    function traceItemJourney(itemId, x, y, z, dim, fingerprint) {
+        if (!itemId) return;
+        switchTab('journey-view');
+
+        if (elements.journeyInputItem) elements.journeyInputItem.value = itemId;
+        if (elements.journeyInputX) elements.journeyInputX.value = (x !== undefined && x !== null && x !== '-') ? x : '';
+        if (elements.journeyInputY) elements.journeyInputY.value = (y !== undefined && y !== null && y !== '-') ? y : '';
+        if (elements.journeyInputZ) elements.journeyInputZ.value = (z !== undefined && z !== null && z !== '-') ? z : '';
+        if (elements.journeySelectDim) elements.journeySelectDim.value = dim || 'minecraft:overworld';
+        if (elements.journeyInputFp) elements.journeyInputFp.value = (fingerprint && fingerprint !== '0' && fingerprint !== 0) ? fingerprint : '';
+
+        fetchProvenance();
+        showToast(`Tracing journey for ${formatItemName(itemId)}...`);
     }
 
     // Quick-Filter Chips Handler
@@ -307,8 +443,7 @@
             if (document.hidden || state.isRateLimited) return;
 
             fetchStats();
-            // If currently on first page and modal is closed, refresh latest logs
-            if (state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
+            if (state.activeTab === 'logs-view' && state.currentPage === 1 && (!elements.authModal || elements.authModal.classList.contains('hidden'))) {
                 fetchLogsSilently(1);
             }
         }, state.autoTailInterval);
@@ -347,17 +482,15 @@
                 activeEl.isContentEditable
             );
 
-            // Escape key handler: always active (even when input is focused or modal is open)
+            // Escape key handler: always active
             if (e.key === 'Escape') {
                 let handled = false;
 
-                // 1. Close auth modal if open
                 if (elements.authModal && !elements.authModal.classList.contains('hidden')) {
                     closeAuthModal();
                     handled = true;
                 }
 
-                // 2. Collapse all expanded detail rows
                 const expandedDetailRows = document.querySelectorAll('.row-detail-expanded');
                 if (expandedDetailRows.length > 0) {
                     expandedDetailRows.forEach(row => {
@@ -372,7 +505,6 @@
                     handled = true;
                 }
 
-                // 3. Blur active input element
                 if (isInputActive) {
                     activeEl.blur();
                     handled = true;
@@ -384,32 +516,38 @@
                 return;
             }
 
-            // For all other shortcuts, ignore if user is typing in an input/textarea/select or modifier keys are pressed
             if (isInputActive || e.ctrlKey || e.altKey || e.metaKey) {
                 return;
             }
 
-            // '/' : Focus player search input, prevent default typing slash
+            // '/' : Focus player search input or item input
             if (e.key === '/') {
-                if (elements.inputPlayer) {
-                    e.preventDefault();
+                e.preventDefault();
+                if (state.activeTab === 'logs-view' && elements.inputPlayer) {
                     elements.inputPlayer.focus();
                     elements.inputPlayer.select();
+                } else if (state.activeTab === 'journey-view' && elements.journeyInputItem) {
+                    elements.journeyInputItem.focus();
+                    elements.journeyInputItem.select();
                 }
                 return;
             }
 
-            // 'r' or 'R' : Trigger manual refresh of telemetry & current page logs with toast
+            // 'r' or 'R' : Refresh
             if (e.key === 'r' || e.key === 'R') {
                 e.preventDefault();
                 fetchStats();
-                fetchLogs(state.currentPage);
-                showToast('Refreshed telemetry and transaction records.');
+                if (state.activeTab === 'logs-view') {
+                    fetchLogs(state.currentPage);
+                } else if (state.activeTab === 'journey-view') {
+                    fetchProvenance();
+                }
+                showToast('Refreshed data.');
                 return;
             }
 
-            // 'ArrowLeft' : Navigate to previous page (when pagination is active)
-            if (e.key === 'ArrowLeft') {
+            // 'ArrowLeft' : Previous page
+            if (e.key === 'ArrowLeft' && state.activeTab === 'logs-view') {
                 if (state.currentPage > 1) {
                     e.preventDefault();
                     fetchLogs(state.currentPage - 1);
@@ -417,8 +555,8 @@
                 return;
             }
 
-            // 'ArrowRight' : Navigate to next page (when pagination is active)
-            if (e.key === 'ArrowRight') {
+            // 'ArrowRight' : Next page
+            if (e.key === 'ArrowRight' && state.activeTab === 'logs-view') {
                 if (state.currentPage < state.totalPages) {
                     e.preventDefault();
                     fetchLogs(state.currentPage + 1);
@@ -522,7 +660,7 @@
         return `${m}m ${s}s`;
     }
 
-    // Filter Form Reading & Reset
+    // Filter Form Reading & Reset (Audit View)
     function readFiltersFromUI() {
         state.filters.x = elements.inputX ? elements.inputX.value.trim() : '';
         state.filters.y = elements.inputY ? elements.inputY.value.trim() : '';
@@ -551,7 +689,7 @@
         fetchLogs(1);
     }
 
-    // Query & Fetch Logs
+    // Query & Fetch Logs (Audit View)
     async function fetchLogs(targetPage) {
         renderTableLoading();
         await executeFetchLogs(targetPage, false);
@@ -666,9 +804,8 @@
         updatePaginationUI();
     }
 
-    // Render Table Data & Rows
+    // Render Table Data & Rows (Audit View)
     function renderTableData(records) {
-        // If action filter is active (TAKE or PUT), filter records client-side
         let displayRecords = records || [];
         if (state.filters.action) {
             displayRecords = displayRecords.filter(rec => (rec.action || '').toUpperCase() === state.filters.action);
@@ -683,7 +820,6 @@
             elements.resultsSummary.textContent = `Showing ${displayRecords.length} of ${state.totalRecords.toLocaleString()} records`;
         }
 
-        // Capture expanded row keys to preserve user state during auto-tail updates
         const expandedKeys = new Set();
         document.querySelectorAll('.log-row.is-expanded').forEach(r => {
             if (r.dataset.txKey) expandedKeys.add(r.dataset.txKey);
@@ -711,8 +847,8 @@
 
             const act = (rec.action || 'INTERACT').toUpperCase();
             let actClass = 'action-interact';
-            if (act === 'TAKE') actClass = 'action-take';
-            else if (act === 'PUT') actClass = 'action-put';
+            if (act === 'TAKE' || act === 'PICKUP') actClass = 'action-take';
+            else if (act === 'PUT' || act === 'PLACE') actClass = 'action-put';
             else if (act === 'CLEAR') actClass = 'action-clear';
 
             const slotNum = rec.slot != null ? (rec.slot < 10 ? '0' + rec.slot : rec.slot) : '--';
@@ -770,12 +906,20 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
                     </button>
+                    <button type="button" class="btn-inspect-mini btn-trace-item" title="Trace Item Journey / Provenance" aria-label="Trace Journey">
+                        <svg class="svg-icon-xs text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="6" cy="6" r="3"/>
+                            <circle cx="18" cy="18" r="3"/>
+                            <path d="M6 9v12a2 2 0 0 0 2 2h10"/>
+                        </svg>
+                    </button>
                 </td>
             `;
 
             // Expansion & Inspection Handlers
             const btnExpand = tr.querySelector('.btn-row-expand');
             const btnInspect = tr.querySelector('.btn-quick-inspect');
+            const btnTrace = tr.querySelector('.btn-trace-item');
             const coordBadge = tr.querySelector('.badge-coord');
 
             function toggleRowDetail() {
@@ -783,13 +927,11 @@
                 const isCurrentlyExpanded = nextElem && nextElem.classList.contains('row-detail-expanded');
 
                 if (isCurrentlyExpanded) {
-                    // Collapse
                     tr.classList.remove('is-expanded', 'expanded');
                     const chevron = tr.querySelector('.chevron-icon');
                     if (chevron) chevron.classList.remove('expanded');
                     nextElem.remove();
                 } else {
-                    // Expand
                     tr.classList.add('is-expanded', 'expanded');
                     const chevron = tr.querySelector('.chevron-icon');
                     if (chevron) chevron.classList.add('expanded');
@@ -800,7 +942,6 @@
             }
 
             tr.addEventListener('click', (e) => {
-                // Ignore click if user clicked on coord badge or a button inside the row
                 if (e.target.closest('.badge-coord') || e.target.closest('button')) return;
                 toggleRowDetail();
             });
@@ -816,6 +957,13 @@
                 btnInspect.addEventListener('click', (e) => {
                     e.stopPropagation();
                     toggleRowDetail();
+                });
+            }
+
+            if (btnTrace) {
+                btnTrace.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    traceItemJourney(rec.itemId || rec.item, rec.x, rec.y, rec.z, rec.dimension, rec.metadataFingerprint);
                 });
             }
 
@@ -836,7 +984,6 @@
 
             elements.logsTbody.appendChild(tr);
 
-            // Re-open if previously expanded before refresh
             if (expandedKeys.has(txKey)) {
                 toggleRowDetail();
             }
@@ -862,6 +1009,8 @@
         const posY = (rec.y !== undefined && rec.y !== null) ? rec.y : '-';
         const posZ = (rec.z !== undefined && rec.z !== null) ? rec.z : '-';
         const containerPos = `X: ${posX}, Y: ${posY}, Z: ${posZ}`;
+        const dimension = rec.dimension || 'minecraft:overworld';
+        const actorUuid = rec.actorUuid || 'N/A';
         const slotNum = rec.slot != null ? (rec.slot < 10 ? '0' + rec.slot : rec.slot) : null;
         const slotIndex = slotNum != null ? (rec.slot >= 27 ? `#${slotNum} (Right)` : `#${slotNum} (Left)`) : '#-';
         const prevItem = rec.prevItem || (rec.delta < 0 ? (rec.itemId || rec.item || 'empty') : 'empty');
@@ -871,7 +1020,6 @@
         const deltaClass = deltaVal >= 0 ? 'delta-pos' : 'delta-neg';
         const deltaSign = deltaVal > 0 ? '+' : '';
 
-        // Populate detail fields
         const setFieldText = (fieldName, text) => {
             const el = detailTr.querySelector(`[data-field="${fieldName}"]`);
             if (el) el.textContent = text;
@@ -891,7 +1039,14 @@
             deltaPillEl.innerHTML = `<span class="delta-pill ${deltaClass}">${deltaSign}${deltaVal}</span>`;
         }
 
-        // Bind Detail Row Action Buttons
+        const btnTraceRowItem = detailTr.querySelector('.btn-trace-row-item');
+        if (btnTraceRowItem) {
+            btnTraceRowItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                traceItemJourney(rec.itemId || rec.item, rec.x, rec.y, rec.z, rec.dimension, rec.metadataFingerprint);
+            });
+        }
+
         const btnCopyCmd = detailTr.querySelector('.btn-copy-cmd');
         if (btnCopyCmd) {
             btnCopyCmd.addEventListener('click', (e) => {
@@ -957,7 +1112,378 @@
         return detailTr;
     }
 
-    // Pagination Controls
+    // =========================================================================
+    // Item Journey / Provenance Graph Resolution & Interactive Visualizer
+    // =========================================================================
+
+    function resetJourneyForm() {
+        if (elements.journeyInputItem) elements.journeyInputItem.value = '';
+        if (elements.journeyInputX) elements.journeyInputX.value = '';
+        if (elements.journeyInputY) elements.journeyInputY.value = '';
+        if (elements.journeyInputZ) elements.journeyInputZ.value = '';
+        if (elements.journeySelectDim) elements.journeySelectDim.value = 'minecraft:overworld';
+        if (elements.journeyInputFp) elements.journeyInputFp.value = '';
+        if (elements.journeySelectHops) elements.journeySelectHops.value = '50';
+
+        state.provenanceGraph = null;
+        state.selectedStepIndex = null;
+
+        if (elements.journeyEmptyState) elements.journeyEmptyState.classList.remove('hidden');
+        if (elements.journeySvgContainer) elements.journeySvgContainer.classList.add('hidden');
+        if (elements.journeyTargetId) elements.journeyTargetId.textContent = 'None';
+        if (elements.journeyTotalSteps) elements.journeyTotalSteps.textContent = '0';
+        if (elements.journeyOverallConfidence) {
+            elements.journeyOverallConfidence.className = 'confidence-badge confidence-exact';
+            elements.journeyOverallConfidence.textContent = 'EXACT';
+        }
+
+        if (elements.inspectorPlaceholder) elements.inspectorPlaceholder.classList.remove('hidden');
+        if (elements.inspectorDetails) elements.inspectorDetails.classList.add('hidden');
+    }
+
+    async function fetchProvenance() {
+        const itemVal = elements.journeyInputItem ? elements.journeyInputItem.value.trim() : '';
+        if (!itemVal) {
+            showToast('Please specify a target item identifier (e.g. minecraft:diamond)', 'warning');
+            if (elements.journeyInputItem) elements.journeyInputItem.focus();
+            return;
+        }
+
+        const queryParams = new URLSearchParams();
+        queryParams.set('item', itemVal);
+
+        const xVal = elements.journeyInputX ? elements.journeyInputX.value.trim() : '';
+        const yVal = elements.journeyInputY ? elements.journeyInputY.value.trim() : '';
+        const zVal = elements.journeyInputZ ? elements.journeyInputZ.value.trim() : '';
+
+        if (xVal !== '' && yVal !== '' && zVal !== '') {
+            queryParams.set('x', xVal);
+            queryParams.set('y', yVal);
+            queryParams.set('z', zVal);
+        }
+
+        const dimVal = elements.journeySelectDim ? elements.journeySelectDim.value : '';
+        if (dimVal) queryParams.set('dim', dimVal);
+
+        const fpVal = elements.journeyInputFp ? elements.journeyInputFp.value.trim() : '';
+        if (fpVal && fpVal !== '0') queryParams.set('fingerprint', fpVal);
+
+        const hopsVal = elements.journeySelectHops ? elements.journeySelectHops.value : '50';
+        queryParams.set('maxHops', hopsVal);
+
+        try {
+            const resp = await fetch('/api/v1/provenance?' + queryParams.toString(), {
+                headers: getAuthHeaders()
+            });
+
+            if (resp.status === 401) {
+                showToast('Authentication required. Opening token settings...', 'warning');
+                openAuthModal();
+                return;
+            }
+
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({}));
+                showToast('Provenance Error: ' + (errData.error || ('HTTP ' + resp.status)), 'error');
+                return;
+            }
+
+            const graph = await resp.json();
+            state.provenanceGraph = graph;
+            renderProvenanceGraph(graph);
+        } catch (err) {
+            showToast('Failed to resolve provenance graph: ' + err.message, 'error');
+        }
+    }
+
+    function renderProvenanceGraph(graph) {
+        if (!graph || !graph.nodes || graph.nodes.length === 0) {
+            if (elements.journeyEmptyState) elements.journeyEmptyState.classList.remove('hidden');
+            if (elements.journeySvgContainer) elements.journeySvgContainer.classList.add('hidden');
+            if (elements.journeyTargetId) elements.journeyTargetId.textContent = graph ? graph.targetItemId : 'None';
+            if (elements.journeyTotalSteps) elements.journeyTotalSteps.textContent = '0';
+            if (elements.inspectorPlaceholder) elements.inspectorPlaceholder.classList.remove('hidden');
+            if (elements.inspectorDetails) elements.inspectorDetails.classList.add('hidden');
+            showToast('No chain of custody records found for this item.', 'info');
+            return;
+        }
+
+        if (elements.journeyEmptyState) elements.journeyEmptyState.classList.add('hidden');
+        if (elements.journeySvgContainer) elements.journeySvgContainer.classList.remove('hidden');
+
+        // Update Summary Banner
+        if (elements.journeyTargetId) {
+            elements.journeyTargetId.textContent = `${formatItemName(graph.targetItemId)} (${graph.targetItemId})`;
+        }
+        if (elements.journeyTotalSteps) {
+            elements.journeyTotalSteps.textContent = graph.totalSteps;
+        }
+        if (elements.journeyOverallConfidence) {
+            const conf = (graph.overallConfidence || 'PROBABLE').toUpperCase();
+            let confClass = 'confidence-probable';
+            let confLabel = 'PROBABLE';
+            if (conf.includes('EXACT')) {
+                confClass = 'confidence-exact';
+                confLabel = 'EXACT';
+            } else if (conf.includes('HIGH')) {
+                confClass = 'confidence-high';
+                confLabel = 'HIGH';
+            }
+            elements.journeyOverallConfidence.className = `confidence-badge ${confClass}`;
+            elements.journeyOverallConfidence.textContent = confLabel;
+        }
+
+        // SVG Canvas Rendering
+        const svg = elements.journeySvg;
+        if (!svg) return;
+
+        const nodes = graph.nodes;
+        const edges = graph.edges || [];
+
+        const nodeWidth = 260;
+        const nodeHeight = 110;
+        const gapX = 140;
+        const startX = 40;
+        const startY = 60;
+
+        const totalWidth = Math.max(900, startX * 2 + nodes.length * nodeWidth + (nodes.length - 1) * gapX);
+        const totalHeight = 260;
+
+        svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
+        svg.style.width = `${totalWidth}px`;
+        svg.style.height = `${totalHeight}px`;
+
+        // Generate Node Coordinates Map
+        const nodeCoords = [];
+        for (let i = 0; i < nodes.length; i++) {
+            const nx = startX + i * (nodeWidth + gapX);
+            const ny = startY;
+            nodeCoords.push({ x: nx, y: ny, centerX: nx + nodeWidth / 2, centerY: ny + nodeHeight / 2 });
+        }
+
+        // Build SVG Elements
+        let svgContent = `
+            <defs>
+                <marker id="arrow-exact" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#2ecc71"/>
+                </marker>
+                <marker id="arrow-high" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#f1c40f"/>
+                </marker>
+                <marker id="arrow-probable" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#e67e22"/>
+                </marker>
+            </defs>
+        `;
+
+        // Render Edges
+        edges.forEach(edge => {
+            const fromC = nodeCoords[edge.fromIndex];
+            const toC = nodeCoords[edge.toIndex];
+            if (!fromC || !toC) return;
+
+            const x1 = fromC.x + nodeWidth;
+            const y1 = fromC.centerY;
+            const x2 = toC.x;
+            const y2 = toC.centerY;
+
+            const edgeConf = (edge.confidence || 'PROBABLE').toUpperCase();
+            let edgeClass = 'edge-probable';
+            let markerId = 'arrow-probable';
+            if (edgeConf.includes('EXACT')) {
+                edgeClass = 'edge-exact';
+                markerId = 'arrow-exact';
+            } else if (edgeConf.includes('HIGH')) {
+                edgeClass = 'edge-high';
+                markerId = 'arrow-high';
+            }
+
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+
+            const pathD = `M ${x1} ${y1} C ${x1 + 40} ${y1}, ${x2 - 40} ${y2}, ${x2} ${y2}`;
+
+            const transitionStr = formatTransitionType(edge.transitionType);
+            const timeDeltaStr = '+' + formatTimeDelta(edge.timeDeltaMs);
+
+            svgContent += `
+                <g class="svg-edge-group">
+                    <path class="svg-edge-path ${edgeClass}" d="${pathD}" marker-end="url(#${markerId})"/>
+                    <rect class="svg-edge-label-bg" x="${midX - 55}" y="${midY - 18}" width="110" height="36"/>
+                    <text class="svg-edge-text-type" x="${midX}" y="${midY - 6}">${escapeHtml(transitionStr)}</text>
+                    <text class="svg-edge-text-time" x="${midX}" y="${midY + 8}">${escapeHtml(timeDeltaStr)}</text>
+                </g>
+            `;
+        });
+
+        // Render Nodes
+        nodes.forEach((node, i) => {
+            const coord = nodeCoords[i];
+            const nodeConf = (node.confidence || 'PROBABLE').toUpperCase();
+            let confClass = 'node-probable';
+            if (nodeConf.includes('EXACT')) confClass = 'node-exact';
+            else if (nodeConf.includes('HIGH')) confClass = 'node-high';
+
+            const act = (node.actionType || 'INTERACT').toUpperCase();
+            let actBg = '#10b981';
+            if (act === 'TAKE' || act === 'PICKUP') actBg = '#f43f5e';
+            else if (act === 'PUT' || act === 'PLACE') actBg = '#10b981';
+
+            const deltaVal = node.deltaQuantity != null ? node.deltaQuantity : 0;
+            const deltaClass = deltaVal >= 0 ? 'text-success' : 'text-danger';
+            const deltaSign = deltaVal > 0 ? '+' : '';
+
+            const shortDim = (node.dimension || 'overworld').replace('minecraft:', '');
+
+            svgContent += `
+                <g class="svg-node-group" data-step-index="${i}" transform="translate(${coord.x}, ${coord.y})">
+                    <rect class="svg-node-box ${confClass}" width="${nodeWidth}" height="${nodeHeight}"/>
+                    
+                    <!-- Step Index Pill -->
+                    <rect class="svg-node-step-pill" x="12" y="12" width="28" height="20"/>
+                    <text class="svg-node-step-text" x="26" y="22">#${node.stepIndex + 1}</text>
+                    
+                    <!-- Actor Name -->
+                    <text class="svg-node-actor-name" x="48" y="22">${escapeHtml(node.actorName || 'Unknown')}</text>
+                    
+                    <!-- Delta Quantity -->
+                    <text class="svg-node-delta-text ${deltaClass}" x="${nodeWidth - 14}" y="22">${deltaSign}${deltaVal}</text>
+                    
+                    <!-- Action Pill -->
+                    <rect class="svg-node-action-pill" x="12" y="44" width="60" height="18" fill="${actBg}"/>
+                    <text class="svg-node-action-text" x="42" y="53" fill="#ffffff">${escapeHtml(act)}</text>
+                    
+                    <!-- Coordinates & Dimension -->
+                    <text class="svg-node-coord-text" x="80" y="53">(${node.x}, ${node.y}, ${node.z}) • ${escapeHtml(shortDim)}</text>
+                    
+                    <!-- Notes / Summary Line -->
+                    <text class="svg-node-coord-text" x="12" y="84" fill="#94a3b8" style="font-size: 10px;">${escapeHtml(formatNodeSummary(node))}</text>
+                </g>
+            `;
+        });
+
+        svg.innerHTML = svgContent;
+
+        // Bind Click Handlers on Nodes
+        svg.querySelectorAll('.svg-node-group').forEach(group => {
+            group.addEventListener('click', () => {
+                const stepIdx = parseInt(group.dataset.stepIndex, 10);
+                selectStep(stepIdx);
+            });
+        });
+
+        // Select initial node (first step)
+        selectStep(0);
+    }
+
+    function selectStep(index) {
+        if (!state.provenanceGraph || !state.provenanceGraph.nodes) return;
+        const nodes = state.provenanceGraph.nodes;
+        if (index < 0 || index >= nodes.length) return;
+
+        state.selectedStepIndex = index;
+        const node = nodes[index];
+
+        // Update selected state in SVG
+        const svg = elements.journeySvg;
+        if (svg) {
+            svg.querySelectorAll('.svg-node-group').forEach(g => {
+                const isSelected = parseInt(g.dataset.stepIndex, 10) === index;
+                g.classList.toggle('is-selected', isSelected);
+            });
+        }
+
+        // Populate Inspector Card
+        if (elements.inspectorPlaceholder) elements.inspectorPlaceholder.classList.add('hidden');
+        if (elements.inspectorDetails) elements.inspectorDetails.classList.remove('hidden');
+
+        if (elements.inspectorStepTitle) {
+            elements.inspectorStepTitle.textContent = `Step #${node.stepIndex + 1} Inspector`;
+        }
+
+        if (elements.inspectorConfidenceBadge) {
+            const conf = (node.confidence || 'PROBABLE').toUpperCase();
+            let confClass = 'confidence-probable';
+            let confLabel = 'PROBABLE';
+            if (conf.includes('EXACT')) {
+                confClass = 'confidence-exact';
+                confLabel = 'EXACT';
+            } else if (conf.includes('HIGH')) {
+                confClass = 'confidence-high';
+                confLabel = 'HIGH';
+            }
+            elements.inspectorConfidenceBadge.className = `confidence-badge ${confClass}`;
+            elements.inspectorConfidenceBadge.textContent = confLabel;
+        }
+
+        if (elements.inspStepSeq) {
+            elements.inspStepSeq.textContent = `Step #${node.stepIndex + 1} (Sequence #${node.sequenceId})`;
+        }
+
+        if (elements.inspTimestamp) {
+            const iso = new Date(node.timestampMs).toISOString();
+            elements.inspTimestamp.textContent = `${formatTimestamp(node.timestampMs)} (${iso})`;
+        }
+
+        if (elements.inspActionActor) {
+            elements.inspActionActor.textContent = `${node.actionType} by ${node.actorName} (${node.actorType})`;
+        }
+
+        if (elements.inspActorUuid) {
+            elements.inspActorUuid.textContent = node.actorUuid || 'None (Automation / World)';
+        }
+
+        if (elements.inspContainerCoord) {
+            elements.inspContainerCoord.textContent = `X: ${node.x}, Y: ${node.y}, Z: ${node.z}`;
+        }
+
+        if (elements.inspDimension) {
+            elements.inspDimension.textContent = node.dimension;
+        }
+
+        if (elements.inspDelta) {
+            const deltaSign = node.deltaQuantity > 0 ? '+' : '';
+            const deltaClass = node.deltaQuantity >= 0 ? 'delta-pos' : 'delta-neg';
+            elements.inspDelta.innerHTML = `<span class="delta-pill ${deltaClass}">${deltaSign}${node.deltaQuantity}</span>`;
+        }
+
+        if (elements.inspFingerprint) {
+            elements.inspFingerprint.textContent = (node.metadataFingerprint && node.metadataFingerprint !== 0)
+                ? String(node.metadataFingerprint)
+                : '0L (Fungible Commodity)';
+        }
+
+        if (elements.inspNotes) {
+            elements.inspNotes.textContent = node.notes || 'Direct inventory custody transition.';
+        }
+    }
+
+    function formatTransitionType(type) {
+        if (!type) return 'TRANSITION';
+        return type.replace(/_/g, ' ');
+    }
+
+    function formatNodeSummary(node) {
+        const actionStr = node.deltaQuantity < 0 ? 'Extracted' : 'Deposited';
+        return `${actionStr} ${Math.abs(node.deltaQuantity)} ${formatItemName(node.itemId)}`;
+    }
+
+    function formatTimeDelta(ms) {
+        if (ms == null || ms === 0) return '0s';
+        const sec = Math.floor(ms / 1000);
+        if (sec < 60) return `${sec}s`;
+        const min = Math.floor(sec / 60);
+        const remSec = sec % 60;
+        if (min < 60) return remSec > 0 ? `${min}m ${remSec}s` : `${min}m`;
+        const hrs = Math.floor(min / 60);
+        const remMin = min % 60;
+        if (hrs < 24) return `${hrs}h ${remMin}m`;
+        const days = Math.floor(hrs / 24);
+        const remHrs = hrs % 24;
+        return `${days}d ${remHrs}h`;
+    }
+
+    // Pagination Controls (Audit View)
     function updatePaginationUI() {
         if (elements.currentPage) elements.currentPage.textContent = state.currentPage;
         if (elements.totalPages) elements.totalPages.textContent = state.totalPages;
@@ -990,7 +1516,6 @@
         const exportUrl = '/api/v1/export?' + exportParams.toString();
         showToast(`Preparing ${format.toUpperCase()} export download...`);
 
-        // Trigger direct browser download
         const a = document.createElement('a');
         a.href = exportUrl;
         a.download = '';
@@ -1062,7 +1587,11 @@
         showToast(newToken ? 'Auth token saved.' : 'Auth token cleared.');
 
         fetchStats();
-        fetchLogs(1);
+        if (state.activeTab === 'logs-view') {
+            fetchLogs(1);
+        } else if (state.activeTab === 'journey-view') {
+            fetchProvenance();
+        }
     }
 
     // Utilities

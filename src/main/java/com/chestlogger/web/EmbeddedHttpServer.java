@@ -132,16 +132,18 @@ public class EmbeddedHttpServer {
     }
 
     private void registerDefaultEndpoints() {
+        if (server == null) {
+            return;
+        }
+
         // Register all pre-configured custom contexts first
         for (var entry : customContexts.entrySet()) {
-            if (server != null) {
-                server.createContext(entry.getKey(), entry.getValue());
-            }
+            server.createContext(entry.getKey(), entry.getValue());
         }
 
         // Simple health endpoint (if not overridden)
         if (!customContexts.containsKey("/api/v1/health")) {
-            createContext("/api/v1/health", exchange -> {
+            server.createContext("/api/v1/health", exchange -> {
                 if (!HttpAuthValidator.validate(exchange, config)) {
                     return;
                 }
@@ -156,18 +158,21 @@ public class EmbeddedHttpServer {
 
         // REST API endpoints (if not overridden)
         if (!customContexts.containsKey("/api/v1/stats")) {
-            createContext("/api/v1/stats", new StatsHttpHandler(config, queueSupplier, indexManagerSupplier, System.currentTimeMillis()));
+            server.createContext("/api/v1/stats", new StatsHttpHandler(config, queueSupplier, indexManagerSupplier, System.currentTimeMillis()));
         }
         if (!customContexts.containsKey("/api/v1/query")) {
-            createContext("/api/v1/query", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
+            server.createContext("/api/v1/query", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
+        }
+        if (!customContexts.containsKey("/api/v1/provenance")) {
+            server.createContext("/api/v1/provenance", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier));
         }
         if (!customContexts.containsKey("/api/v1/export")) {
-            createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));
+            server.createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));
         }
 
         // Static asset handler for embedded web dashboard
         if (!customContexts.containsKey("/")) {
-            createContext("/", new StaticAssetHttpHandler());
+            server.createContext("/", new StaticAssetHttpHandler());
         }
     }
 }

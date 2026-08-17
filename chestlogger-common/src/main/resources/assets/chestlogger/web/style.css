@@ -1318,6 +1318,488 @@ kbd {
     }
 }
 
+/* =========================================================================
+   Phase 3: Item Journey & Provenance Graph Visualizer Design System
+   ========================================================================= */
+
+/* View Mode Tabs Navigation */
+.view-tabs-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 20px;
+    padding: 0 4px;
+}
+
+.view-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.view-tab-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.view-tab-btn.active {
+    color: var(--accent-cyan);
+    border-bottom: 2px solid var(--accent-cyan);
+    background: var(--bg-surface);
+    box-shadow: inset 0 1px 0 rgba(56, 189, 248, 0.2);
+}
+
+.badge-feature {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    background: rgba(56, 189, 248, 0.18);
+    color: var(--accent-cyan);
+    border: 1px solid var(--border-accent);
+    letter-spacing: 0.5px;
+}
+
+/* View Panels */
+.view-panel {
+    display: block;
+    animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-panel.hidden {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Journey Layout Grid */
+.journey-filter-card {
+    margin-bottom: 20px;
+}
+
+.journey-main-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Journey Graph Card */
+.journey-graph-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.journey-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.journey-summary-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.journey-target-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.journey-label {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.journey-val {
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+}
+
+.journey-metric-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-input);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    font-size: 12px;
+}
+
+.metric-label {
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+/* Confidence Badges & Indicators */
+.confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.confidence-exact {
+    background: rgba(46, 204, 113, 0.18);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.4);
+}
+
+.confidence-high {
+    background: rgba(241, 196, 15, 0.18);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.4);
+}
+
+.confidence-probable {
+    background: rgba(230, 126, 34, 0.18);
+    color: #e67e22;
+    border: 1px solid rgba(230, 126, 34, 0.4);
+}
+
+.dot-exact {
+    background-color: #2ecc71;
+    box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
+}
+
+.dot-high {
+    background-color: #f1c40f;
+    box-shadow: 0 0 6px rgba(241, 196, 15, 0.8);
+}
+
+.dot-probable {
+    background-color: #e67e22;
+    box-shadow: 0 0 6px rgba(230, 126, 34, 0.8);
+}
+
+.text-exact {
+    color: #2ecc71 !important;
+}
+
+.text-high {
+    color: #f1c40f !important;
+}
+
+.text-probable {
+    color: #e67e22 !important;
+}
+
+/* Journey Canvas & SVG */
+.journey-canvas-wrapper {
+    min-height: 520px;
+    max-height: 760px;
+    overflow: auto;
+    background: radial-gradient(circle at 50% 50%, #0d1322 0%, #070911 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.journey-svg-container {
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    position: relative;
+}
+
+.journey-svg {
+    width: 100%;
+    min-width: 800px;
+    min-height: 480px;
+    display: block;
+    overflow: visible;
+}
+
+/* SVG Node Link Graph Styling */
+.svg-edge-path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+.svg-edge-path.edge-exact {
+    stroke: #2ecc71;
+}
+
+.svg-edge-path.edge-high {
+    stroke: #f1c40f;
+    stroke-dasharray: 6 3;
+}
+
+.svg-edge-path.edge-probable {
+    stroke: #e67e22;
+    stroke-dasharray: 4 4;
+}
+
+.svg-edge-label-bg {
+    fill: #0c111d;
+    stroke: var(--border-subtle);
+    stroke-width: 1;
+    rx: 6;
+    ry: 6;
+}
+
+.svg-edge-text-type {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    fill: var(--text-secondary);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.svg-edge-text-time {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    fill: var(--accent-cyan);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.svg-node-group {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.svg-node-group:hover {
+    transform: translateY(-2px);
+}
+
+.svg-node-box {
+    fill: #111827;
+    stroke: var(--border-subtle);
+    stroke-width: 1.5;
+    rx: 10;
+    ry: 10;
+    transition: all 0.2s ease;
+}
+
+.svg-node-box.node-exact {
+    stroke: rgba(46, 204, 113, 0.6);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+}
+
+.svg-node-box.node-high {
+    stroke: rgba(241, 196, 15, 0.6);
+}
+
+.svg-node-box.node-probable {
+    stroke: rgba(230, 126, 34, 0.6);
+}
+
+.svg-node-group.is-selected .svg-node-box {
+    stroke: var(--accent-cyan);
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+}
+
+.svg-node-step-pill {
+    fill: #1f2937;
+    rx: 6;
+    ry: 6;
+}
+
+.svg-node-step-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    fill: var(--text-primary);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.svg-node-actor-name {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    fill: var(--text-primary);
+    text-anchor: start;
+    dominant-baseline: central;
+}
+
+.svg-node-action-pill {
+    rx: 4;
+    ry: 4;
+}
+
+.svg-node-action-text {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.svg-node-coord-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--text-secondary);
+    dominant-baseline: central;
+}
+
+.svg-node-delta-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: end;
+    dominant-baseline: central;
+}
+
+/* Legend Bar */
+.journey-legend-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 18px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.legend-title {
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Step Inspector Drawer / Card */
+.step-inspector-card {
+    position: sticky;
+    top: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.inspector-body {
+    padding: 18px;
+}
+
+.inspector-placeholder {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.inspector-placeholder p {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.inspector-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.notes-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
+    background: var(--bg-input);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+.inspector-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.inspector-actions .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Buttons */
+.btn-accent {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+}
+
+.btn-accent:hover {
+    background: #0369a1;
+    border-color: #7dd3fc;
+}
+
+.btn-trace-row-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-trace-item {
+    color: var(--accent-cyan);
+    margin-left: 4px;
+}
+
+.btn-trace-item:hover {
+    background: var(--bg-hover);
+    color: #7dd3fc;
+}
+
 /* Responsive Media Queries */
 @media (max-width: 1200px) {
     .telemetry-strip {
@@ -1325,6 +1807,12 @@ kbd {
     }
     .detail-grid {
         grid-template-columns: 1fr 1fr;
+    }
+    .journey-main-section {
+        grid-template-columns: 1fr;
+    }
+    .step-inspector-card {
+        position: static;
     }
 }
 
@@ -1337,6 +1825,9 @@ kbd {
     }
     .detail-grid {
         grid-template-columns: 1fr;
+    }
+    .view-tabs-nav {
+        flex-wrap: wrap;
     }
 }
 
@@ -1361,5 +1852,9 @@ kbd {
     }
     .filter-actions .btn {
         flex: 1;
+    }
+    .journey-summary-group {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

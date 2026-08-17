@@ -61,6 +61,7 @@ class RestApiIntegrationTest {
 
     @BeforeEach
     void setUp(@TempDir File tempDir) throws Exception {
+        HttpAuthValidator.resetRateLimiter();
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(3))
                 .build();
@@ -149,6 +150,7 @@ class RestApiIntegrationTest {
         if (server != null) {
             server.stop();
         }
+        HttpAuthValidator.resetRateLimiter();
     }
 
     // =========================================================================
@@ -496,6 +498,7 @@ class RestApiIntegrationTest {
                 "/api/v1/health",
                 "/api/v1/stats",
                 "/api/v1/query",
+                "/api/v1/provenance",
                 "/api/v1/export"
         })
         void testMissingTokenReturns401(String path) throws IOException {
@@ -516,6 +519,7 @@ class RestApiIntegrationTest {
                 "/api/v1/health",
                 "/api/v1/stats",
                 "/api/v1/query",
+                "/api/v1/provenance",
                 "/api/v1/export"
         })
         void testInvalidTokenReturns401(String path) throws IOException {
@@ -537,6 +541,7 @@ class RestApiIntegrationTest {
                 "/api/v1/health",
                 "/api/v1/stats",
                 "/api/v1/query",
+                "/api/v1/provenance?item=minecraft:diamond",
                 "/api/v1/export"
         })
         void testValidHeaderTokenReturns200(String path) throws IOException {
@@ -552,6 +557,7 @@ class RestApiIntegrationTest {
                 "/api/v1/health",
                 "/api/v1/stats",
                 "/api/v1/query",
+                "/api/v1/provenance?item=minecraft:diamond",
                 "/api/v1/export"
         })
         void testValidBearerTokenReturns200(String path) throws IOException {
@@ -567,6 +573,7 @@ class RestApiIntegrationTest {
                 "/api/v1/health",
                 "/api/v1/stats",
                 "/api/v1/query",
+                "/api/v1/provenance?item=minecraft:diamond",
                 "/api/v1/export"
         })
         void testValidQueryParamTokenReturns200(String path) throws IOException {
