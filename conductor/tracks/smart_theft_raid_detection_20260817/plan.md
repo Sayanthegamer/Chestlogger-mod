@@ -18,18 +18,18 @@
   - [x] Broadcast Action-Bar HUD notice and interactive `[Teleport]` / `[Inspect]` chat cards to online admins [0f85944]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [0f85944]
 
-## Phase 3: Discord Rich Embeds & Web Dashboard Incidents Feed (`chestlogger-common`)
-- [ ] Task: Phase 3 Test Harness - Discord Embed & Incidents REST API Tests
-  - [ ] Write unit tests for upgraded `DiscordEmbedBuilder` and `/api/v1/incidents` endpoint
-- [ ] Task: Upgrade `DiscordAlertDispatcher` with Smart Context Badges
-  - [ ] Add Owner Presence badges (`Offline`, `Absent`, `Nearby`) and severity-based coloring
-- [ ] Task: Implement Web UI Security Incidents Feed & Staged Rollback Preview Modal
-  - [ ] Add live incidents feed and staged rollback confirmation dialog in `index.html`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Discord Rich Embeds & Web Dashboard Incidents Feed (`chestlogger-common`) [checkpoint: 52c619e]
+- [x] Task: Phase 3 Test Harness - Discord Embed & Incidents REST API Tests [52c619e]
+  - [x] Write unit tests for upgraded `DiscordEmbedBuilder` and `/api/v1/incidents` endpoint [52c619e]
+- [x] Task: Upgrade `DiscordAlertDispatcher` with Smart Context Badges [52c619e]
+  - [x] Add Owner Presence badges (`Offline`, `Absent`, `Nearby`) and severity-based coloring [52c619e]
+- [x] Task: Implement Web UI Security Incidents Feed & Staged Rollback Preview Modal [52c619e]
+  - [x] Add live incidents feed and staged rollback confirmation dialog in `index.html` [52c619e]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [52c619e]
 
 ## Phase 4: Cross-Platform Regression, Concurrent Stress Tests & CI Release
-- [ ] Task: Concurrent Heuristic Stress Test
-  - [ ] Implement `SmartTheftConcurrencyTest` verifying zero memory leaks under 500 simultaneous player actions
+- [~] Task: Concurrent Heuristic Stress Test
+  - [~] Implement `SmartTheftConcurrencyTest` verifying zero memory leaks under 500 simultaneous player actions
 - [ ] Task: Cross-Platform Regression Test Suite
   - [ ] Run full test suite across common, fabric, and paper
 - [ ] Task: Documentation & Release Bump to `2.4.0`
