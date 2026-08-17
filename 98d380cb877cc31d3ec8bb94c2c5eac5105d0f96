@@ -1,0 +1,1 @@
+{track:double_chest_support_20260817,phase:Phase 4: Adaptive Rollback Engine & Cross-Platform Durability,task:Implement adaptive broken-half compensation in RollbackEngine,status:COMPLETED,tests:[./gradlew test (passed)]}
