@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/banner.png" alt="ChestLogger Hero Banner" width="100%" />
+
 # 📦 ChestLogger
 
 **High-Performance, Server-Authoritative Container Audit & Rollback System for Minecraft Fabric 26.2**
