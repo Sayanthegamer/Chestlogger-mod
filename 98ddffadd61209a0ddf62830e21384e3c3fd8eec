@@ -1,0 +1,1 @@
+Task: Phase 1 Mode Tracking & Wand Matcher Unit Tests + Implementation. Created InspectModeManager and WandConfig with thread-safe session tracking, wand item matching, and debounce rate limiting.
