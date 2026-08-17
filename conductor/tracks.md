@@ -8,5 +8,5 @@
 - [x] **Track: ChestLogger Phase 11 History GUI**
   *Link: [./tracks/chestlogger_gui_20260816/index.md](./tracks/chestlogger_gui_20260816/index.md)*
 
-- [~] **Track: ChestLogger Embedded Web Admin Dashboard**
+- [x] **Track: ChestLogger Embedded Web Admin Dashboard**
   *Link: [./tracks/chestlogger_web_20260817/index.md](./tracks/chestlogger_web_20260817/index.md)*
