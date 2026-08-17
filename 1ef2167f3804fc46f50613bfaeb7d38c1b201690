@@ -1,0 +1,1 @@
+Task: In-Game Provenance GUI for Paper & Fabric. Implemented PaperProvenanceGuiModel, PaperProvenanceGuiView, PaperProvenanceGuiListener, and /chestlog trace commands on Paper and Fabric. 100% tests passing.
