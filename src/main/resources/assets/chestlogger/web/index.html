@@ -3,18 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChestLogger Admin Dashboard</title>
+    <meta name="description" content="ChestLogger Web Admin Dashboard - Real-time container transaction auditing, telemetry, and export system for Minecraft servers.">
+    <title>ChestLogger - Web Admin Dashboard</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>ChestLogger Web Dashboard</h1>
+    <div id="app" class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="navbar">
+            <div class="brand-group">
+                <div class="logo-box">
+                    <span class="logo-icon">📦</span>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">ChestLogger <span class="badge-version">Fabric 26.2</span></h1>
+                    <span class="brand-subtitle">Server Container Audit & Telemetry</span>
+                </div>
+            </div>
+
+            <div class="nav-controls">
+                <div id="connection-status" class="status-pill offline" title="Server Connection Status">
+                    <span class="status-dot"></span>
+                    <span id="status-text">Disconnected</span>
+                </div>
+
+                <button id="btn-open-auth" class="btn btn-secondary btn-icon" title="Authentication Settings">
+                    <span class="icon">🔑</span>
+                    <span id="auth-status-label">Auth Token</span>
+                </button>
+
+                <button id="btn-refresh-all" class="btn btn-primary btn-icon" title="Refresh Telemetry and Results">
+                    <span class="icon">🔄</span>
+                    <span>Refresh</span>
+                </button>
+            </div>
         </header>
-        <main id="main-content">
-            <p>Welcome to ChestLogger Dashboard.</p>
+
+        <!-- Main Content Grid -->
+        <main class="dashboard-content">
+            <!-- Telemetry Stats Cards -->
+            <section class="telemetry-grid">
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Ring Buffer Queue</span>
+                        <span class="stat-icon">⚡</span>
+                    </div>
+                    <div class="stat-value-group">
+                        <span id="stat-queue-depth" class="stat-value">0</span>
+                        <span class="stat-total">/ <span id="stat-queue-cap">65,536</span></span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="queue-progress-bar" class="progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Enqueued</span>
+                        <span class="stat-icon">📥</span>
+                    </div>
+                    <div class="stat-value-group">
+                        <span id="stat-enqueued" class="stat-value text-accent">0</span>
+                    </div>
+                    <span class="stat-subtext">Events captured in RAM</span>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Drained to Disk</span>
+                        <span class="stat-icon">💾</span>
+                    </div>
+                    <div class="stat-value-group">
+                        <span id="stat-drained" class="stat-value text-success">0</span>
+                    </div>
+                    <span class="stat-subtext">Dropped: <strong id="stat-dropped" class="text-danger">0</strong></span>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Indexed Pointers</span>
+                        <span class="stat-icon">🗂️</span>
+                    </div>
+                    <div class="stat-value-group">
+                        <span id="stat-index-size" class="stat-value">0</span>
+                    </div>
+                    <span class="stat-subtext">Uptime: <span id="stat-uptime">0s</span></span>
+                </div>
+            </section>
+
+            <!-- Search & Filter Controls Card -->
+            <section class="card filter-card">
+                <div class="card-header">
+                    <h2 class="card-title">🔍 Search & Audit Filters</h2>
+                    <div class="header-actions">
+                        <button id="btn-export-csv" class="btn btn-outline btn-sm" title="Export matching logs as RFC 4180 CSV">
+                            <span>📄 Export CSV</span>
+                        </button>
+                        <button id="btn-export-json" class="btn btn-outline btn-sm" title="Export matching logs as JSON">
+                            <span>📋 Export JSON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <form id="filter-form" class="filter-form" onsubmit="return false;">
+                    <div class="filter-grid">
+                        <div class="input-group">
+                            <label for="input-x">Coordinate X</label>
+                            <input type="number" id="input-x" placeholder="e.g. -29" class="form-input">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-y">Coordinate Y</label>
+                            <input type="number" id="input-y" placeholder="e.g. -60" class="form-input">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-z">Coordinate Z</label>
+                            <input type="number" id="input-z" placeholder="e.g. 8" class="form-input">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="select-dim">Dimension</label>
+                            <select id="select-dim" class="form-select">
+                                <option value="">All Dimensions</option>
+                                <option value="minecraft:overworld">Overworld</option>
+                                <option value="minecraft:the_nether">The Nether</option>
+                                <option value="minecraft:the_end">The End</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="input-player">Player / Actor</label>
+                            <input type="text" id="input-player" placeholder="Player name or UUID..." class="form-input">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="input-item">Item Identifier</label>
+                            <input type="text" id="input-item" placeholder="e.g. diamond, shulker_box..." class="form-input">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="select-timeframe">Timeframe</label>
+                            <select id="select-timeframe" class="form-select">
+                                <option value="0">All Time</option>
+                                <option value="900">Last 15 Minutes</option>
+                                <option value="3600">Last 1 Hour</option>
+                                <option value="86400">Last 24 Hours</option>
+                                <option value="604800">Last 7 Days</option>
+                                <option value="2592000">Last 30 Days</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="select-limit">Page Size</label>
+                            <select id="select-limit" class="form-select">
+                                <option value="25" selected>25 records</option>
+                                <option value="50">50 records</option>
+                                <option value="100">100 records</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" id="btn-search" class="btn btn-primary">
+                            <span>🔍 Search Logs</span>
+                        </button>
+                        <button type="button" id="btn-clear-filters" class="btn btn-secondary">
+                            <span>Clear Filters</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Results Table Card -->
+            <section class="card table-card">
+                <div class="table-header-row">
+                    <h2 class="card-title">Audit Log History</h2>
+                    <span id="results-summary" class="results-summary">Showing 0 records</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Position</th>
+                                <th>Dimension</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Slot</th>
+                                <th>Item</th>
+                                <th class="text-right">Delta</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-tbody">
+                            <!-- Populated dynamically by app.js -->
+                            <tr>
+                                <td colspan="8" class="table-placeholder">
+                                    <div class="empty-state">
+                                        <span class="empty-icon">📂</span>
+                                        <p>No transaction records loaded. Apply filters or click Search Logs.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Bar -->
+                <div class="pagination-bar">
+                    <div class="pagination-info">
+                        Page <strong id="current-page">1</strong> of <strong id="total-pages">1</strong>
+                    </div>
+                    <div class="pagination-buttons">
+                        <button id="btn-page-first" class="btn btn-sm btn-secondary" disabled>|&lt;</button>
+                        <button id="btn-page-prev" class="btn btn-sm btn-secondary" disabled>&lt; Prev</button>
+                        <button id="btn-page-next" class="btn btn-sm btn-secondary" disabled>Next &gt;</button>
+                        <button id="btn-page-last" class="btn btn-sm btn-secondary" disabled>&gt;|</button>
+                    </div>
+                </div>
+            </section>
         </main>
+
+        <!-- Authentication Modal -->
+        <div id="auth-modal" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 class="modal-title">🔐 Admin Authentication</h3>
+                    <button id="btn-close-modal" class="btn-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-desc">Enter the <code>secretToken</code> configured in your server's <code>config/chestlogger_web.json</code> file.</p>
+                    
+                    <div class="input-group">
+                        <label for="input-secret-token">Secret Auth Token</label>
+                        <input type="password" id="input-secret-token" placeholder="Paste 32-character secret token..." class="form-input">
+                    </div>
+
+                    <div id="auth-feedback" class="auth-feedback hidden"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-test-auth" class="btn btn-secondary">Test Connection</button>
+                    <button id="btn-save-auth" class="btn btn-primary">Save & Connect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
     </div>
+
     <script src="/app.js"></script>
 </body>
 </html>
