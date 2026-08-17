@@ -27,11 +27,11 @@
   - [x] Add interactive Canvas/SVG journey visualizer with confidence filters to `index.html` [61e6508]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [97bc2b9]
 
-## Phase 4: Cross-Platform Regression, Benchmark & CI Release Verification
-- [~] Task: Provenance Resolver Performance Benchmark
-  - [~] Implement `ProvenanceResolverBenchmarkTest` verifying sub-50ms execution on 100,000+ transaction segments
-- [ ] Task: Cross-Platform Regression Test Suite
-  - [ ] Run full test suite across common, fabric, and paper
-- [ ] Task: Documentation & Release Bump to `2.3.0`
-  - [ ] Update `README.md`, `product.md`, `tech-stack.md`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 4: Cross-Platform Regression, Benchmark & CI Release Verification [checkpoint: dcc8c23]
+- [x] Task: Provenance Resolver Performance Benchmark [646fba1]
+  - [x] Implement `ProvenanceResolverBenchmarkTest` verifying sub-50ms execution on 100,000+ transaction segments [646fba1]
+- [x] Task: Cross-Platform Regression Test Suite [646fba1]
+  - [x] Run full test suite across common, fabric, and paper [646fba1]
+- [x] Task: Documentation & Release Bump to `2.3.0` [646fba1]
+  - [x] Update `README.md`, `product.md`, `tech-stack.md` [646fba1]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [dcc8c23]

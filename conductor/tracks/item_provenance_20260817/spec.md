@@ -21,7 +21,7 @@ A zero-world-mutation, non-invasive Item Provenance & Chain-of-Custody Engine fo
 - Web UI renders interactive node-link graph with zoom, confidence filters, and step inspection drawer.
 
 ## 4. Acceptance Criteria
-- [ ] 100% test coverage for graph cycle protection, confidence scoring, and temporal lookahead/lookbehind.
-- [ ] In-game GUI displays accurate chronological cards with click safety.
-- [ ] Web REST API `/api/v1/provenance` returns valid structured node-link payloads.
-- [ ] Worst-case performance benchmark on 100,000+ transaction segments executes within < 50ms without main thread impact.
+- [x] 100% test coverage for graph cycle protection, confidence scoring, and temporal lookahead/lookbehind.
+- [x] In-game GUI displays accurate chronological cards with click safety.
+- [x] Web REST API `/api/v1/provenance` returns valid structured node-link payloads.
+- [x] Worst-case performance benchmark on 100,000+ transaction segments executes within < 50ms without main thread impact.
