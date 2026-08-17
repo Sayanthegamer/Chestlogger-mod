@@ -200,11 +200,21 @@ public class QueryHttpHandler implements HttpHandler {
 
     private static String serializePagePayload(ChestLogPagePayload payload) {
         StringBuilder sb = new StringBuilder(1024);
+        int defX = BlockPosUtil.unpackX(payload.packedBlockPos());
+        int defY = BlockPosUtil.unpackY(payload.packedBlockPos());
+        int defZ = BlockPosUtil.unpackZ(payload.packedBlockPos());
+        String defDim = payload.dimension() != null ? payload.dimension() : "minecraft:overworld";
+
         sb.append("{");
         sb.append("\"queryId\":\"").append(payload.queryId()).append("\",");
         sb.append("\"page\":").append(payload.pageIndex()).append(",");
         sb.append("\"totalPages\":").append(payload.totalPages()).append(",");
         sb.append("\"totalRecords\":").append(payload.totalRecords()).append(",");
+        sb.append("\"containerType\":\"").append(escapeJson(payload.containerType())).append("\",");
+        sb.append("\"dimension\":\"").append(escapeJson(defDim)).append("\",");
+        sb.append("\"x\":").append(defX).append(",");
+        sb.append("\"y\":").append(defY).append(",");
+        sb.append("\"z\":").append(defZ).append(",");
         sb.append("\"records\":[");
 
         List<DisplayRecord> records = payload.records();
@@ -220,6 +230,11 @@ public class QueryHttpHandler implements HttpHandler {
             sb.append("\"action\":\"").append(ActionType.fromWireId(r.actionType()).name()).append("\",");
             sb.append("\"slot\":").append(r.slotIndex()).append(",");
             sb.append("\"item\":\"").append(escapeJson(r.itemId())).append("\",");
+            sb.append("\"itemId\":\"").append(escapeJson(r.itemId())).append("\",");
+            sb.append("\"x\":").append(defX).append(",");
+            sb.append("\"y\":").append(defY).append(",");
+            sb.append("\"z\":").append(defZ).append(",");
+            sb.append("\"dimension\":\"").append(escapeJson(defDim)).append("\",");
             sb.append("\"delta\":").append(r.quantityDelta()).append(",");
             sb.append("\"metadataFingerprint\":").append(r.metadataFingerprint());
             sb.append("}");

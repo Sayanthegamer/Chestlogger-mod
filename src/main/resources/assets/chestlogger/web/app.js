@@ -343,12 +343,17 @@
 
         let html = '';
         for (const rec of records) {
-            const timeStr = formatTimestamp(rec.timestamp);
-            const posStr = `(${rec.x}, ${rec.y}, ${rec.z})`;
+            const timeStr = formatTimestamp(rec.timestamp || rec.timestampMs);
+            const posX = (rec.x !== undefined && rec.x !== null) ? rec.x : '-';
+            const posY = (rec.y !== undefined && rec.y !== null) ? rec.y : '-';
+            const posZ = (rec.z !== undefined && rec.z !== null) ? rec.z : '-';
+            const posStr = (posX !== '-' && posY !== '-' && posZ !== '-') ? `(${posX}, ${posY}, ${posZ})` : '-';
+            const rawDim = rec.dimension || 'minecraft:overworld';
+            const dimShort = rawDim.replace(/^minecraft:/, '');
+            const rawItemId = rec.itemId || rec.item || '';
+            const itemName = formatItemName(rawItemId);
             const deltaClass = rec.delta >= 0 ? 'delta-pos' : 'delta-neg';
             const deltaSign = rec.delta > 0 ? '+' : '';
-            const itemName = formatItemName(rec.itemId);
-            const dimShort = (rec.dimension || '').replace('minecraft:', '');
 
             html += `
                 <tr>
