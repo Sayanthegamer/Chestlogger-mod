@@ -14,6 +14,11 @@ import java.util.regex.Pattern;
 /**
  * Thread-safe manager for player trust relationships with persistent JSON storage.
  * Trusted players are exempt from theft and raid security alerts when accessing an owner's containers.
+ * <p>
+ * <b>Directional Semantics:</b> Trust is strictly directional (asymmetric). If Alice grants trust to Bob
+ * ({@code trust(Alice, Bob)}), Bob is permitted to access Alice's containers without security alerts,
+ * but Alice is <i>not</i> automatically permitted to access Bob's containers unless Bob explicitly grants
+ * trust back to Alice ({@code trust(Bob, Alice)}).
  */
 public final class TrustManager {
 
