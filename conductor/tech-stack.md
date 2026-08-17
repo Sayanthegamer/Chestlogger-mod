@@ -17,9 +17,15 @@
 - **Encoding**: Variable-length VarInt/VarLong integers, bitmasks, string/item dictionary table
 - **I/O Pipelines**: Bounded MPSC event queues, dedicated background worker thread, profile-tuned batch flushers (`balanced`, `hdd`, `ssd`)
 
+## Item Provenance & Chain-of-Custody Engine
+- **Graph Resolver**: Pure-Java cycle-safe DAG traversal engine (`ItemProvenanceResolver`) in `chestlogger-common`
+- **Component Fingerprinting**: 64-bit component hashing (`MetadataFingerprint`) for exact non-fungible gear matching
+- **Heuristic Temporal Traversal**: Lookback/lookahead window correlation for commodity flow with explicit confidence levels (`EXACT_LINKAGE`, `HIGH_CONFIDENCE`, `PROBABLE`)
+- **Visual Presentation**: Dual-presentation via in-game 54-slot GUI (`PaperProvenanceGuiView` / Fabric Screen) and Web UI Canvas/SVG interactive node-link visualizer with live step inspection drawer
+
 ## Embedded Web Administration & REST API
 - **HTTP Server**: Embedded `com.sun.net.httpserver.HttpServer` (Zero external dependencies, daemon thread pool)
-- **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) with inline SVG iconography, dark-carbon observability design system, expandable transaction inspector, and live auto-tail engine embedded directly in mod resources (zero npm build, zero CDN dependencies)
+- **Frontend**: Vanilla HTML5, CSS3, ES6 JavaScript Single-Page Application (SPA) with inline SVG iconography, dark-carbon observability design system, expandable transaction inspector, interactive item journey graph visualizer, and live auto-tail engine embedded directly in mod resources (zero npm build, zero CDN dependencies)
 - **Security**: Token-based authentication (`X-ChestLogger-Auth`, Bearer token, query param), IP-based rate limiting (HTTP 429), timing-safe token validation, strict path traversal blocking
 - **Export Engine**: RFC 4180 streaming CSV and structured JSON attachment exporters
 

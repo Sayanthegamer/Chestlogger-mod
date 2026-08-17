@@ -233,7 +233,6 @@ public class ItemProvenanceResolver {
             if (collectedEntries.size() >= maxHops) break;
             traverseLookback(seed, itemId, containerEvents, playerEvents, automationEvents, visitedSequenceIds, collectedEntries, maxHops, maxTimeWindowMs, 0);
             collectedEntries.add(seed);
-            visitedSequenceIds.add(seed.sequenceId());
             traverseLookahead(seed, itemId, containerEvents, playerEvents, automationEvents, visitedSequenceIds, collectedEntries, maxHops, maxTimeWindowMs, 0);
         }
 
@@ -296,7 +295,7 @@ public class ItemProvenanceResolver {
             long maxTimeWindowMs,
             int depth
     ) {
-        if (depth >= maxHops || collected.size() >= maxHops || visited.contains(current.sequenceId())) {
+        if (depth >= maxHops || collected.size() >= maxHops || (depth > 0 && visited.contains(current.sequenceId()))) {
             return;
         }
         visited.add(current.sequenceId());
@@ -374,7 +373,7 @@ public class ItemProvenanceResolver {
             long maxTimeWindowMs,
             int depth
     ) {
-        if (depth >= maxHops || collected.size() >= maxHops || visited.contains(current.sequenceId())) {
+        if (depth >= maxHops || collected.size() >= maxHops || (depth > 0 && visited.contains(current.sequenceId()))) {
             return;
         }
         visited.add(current.sequenceId());
