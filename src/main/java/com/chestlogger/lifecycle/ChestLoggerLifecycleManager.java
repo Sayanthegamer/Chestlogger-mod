@@ -55,7 +55,11 @@ public final class ChestLoggerLifecycleManager {
             try {
                 LOGGER.info("Starting ChestLogger for world at: {}", storageDir.getAbsolutePath());
                 lifecycleManager.start(storageDir);
-                ChestLoggerMod.getHttpServer().start();
+                try {
+                    ChestLoggerMod.getHttpServer().start();
+                } catch (Throwable t) {
+                    LOGGER.warn("[ChestLogger] Optional web server could not be started: {}", t.getMessage());
+                }
             } catch (Exception e) {
                 LOGGER.error("Failed to start ChestLogger storage engine: {}", e.getMessage(), e);
             }
@@ -63,7 +67,11 @@ public final class ChestLoggerLifecycleManager {
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             LOGGER.info("Gracefully stopping ChestLogger storage engine...");
-            ChestLoggerMod.getHttpServer().stop();
+            try {
+                ChestLoggerMod.getHttpServer().stop();
+            } catch (Throwable t) {
+                LOGGER.warn("[ChestLogger] Error stopping optional web server: {}", t.getMessage());
+            }
             lifecycleManager.stop(10000);
         });
     }
