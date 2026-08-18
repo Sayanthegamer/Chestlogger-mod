@@ -90,6 +90,7 @@ public final class DiscordEmbedBuilder {
             case OFFLINE_THEFT -> "🚨 Offline Theft Detected";
             case ABSENT_OWNER_THEFT -> "⚠️ Absent Owner Theft Detected";
             case CONSENSUAL_PROXIMITY -> "ℹ️ Consensual Container Interaction";
+            case UNCLAIMED_NATURAL -> "ℹ️ Unclaimed Container Interaction";
             case INFO -> "ℹ️ Container Security Event";
         };
         sb.append("\"title\":\"").append(escapeJson(title)).append("\",");

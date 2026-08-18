@@ -95,10 +95,15 @@ public final class SmartTheftEvaluator {
             return Optional.empty();
         }
 
+        // 3. Unclaimed / world-gen container: bypass raid velocity tracking and security alerting
+        if (ownerUuid == null) {
+            return Optional.empty();
+        }
+
         AlertConfig effectiveConfig = config != null ? config : this.alertConfig;
         OwnerPresenceState presence = ownerPresence != null ? ownerPresence : OwnerPresenceState.offline();
 
-        // 3. Track raid velocity & check multi-container burst
+        // 4. Track raid velocity & check multi-container burst
         boolean isRaidBurst = false;
         if (raidVelocityTracker != null) {
             isRaidBurst = raidVelocityTracker.recordAndCheckBurst(
@@ -108,7 +113,7 @@ public final class SmartTheftEvaluator {
             );
         }
 
-        // 4. Classify incident
+        // 5. Classify incident
         IncidentClassification classification;
         if (isRaidBurst) {
             classification = IncidentClassification.CRITICAL_RAID;
@@ -122,10 +127,10 @@ public final class SmartTheftEvaluator {
             classification = IncidentClassification.INFO;
         }
 
-        // 5. Identify primary item involved
+        // 6. Identify primary item involved
         PrimaryItemInfo itemInfo = extractPrimaryItem(entry, effectiveConfig);
 
-        // 6. Build summary
+        // 7. Build summary
         String summary = generateSummary(
                 classification,
                 entry.actorName(),
@@ -171,6 +176,9 @@ public final class SmartTheftEvaluator {
     ) {
         if (entry == null || entry.actorType() != ActorType.PLAYER) {
             return IncidentClassification.INFO;
+        }
+        if (ownerUuid == null) {
+            return IncidentClassification.UNCLAIMED_NATURAL;
         }
         if (isExempt(ownerUuid, entry.actorUuid())) {
             return IncidentClassification.INFO;
@@ -313,6 +321,8 @@ public final class SmartTheftEvaluator {
             case CONSENSUAL_PROXIMITY -> String.format(Locale.ROOT,
                     "Consensual proximity interaction: %s extracted %s near owner %s (%.1f blocks away)",
                     actorDisplay, qtyStr, ownerDisplay, presence.distanceBlocks());
+            case UNCLAIMED_NATURAL -> String.format(Locale.ROOT,
+                    "Unclaimed natural container interaction by %s", actorDisplay);
             case INFO -> String.format(Locale.ROOT,
                     "Benign container interaction by %s", actorDisplay);
         };

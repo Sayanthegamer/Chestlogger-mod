@@ -26,6 +26,11 @@ public enum IncidentClassification {
     CONSENSUAL_PROXIMITY,
 
     /**
+     * Interaction with an unowned natural world-gen container (e.g. dungeon, village, mineshaft chest).
+     */
+    UNCLAIMED_NATURAL,
+
+    /**
      * Benign or low-priority information event (e.g. self-access, trusted teammate interaction, deposits).
      */
     INFO;
