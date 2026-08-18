@@ -11,8 +11,8 @@
 ## Phase 2: Fabric Provenance Networking & TDD Unit Tests
 - [x] Task: Write unit tests for `ChestLogProvenancePayload` codec (`ChestLogProvenancePayloadTest.java`) [b6cd594]
   - [x] Test roundtrip encoding and decoding of provenance graph metadata and node list
-- [~] Task: Implement `ChestLogProvenancePayload.java` and register in `ChestLogNetworking`
-  - [ ] Register clientbound payload type in `ChestLogNetworking.java`
+- [x] Task: Implement `ChestLogProvenancePayload.java` and register in `ChestLogNetworking` [2bb49cc]
+  - [x] Register clientbound payload type in `ChestLogNetworking.java`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Fabric Client-Side `ChestLogProvenanceScreen` & Command Dispatch
