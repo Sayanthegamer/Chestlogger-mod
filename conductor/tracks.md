@@ -35,3 +35,7 @@
 - [x] **Track: Unclaimed Natural Containers, Claim System & Trust UX**
   *Link: [./tracks/unclaimed_natural_and_claims_20260818/index.md](./tracks/unclaimed_natural_and_claims_20260818/index.md)*
 
+- [ ] **Track: Custom In-Game Configuration Menu & Hot-Reload Suite**
+  *Link: [./tracks/custom_config_gui_20260818/index.md](./tracks/custom_config_gui_20260818/index.md)*
+
+
