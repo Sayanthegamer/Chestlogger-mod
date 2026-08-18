@@ -29,13 +29,13 @@
 - [x] Task: Write unit tests for Paper config GUI components and layout [c135f28]
   - [x] Test inventory slot layouts and category tab actions
   - [x] Test chat prompt string editor state machine
-- [~] Task: Implement `PaperChestConfigView` and `PaperChestConfigListener`
-  - [ ] Create 54-slot zero-dependency Bukkit inventory GUI with category tabs and visual toggle states
-  - [ ] Implement click actions for adjusting toggles, cooldowns, and distances
-- [ ] Task: Implement chat-assisted text editor for Discord Webhook URLs and string values
-  - [ ] Implement temporary chat listener capturing admin text input with timeout and cancellation
-- [ ] Task: Register `/chestlog config` in Paper command suite
-  - [ ] Add `/chestlog config` and `/chestlog config reload/get/set` in `PaperCommandExecutor.java`
+- [x] Task: Implement `PaperChestConfigView` and `PaperChestConfigListener` [8565e6e]
+  - [x] Create 54-slot zero-dependency Bukkit inventory GUI with category tabs and visual toggle states
+  - [x] Implement click actions for adjusting toggles, cooldowns, and distances
+- [x] Task: Implement chat-assisted text editor for Discord Webhook URLs and string values [8565e6e]
+  - [x] Implement temporary chat listener capturing admin text input with timeout and cancellation
+- [x] Task: Register `/chestlog config` in Paper command suite [8565e6e]
+  - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `PaperCommandExecutor.java`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
