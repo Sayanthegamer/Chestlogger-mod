@@ -12,10 +12,10 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [40ca164]
 
 ## Phase 2: Fabric Custom Networking & Client-Side Configuration Screen
-- [ ] Task: Write unit tests for `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` codecs
-  - [ ] Test roundtrip packet serialization and deserialization
-  - [ ] Test payload validation and permission checking
-- [ ] Task: Implement Fabric network packet payloads and server packet handlers
+- [x] Task: Write unit tests for `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` codecs [36bd745]
+  - [x] Test roundtrip packet serialization and deserialization
+  - [x] Test payload validation and permission checking
+- [~] Task: Implement Fabric network packet payloads and server packet handlers
   - [ ] Register `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` in `ChestLogNetworking`
   - [ ] Implement server packet receiver with admin permission gating and atomic config saving
 - [ ] Task: Implement client-side `ChestLogConfigScreen`
