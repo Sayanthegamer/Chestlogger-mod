@@ -38,4 +38,7 @@
 - [x] **Track: Custom In-Game Configuration Menu & Hot-Reload Suite**
   *Link: [./tracks/custom_config_gui_20260818/index.md](./tracks/custom_config_gui_20260818/index.md)*
 
+- [ ] **Track: Repository Housekeeping, Obsolete Code Purge & Custom GUI Audit**
+  *Link: [./tracks/repo_cleanup_and_custom_gui_audit_20260818/index.md](./tracks/repo_cleanup_and_custom_gui_audit_20260818/index.md)*
+
 
