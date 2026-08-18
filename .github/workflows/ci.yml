@@ -65,7 +65,7 @@ jobs:
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           if [ "$TAG_NAME" = "$GITHUB_REF" ]; then
-            TAG_NAME="v2.4.1"
+            TAG_NAME="v2.5.0"
           fi
           echo "Publishing release for tag: $TAG_NAME"
           gh release create "$TAG_NAME" \
