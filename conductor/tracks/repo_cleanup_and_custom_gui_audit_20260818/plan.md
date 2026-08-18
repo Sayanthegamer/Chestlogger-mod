@@ -23,9 +23,9 @@
 - [x] Task: Update `/chestlog trace` on Fabric to dispatch packet to player [3ed2b79]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [3ed2b79]
 
-## Phase 4: System Integration, Test Verification & Quality Gates
-- [~] Task: Run automated test suite across all modules (`./gradlew test --rerun-tasks`)
-  - [ ] Execute `./gradlew test` and verify 100% test pass rate
-- [ ] Task: Track Completion Review & Verification
-  - [ ] Verify all acceptance criteria from `spec.md`
-  - [ ] Perform manual and automated verification checkpoint (Refer to workflow.md)
+## Phase 4: System Integration, Test Verification & Quality Gates [checkpoint: 3ed2b79]
+- [x] Task: Run automated test suite across all modules (`./gradlew test --rerun-tasks`) [3ed2b79]
+  - [x] Execute `./gradlew test` and verify 100% test pass rate
+- [x] Task: Track Completion Review & Verification [3ed2b79]
+  - [x] Verify all acceptance criteria from `spec.md`
+  - [x] Perform manual and automated verification checkpoint (Refer to workflow.md)
