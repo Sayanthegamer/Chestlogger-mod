@@ -156,6 +156,22 @@ public final class ChestLoggerCommands {
                 .then(trustNode)
                 .then(untrustNode)
                 .then(trustlistNode)
+                // --- CONFIG & SETTINGS ---
+                .then(Commands.literal("config")
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
+                        .executes(ctx -> executeOpenConfig(ctx.getSource()))
+                        .then(Commands.literal("reload")
+                                .executes(ctx -> executeConfigReload(ctx.getSource())))
+                        .then(Commands.literal("get")
+                                .then(Commands.argument("key", StringArgumentType.word())
+                                        .executes(ctx -> executeConfigGet(ctx.getSource(), StringArgumentType.getString(ctx, "key")))))
+                        .then(Commands.literal("set")
+                                .then(Commands.argument("key", StringArgumentType.word())
+                                        .then(Commands.argument("value", StringArgumentType.greedyString())
+                                                .executes(ctx -> executeConfigSet(ctx.getSource(), StringArgumentType.getString(ctx, "key"), StringArgumentType.getString(ctx, "value")))))))
+                .then(Commands.literal("settings")
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
+                        .executes(ctx -> executeOpenConfig(ctx.getSource())))
                 // --- ROLLBACK ---
                 .then(Commands.literal("rollback")
                         .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
@@ -841,5 +857,127 @@ public final class ChestLoggerCommands {
             }
         }
         return null;
+    }
+
+    private static int executeOpenConfig(CommandSourceStack source) {
+        if (!source.isPlayer()) {
+            source.sendFailure(Component.literal("§c[ChestLogger] In-game GUI config is only available to players. Use /chestlog config <reload|get|set> from console."));
+            return 0;
+        }
+
+        ServerPlayer player = source.getPlayer();
+        com.chestlogger.config.ConfigManager configManager = ChestLoggerMod.getConfigManager();
+        if (configManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Configuration manager is not available."));
+            return 0;
+        }
+
+        com.chestlogger.alert.AlertConfig alertConfig = configManager.getAlertConfig();
+        com.chestlogger.web.WebConfig webConfig = configManager.getWebConfig();
+
+        com.chestlogger.network.ChestLogConfigPayload payload = new com.chestlogger.network.ChestLogConfigPayload(
+                alertConfig != null ? alertConfig.enabled() : false,
+                alertConfig != null ? alertConfig.webhookUrl() : "",
+                alertConfig != null ? alertConfig.botUsername() : "",
+                alertConfig != null ? alertConfig.avatarUrl() : "",
+                alertConfig != null ? alertConfig.rateLimitPerMinute() : 30,
+                configManager.isActionBarNoticeEnabled(),
+                configManager.isInGameChatAlertEnabled(),
+                configManager.getMaxOwnerAlertDistance(),
+                alertConfig != null ? new ArrayList<>(alertConfig.valuableItems()) : Collections.emptyList(),
+                webConfig != null ? webConfig.isEnabled() : false,
+                webConfig != null ? webConfig.getHost() : "127.0.0.1",
+                webConfig != null ? webConfig.getPort() : 8080,
+                webConfig != null ? webConfig.getSecretToken() : ""
+        );
+
+        ServerPlayNetworking.send(player, payload);
+        return 1;
+    }
+
+    private static int executeConfigReload(CommandSourceStack source) {
+        com.chestlogger.config.ConfigManager configManager = ChestLoggerMod.getConfigManager();
+        if (configManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Configuration manager is not available."));
+            return 0;
+        }
+
+        configManager.reloadFromDisk();
+        source.sendSuccess(() -> Component.literal("§a[ChestLogger] All configurations reloaded and hot-swapped from disk successfully."), true);
+        return 1;
+    }
+
+    private static int executeConfigGet(CommandSourceStack source, String key) {
+        com.chestlogger.config.ConfigManager configManager = ChestLoggerMod.getConfigManager();
+        if (configManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Configuration manager is not available."));
+            return 0;
+        }
+
+        com.chestlogger.alert.AlertConfig alert = configManager.getAlertConfig();
+        com.chestlogger.web.WebConfig web = configManager.getWebConfig();
+
+        String lower = key.toLowerCase(Locale.ROOT);
+        String val = switch (lower) {
+            case "alert_enabled", "alertenabled" -> String.valueOf(alert.enabled());
+            case "webhook", "webhook_url", "webhookurl" -> alert.webhookUrl();
+            case "bot_username", "botusername" -> alert.botUsername();
+            case "cooldown", "cooldown_seconds" -> String.valueOf(alert.rateLimitPerMinute());
+            case "hud", "actionbar" -> String.valueOf(configManager.isActionBarNoticeEnabled());
+            case "chat", "chatalerts" -> String.valueOf(configManager.isInGameChatAlertEnabled());
+            case "owner_distance", "distance" -> String.valueOf(configManager.getMaxOwnerAlertDistance());
+            case "web_enabled", "webenabled" -> String.valueOf(web.isEnabled());
+            case "web_host", "webhost" -> web.getHost();
+            case "web_port", "webport" -> String.valueOf(web.getPort());
+            default -> "Unknown setting key: " + key;
+        };
+
+        source.sendSuccess(() -> Component.literal("§e[ChestLogger] " + key + " = §f" + val), false);
+        return 1;
+    }
+
+    private static int executeConfigSet(CommandSourceStack source, String key, String value) {
+        com.chestlogger.config.ConfigManager configManager = ChestLoggerMod.getConfigManager();
+        if (configManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Configuration manager is not available."));
+            return 0;
+        }
+
+        String lower = key.toLowerCase(Locale.ROOT);
+        try {
+            switch (lower) {
+                case "alert_enabled", "alertenabled" -> {
+                    boolean v = Boolean.parseBoolean(value.trim());
+                    configManager.updateAlertConfig(new com.chestlogger.alert.AlertConfig(
+                            v,
+                            configManager.getAlertConfig().webhookUrl(),
+                            configManager.getAlertConfig().botUsername(),
+                            configManager.getAlertConfig().avatarUrl(),
+                            configManager.getAlertConfig().quantityThreshold(),
+                            configManager.getAlertConfig().valuableItems(),
+                            configManager.getAlertConfig().alertOnContainerBreak(),
+                            configManager.getAlertConfig().alertOnValuableTheft(),
+                            configManager.getAlertConfig().rateLimitPerMinute()
+                    ));
+                }
+                case "webhook", "webhook_url", "webhookurl" -> configManager.setDiscordWebhookUrl(value.trim());
+                case "cooldown", "cooldown_seconds" -> configManager.setAlertCooldownSeconds(Integer.parseInt(value.trim()));
+                case "hud", "actionbar" -> configManager.setActionBarNoticeEnabled(Boolean.parseBoolean(value.trim()));
+                case "chat", "chatalerts" -> configManager.setInGameChatAlertEnabled(Boolean.parseBoolean(value.trim()));
+                case "owner_distance", "distance" -> configManager.setMaxOwnerAlertDistance(Integer.parseInt(value.trim()));
+                case "web_enabled", "webenabled" -> configManager.setWebEnabled(Boolean.parseBoolean(value.trim()));
+                case "web_port", "webport" -> configManager.setWebPort(Integer.parseInt(value.trim()));
+                default -> {
+                    source.sendFailure(Component.literal("§c[ChestLogger] Unknown setting key: " + key));
+                    return 0;
+                }
+            }
+            configManager.saveAll();
+            source.sendSuccess(() -> Component.literal("§a[ChestLogger] Updated " + key + " to " + value + " and hot-reloaded."), true);
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Failed updating setting: " + e.getMessage()));
+            return 0;
+        }
     }
 }

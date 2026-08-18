@@ -26,5 +26,15 @@ public class ChestLoggerClient implements ClientModInitializer {
                     });
                 }
         );
+
+        ClientPlayNetworking.registerGlobalReceiver(
+                com.chestlogger.network.ChestLogConfigPayload.TYPE,
+                (payload, context) -> {
+                    context.client().execute(() -> {
+                        Minecraft mc = context.client();
+                        mc.gui.setScreen(new com.chestlogger.client.gui.ChestLogConfigScreen(payload));
+                    });
+                }
+        );
     }
 }
