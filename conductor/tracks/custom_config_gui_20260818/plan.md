@@ -18,11 +18,11 @@
 - [x] Task: Implement Fabric network packet payloads and server packet handlers [b8a1b14]
   - [x] Register `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` in `ChestLogNetworking`
   - [x] Implement server packet receiver with admin permission gating and atomic config saving
-- [~] Task: Implement client-side `ChestLogConfigScreen`
-  - [ ] Build custom `Screen` with tab navigation, text `EditBox` inputs (Discord webhook URL, port, bot name), toggle buttons, and tracked items editor
-  - [ ] Register client networking receiver to open screen on receiving server payload
-- [ ] Task: Register `/chestlog config` command in Fabric Brigadier command suite
-  - [ ] Add `/chestlog config` and `/chestlog config reload/get/set` in `ChestLoggerCommands.java`
+- [x] Task: Implement client-side `ChestLogConfigScreen` [2d475c5]
+  - [x] Build custom `Screen` with tab navigation, text `EditBox` inputs (Discord webhook URL, port, bot name), toggle buttons, and tracked items editor
+  - [x] Register client networking receiver to open screen on receiving server payload
+- [x] Task: Register `/chestlog config` command in Fabric Brigadier command suite [2d475c5]
+  - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `ChestLoggerCommands.java`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Paper In-Game Configuration GUI & Chat-Input Handler
