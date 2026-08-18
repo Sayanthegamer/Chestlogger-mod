@@ -16,11 +16,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2bb49cc]
 
 ## Phase 3: Fabric Client-Side `ChestLogProvenanceScreen` & Command Dispatch
-- [~] Task: Implement client-side `ChestLogProvenanceScreen`
-  - [ ] Build custom `Screen` with visual node cards, confidence badges (`[EXACT_LINKAGE]`, `[HIGH_CONFIDENCE]`, `[PROBABLE]`), timestamp formatting, item icons, and pagination
-- [ ] Task: Register client packet receiver in `ChestLoggerClient.java`
-  - [ ] Open `ChestLogProvenanceScreen` upon receiving `ChestLogProvenancePayload`
-- [ ] Task: Update `/chestlog trace` on Fabric to dispatch packet to player
+- [x] Task: Implement client-side `ChestLogProvenanceScreen` [3ed2b79]
+  - [x] Build custom `Screen` with visual node cards, confidence badges (`[EXACT_LINKAGE]`, `[HIGH_CONFIDENCE]`, `[PROBABLE]`), timestamp formatting, item icons, and pagination
+- [x] Task: Register client packet receiver in `ChestLoggerClient.java` [3ed2b79]
+  - [x] Open `ChestLogProvenanceScreen` upon receiving `ChestLogProvenancePayload`
+- [x] Task: Update `/chestlog trace` on Fabric to dispatch packet to player [3ed2b79]
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
