@@ -22,7 +22,7 @@
   - [x] Verify all unit tests pass (Green Phase)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [dc19277]
 
-## Phase 3: In-Game Commands, Wand Claiming & Multi-Channel Trust UX
+## Phase 3: In-Game Commands, Wand Claiming & Multi-Channel Trust UX [checkpoint: 7e10c06]
 - [x] Task: Write tests for Claim Commands and One-Click Trust actions [a745cc8]
   - [x] Unit & Integration tests for `/chestlog claim`, `/chestlog unclaim`, and wand claim interactions
   - [x] Tests for one-click `[Trust]` chat component generation in broadcasters
@@ -34,7 +34,7 @@
 - [x] Task: Implement Web UI and REST API One-Click Trust Actions [7e10c06]
   - [x] Add `POST /api/v1/trust` handler in `com.chestlogger.web.HttpApiServer`
   - [x] Add "Trust Actor" action button to Web UI Incidents table with live feedback
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [7e10c06]
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
 - [ ] Task: Run automated test suite and verify coverage
