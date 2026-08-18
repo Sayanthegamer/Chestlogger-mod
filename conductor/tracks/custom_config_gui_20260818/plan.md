@@ -1,6 +1,6 @@
 # Implementation Plan: Custom In-Game Configuration Menu & Hot-Reload Suite
 
-## Phase 1: Core Configuration Model & Live Hot-Reload Engine (TDD)
+## Phase 1: Core Configuration Model & Live Hot-Reload Engine (TDD) [checkpoint: 40ca164]
 - [x] Task: Write unit tests for configuration hot-reloading and listener propagation (`ConfigHotReloadTest.java`) [8c18f97]
   - [x] Test `ConfigManager` managing `AlertConfig` and `WebConfig`
   - [x] Test atomic file saving and serialization validation
@@ -9,7 +9,7 @@
   - [x] Create `ConfigManager.java` managing configuration lifecycles and thread-safe listeners
   - [x] Integrate `ConfigManager` with `SmartTheftEvaluator`, `DiscordAlertDispatcher`, and Broadcasters
   - [x] Verify all unit tests pass (Green Phase)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [40ca164]
 
 ## Phase 2: Fabric Custom Networking & Client-Side Configuration Screen
 - [ ] Task: Write unit tests for `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` codecs
