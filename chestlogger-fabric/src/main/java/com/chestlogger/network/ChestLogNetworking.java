@@ -31,6 +31,10 @@ public final class ChestLogNetworking {
                 ChestLogConfigPayload.TYPE,
                 ChestLogConfigPayload.STREAM_CODEC
         );
+        PayloadTypeRegistry.clientboundPlay().register(
+                ChestLogProvenancePayload.TYPE,
+                ChestLogProvenancePayload.STREAM_CODEC
+        );
 
         // Register serverbound payload (Client -> Server)
         PayloadTypeRegistry.serverboundPlay().register(
