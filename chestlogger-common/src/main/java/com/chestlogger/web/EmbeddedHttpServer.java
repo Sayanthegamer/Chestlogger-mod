@@ -30,9 +30,11 @@ public class EmbeddedHttpServer {
     private final Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier;
     private final Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier;
     private final Supplier<IncidentRingBuffer> incidentBufferSupplier;
+    private final Supplier<com.chestlogger.security.TrustManager> trustManagerSupplier;
+    private final Supplier<com.chestlogger.claim.ClaimManager> claimManagerSupplier;
 
     public EmbeddedHttpServer(WebConfig config) {
-        this(config, () -> null, () -> null, () -> null, () -> null, () -> null);
+        this(config, () -> null, () -> null, () -> null, () -> null, () -> null, () -> null, () -> null);
     }
 
     public EmbeddedHttpServer(
@@ -42,7 +44,7 @@ public class EmbeddedHttpServer {
             Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier,
             Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier
     ) {
-        this(config, queueSupplier, indexManagerSupplier, queryEngineSupplier, sessionManagerSupplier, () -> null);
+        this(config, queueSupplier, indexManagerSupplier, queryEngineSupplier, sessionManagerSupplier, () -> null, () -> null, () -> null);
     }
 
     public EmbeddedHttpServer(
@@ -53,12 +55,27 @@ public class EmbeddedHttpServer {
             Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier,
             Supplier<IncidentRingBuffer> incidentBufferSupplier
     ) {
+        this(config, queueSupplier, indexManagerSupplier, queryEngineSupplier, sessionManagerSupplier, incidentBufferSupplier, () -> null, () -> null);
+    }
+
+    public EmbeddedHttpServer(
+            WebConfig config,
+            Supplier<com.chestlogger.event.TransactionEventQueue> queueSupplier,
+            Supplier<com.chestlogger.index.PersistentIndexManager> indexManagerSupplier,
+            Supplier<com.chestlogger.query.QueryEngine> queryEngineSupplier,
+            Supplier<com.chestlogger.query.QuerySessionManager> sessionManagerSupplier,
+            Supplier<IncidentRingBuffer> incidentBufferSupplier,
+            Supplier<com.chestlogger.security.TrustManager> trustManagerSupplier,
+            Supplier<com.chestlogger.claim.ClaimManager> claimManagerSupplier
+    ) {
         this.config = config != null ? config : new WebConfig();
         this.queueSupplier = queueSupplier != null ? queueSupplier : () -> null;
         this.indexManagerSupplier = indexManagerSupplier != null ? indexManagerSupplier : () -> null;
         this.queryEngineSupplier = queryEngineSupplier != null ? queryEngineSupplier : () -> null;
         this.sessionManagerSupplier = sessionManagerSupplier != null ? sessionManagerSupplier : () -> null;
         this.incidentBufferSupplier = incidentBufferSupplier != null ? incidentBufferSupplier : () -> null;
+        this.trustManagerSupplier = trustManagerSupplier != null ? trustManagerSupplier : () -> null;
+        this.claimManagerSupplier = claimManagerSupplier != null ? claimManagerSupplier : () -> null;
     }
 
     public synchronized void start() {
@@ -176,6 +193,9 @@ public class EmbeddedHttpServer {
         }
         if (!customContexts.containsKey("/api/v1/incidents")) {
             server.createContext("/api/v1/incidents", new QueryHttpHandler(config, queryEngineSupplier, sessionManagerSupplier, incidentBufferSupplier));
+        }
+        if (!customContexts.containsKey("/api/v1/trust")) {
+            server.createContext("/api/v1/trust", new TrustHttpHandler(config, trustManagerSupplier));
         }
         if (!customContexts.containsKey("/api/v1/export")) {
             server.createContext("/api/v1/export", new ExportHttpHandler(config, queryEngineSupplier));

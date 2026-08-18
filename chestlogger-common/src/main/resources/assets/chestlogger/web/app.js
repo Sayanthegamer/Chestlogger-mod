@@ -1805,6 +1805,15 @@
                             </svg>
                             <span>Trace Journey</span>
                         </button>
+                        ${inc.ownerUuid && inc.actorUuid ? `
+                        <button type="button" class="btn btn-sm btn-outline btn-trust-inc-actor" data-owner-uuid="${inc.ownerUuid}" data-actor-uuid="${inc.actorUuid}" data-actor-name="${escapeHtml(inc.actorName || '')}" data-owner-name="${escapeHtml(inc.ownerName || 'Owner')}">
+                            <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <polyline points="16 11 18 13 22 9"/>
+                            </svg>
+                            <span>Trust Actor</span>
+                        </button>` : ''}
                     </div>
                 </div>
             `;
@@ -1818,6 +1827,51 @@
                 const idx = parseInt(btn.dataset.idx, 10);
                 if (filtered[idx]) {
                     openRollbackModal(filtered[idx]);
+                }
+            });
+        });
+
+        elements.incidentsContainer.querySelectorAll('.btn-trust-inc-actor').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const ownerUuid = btn.dataset.ownerUuid;
+                const actorUuid = btn.dataset.actorUuid;
+                const actorName = btn.dataset.actorName;
+                const ownerName = btn.dataset.ownerName;
+                if (!ownerUuid || !actorUuid) return;
+
+                if (!confirm(`Grant trust to ${actorName} for ${ownerName}'s containers? Future interactions will no longer generate alerts.`)) {
+                    return;
+                }
+
+                btn.disabled = true;
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<span>Trusting...</span>';
+
+                try {
+                    const resp = await fetch('/api/v1/trust', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-ChestLogger-Auth': state.token || ''
+                        },
+                        body: JSON.stringify({ ownerUuid, trustedUuid: actorUuid })
+                    });
+
+                    if (resp.ok) {
+                        btn.classList.remove('btn-outline');
+                        btn.classList.add('btn-success');
+                        btn.innerHTML = '<span>✓ Trusted</span>';
+                        showToast(`Successfully trusted ${actorName} for ${ownerName}!`, 'success');
+                    } else {
+                        const err = await resp.json().catch(() => ({}));
+                        alert(`Failed to trust player: ${err.error || resp.statusText}`);
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    }
+                } catch (e) {
+                    alert(`Network error: ${e.message}`);
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
                 }
             });
         });
