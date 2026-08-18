@@ -47,4 +47,7 @@
 - [x] **Track: Comprehensive Project-Wide Audit & Finalized Video-Grade Tutorial Manual**
   *Link: [./tracks/finalized_tutorial_manual_20260818/index.md](./tracks/finalized_tutorial_manual_20260818/index.md)*
 
+- [x] **Track: Strict Player vs Admin Command & Permission Segregation Audit**
+  *Link: [./tracks/strict_permissions_audit_20260818/index.md](./tracks/strict_permissions_audit_20260818/index.md)*
+
 

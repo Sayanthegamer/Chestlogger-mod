@@ -57,6 +57,7 @@ public final class ChestLoggerCommands {
 
     public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         var inspectNode = Commands.literal("inspect")
+                .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                 .executes(ctx -> {
                     if (ctx.getSource().isPlayer()) {
                         return executeToggleInspect(ctx.getSource());
@@ -75,6 +76,7 @@ public final class ChestLoggerCommands {
                                         .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), EntityArgument.getPlayer(ctx, "player").getUUID(), 0, IntegerArgumentType.getInteger(ctx, "page"))))));
 
         var iNode = Commands.literal("i")
+                .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                 .executes(ctx -> executeToggleInspect(ctx.getSource()))
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> executeInspect(ctx.getSource(), ctx.getSource().getPlayerOrException().blockPosition(), null, 0, IntegerArgumentType.getInteger(ctx, "page"))))
@@ -84,6 +86,7 @@ public final class ChestLoggerCommands {
                                 .executes(ctx -> executeInspect(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), null, 0, IntegerArgumentType.getInteger(ctx, "page")))));
 
         var wandNode = Commands.literal("wand")
+                .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                 .executes(ctx -> executeWandInfo(ctx.getSource()));
 
         var traceNode = Commands.literal("trace")
@@ -91,6 +94,7 @@ public final class ChestLoggerCommands {
                 .then(Commands.literal("hand")
                         .executes(ctx -> executeTraceHand(ctx.getSource())))
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
                         .executes(ctx -> executeTracePos(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), 0))
                         .then(Commands.argument("slot", IntegerArgumentType.integer(0, 54))
                                 .executes(ctx -> executeTracePos(ctx.getSource(), BlockPosArgument.getBlockPos(ctx, "pos"), IntegerArgumentType.getInteger(ctx, "slot")))));

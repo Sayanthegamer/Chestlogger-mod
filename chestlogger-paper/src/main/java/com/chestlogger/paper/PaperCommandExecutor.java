@@ -323,17 +323,16 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     }
 
     private void handleTrace(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("chestlogger.inspect") && !sender.hasPermission("chestlogger.admin")) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to trace items.");
-            return;
-        }
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage(ChatColor.RED + "Trace command is only available to in-game players.");
             return;
         }
 
         if (args.length >= 4) {
+            if (!sender.hasPermission("chestlogger.inspect") && !sender.hasPermission("chestlogger.admin")) {
+                sender.sendMessage(ChatColor.RED + "You do not have permission to trace container coordinates.");
+                return;
+            }
             int x, y, z;
             try {
                 x = Integer.parseInt(args[1]);
@@ -400,6 +399,11 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         }
 
         // Trace main hand item
+        if (!player.hasPermission("chestlogger.trace") && !player.hasPermission("chestlogger.inspect") && !player.hasPermission("chestlogger.admin")) {
+            player.sendMessage(ChatColor.RED + "You do not have permission to trace items.");
+            return;
+        }
+
         org.bukkit.inventory.ItemStack handItem = player.getInventory().getItemInMainHand();
         if (handItem == null || handItem.getType().isAir()) {
             player.sendMessage(ChatColor.RED + "[ChestLogger] You must hold an item in your main hand to trace it, or specify: /chestlog trace <x> <y> <z> [slot]");
@@ -881,7 +885,42 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             String current = args[0].toLowerCase(Locale.ROOT);
-            List<String> subcommands = List.of("i", "inspect", "wand", "claim", "unclaim", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web", "config", "settings");
+            List<String> subcommands = new ArrayList<>();
+
+            // Player-accessible subcommands
+            if (sender.hasPermission("chestlogger.claim") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.claim")) {
+                subcommands.add("claim");
+                subcommands.add("unclaim");
+            }
+            if (sender.hasPermission("chestlogger.trust") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.trust")) {
+                subcommands.add("trust");
+                subcommands.add("untrust");
+                subcommands.add("trustlist");
+            }
+            if (sender.hasPermission("chestlogger.trace") || sender.hasPermission("chestlogger.inspect") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.trace")) {
+                subcommands.add("trace");
+            }
+
+            // Staff / Moderator / Admin subcommands
+            if (sender.hasPermission("chestlogger.inspect") || sender.hasPermission("chestlogger.admin")) {
+                subcommands.add("i");
+                subcommands.add("inspect");
+                subcommands.add("wand");
+            }
+            if (sender.hasPermission("chestlogger.rollback") || sender.hasPermission("chestlogger.admin")) {
+                subcommands.add("rollback");
+            }
+            if (sender.hasPermission("chestlogger.stats") || sender.hasPermission("chestlogger.admin")) {
+                subcommands.add("stats");
+            }
+            if (sender.hasPermission("chestlogger.web") || sender.hasPermission("chestlogger.admin")) {
+                subcommands.add("web");
+            }
+            if (sender.hasPermission("chestlogger.admin") || sender.isOp()) {
+                subcommands.add("config");
+                subcommands.add("settings");
+            }
+
             return subcommands.stream().filter(s -> s.startsWith(current)).toList();
         }
         if (args.length == 2 && ("config".equalsIgnoreCase(args[0]) || "settings".equalsIgnoreCase(args[0]))) {

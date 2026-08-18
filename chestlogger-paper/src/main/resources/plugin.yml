@@ -18,6 +18,12 @@ permissions:
   chestlogger.trust:
     description: Access to trust, untrust, and view trusted players list
     default: true
+  chestlogger.claim:
+    description: Access to claim and unclaim own containers
+    default: true
+  chestlogger.trace:
+    description: Access to trace item provenance for items held in main hand
+    default: true
   chestlogger.inspect:
     description: Access to inspect containers and view transaction history
     default: op

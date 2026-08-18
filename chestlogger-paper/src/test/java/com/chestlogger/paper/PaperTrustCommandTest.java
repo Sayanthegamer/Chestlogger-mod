@@ -191,13 +191,20 @@ class PaperTrustCommandTest {
     }
 
     @Test
-    @DisplayName("Tab completion suggests trust, untrust, and trustlist subcommands")
+    @DisplayName("Tab completion suggests player commands for regular players and hides admin commands")
     void testTabCompletionSubcommands() {
         TestPlayer alice = new TestPlayer("Alice", UUID.randomUUID(), Set.of("chestlogger.trust"));
         Player aliceProxy = alice.createProxy();
 
         List<String> completions = executor.onTabComplete(aliceProxy, mockCommand, "chestlog", new String[]{""});
-        assertThat(completions).contains("trust", "untrust", "trustlist", "inspect", "rollback", "stats");
+        assertThat(completions).contains("trust", "untrust", "trustlist", "claim", "unclaim", "trace");
+        assertThat(completions).doesNotContain("rollback", "stats", "inspect", "config", "settings", "web");
+
+        TestPlayer admin = new TestPlayer("AdminBob", UUID.randomUUID(), Set.of("chestlogger.admin"));
+        Player adminProxy = admin.createProxy();
+
+        List<String> adminCompletions = executor.onTabComplete(adminProxy, mockCommand, "chestlog", new String[]{""});
+        assertThat(adminCompletions).contains("trust", "untrust", "trustlist", "claim", "unclaim", "trace", "inspect", "rollback", "stats", "config", "settings", "web");
 
         List<String> trCompletions = executor.onTabComplete(aliceProxy, mockCommand, "chestlog", new String[]{"tr"});
         assertThat(trCompletions).contains("trust", "trace");
