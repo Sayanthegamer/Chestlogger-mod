@@ -25,7 +25,7 @@
   - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `ChestLoggerCommands.java`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2d475c5]
 
-## Phase 3: Paper In-Game Configuration GUI & Chat-Input Handler
+## Phase 3: Paper In-Game Configuration GUI & Chat-Input Handler [checkpoint: 8565e6e]
 - [x] Task: Write unit tests for Paper config GUI components and layout [c135f28]
   - [x] Test inventory slot layouts and category tab actions
   - [x] Test chat prompt string editor state machine
@@ -36,11 +36,11 @@
   - [x] Implement temporary chat listener capturing admin text input with timeout and cancellation
 - [x] Task: Register `/chestlog config` in Paper command suite [8565e6e]
   - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `PaperCommandExecutor.java`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [8565e6e]
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
-- [ ] Task: Run automated test suite and verify coverage
-  - [ ] Execute `./gradlew test` across all modules (`common`, `fabric`, `paper`)
+- [~] Task: Run comprehensive test suite across common, Fabric, and Paper modules
+  - [ ] Execute `./gradlew test` and verify zero regressions across all modules
   - [ ] Verify 100% test pass rate
 - [ ] Task: Track Completion Review & Verification
   - [ ] Verify all acceptance criteria from `spec.md`
