@@ -11,7 +11,7 @@
   - [x] Verify all unit tests pass (Green Phase)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [40ca164]
 
-## Phase 2: Fabric Custom Networking & Client-Side Configuration Screen
+## Phase 2: Fabric Custom Networking & Client-Side Configuration Screen [checkpoint: 2d475c5]
 - [x] Task: Write unit tests for `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` codecs [36bd745]
   - [x] Test roundtrip packet serialization and deserialization
   - [x] Test payload validation and permission checking
@@ -23,7 +23,7 @@
   - [x] Register client networking receiver to open screen on receiving server payload
 - [x] Task: Register `/chestlog config` command in Fabric Brigadier command suite [2d475c5]
   - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `ChestLoggerCommands.java`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2d475c5]
 
 ## Phase 3: Paper In-Game Configuration GUI & Chat-Input Handler
 - [ ] Task: Write unit tests for Paper config GUI components and layout
