@@ -1,12 +1,12 @@
 # Implementation Plan: Fabric GUI Visual Polish & Column Alignment
 
-## Phase 1: Provenance Screen Layout & Action Formatting Overhaul
-- [ ] Task: Refactor `ChestLogProvenanceScreen.java`
-  - [ ] Implement `formatActionName(String rawAction)` mapping long enum strings to clean labels (`Shift Extract`, `Hopper Out`, etc.)
-  - [ ] Format confidence badges concisely (`[EXACT]`, `[HIGH]`, `[PROB]`)
-  - [ ] Redefine proportional column coordinates (`getColumnX`) with safety margins
-  - [ ] Add item name truncation and hover tooltip for complete unclipped details
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 1: Provenance Screen Layout & Action Formatting Overhaul [checkpoint: a7bbdee]
+- [x] Task: Refactor `ChestLogProvenanceScreen.java` [a7bbdee]
+  - [x] Implement `formatActionName(String rawAction)` mapping long enum strings to clean labels (`Shift Extract`, `Hopper Out`, etc.)
+  - [x] Format confidence badges concisely (`[EXACT]`, `[HIGH]`, `[PROB]`)
+  - [x] Redefine proportional column coordinates (`getColumnX`) with safety margins
+  - [x] Add item name truncation and hover tooltip for complete unclipped details
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [a7bbdee]
 
 ## Phase 2: Configuration Screen Container Panel, Field Labels & Layout Polish
 - [ ] Task: Overhaul `ChestLogConfigScreen.java` visual structure
