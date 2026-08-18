@@ -12,11 +12,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [edc1884]
 
 ## Phase 2: Claim Management Engine & Persistent Claim Store (TDD)
-- [ ] Task: Write unit tests for `ClaimManager` and Double Chest claiming
-  - [ ] Write tests for `ClaimManager` registering, unclaiming, checking ownership, and batch claiming nearby containers
-  - [ ] Write tests for linked double chest claim propagation (claiming one half claims both)
-  - [ ] Write tests for atomic JSON serialization/deserialization of `claims.json`
-- [ ] Task: Implement `ClaimManager` in `chestlogger-common`
+- [x] Task: Write unit tests for `ClaimManager` and Double Chest claiming [bf7a9b2]
+  - [x] Write tests for `ClaimManager` registering, unclaiming, checking ownership, and batch claiming nearby containers
+  - [x] Write tests for linked double chest claim propagation (claiming one half claims both)
+  - [x] Write tests for atomic JSON serialization/deserialization of `claims.json`
+- [~] Task: Implement `ClaimManager` in `chestlogger-common`
   - [ ] Implement `ClaimManager` with thread-safe maps, double-chest linking, and JSON persistence
   - [ ] Integrate `ClaimManager` with `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
   - [ ] Verify all unit tests pass (Green Phase)
