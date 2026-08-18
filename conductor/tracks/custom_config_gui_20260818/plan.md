@@ -26,10 +26,10 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2d475c5]
 
 ## Phase 3: Paper In-Game Configuration GUI & Chat-Input Handler
-- [ ] Task: Write unit tests for Paper config GUI components and layout
-  - [ ] Test inventory slot layouts and category tab actions
-  - [ ] Test chat prompt string editor state machine
-- [ ] Task: Implement `PaperChestConfigView` and `PaperChestConfigListener`
+- [x] Task: Write unit tests for Paper config GUI components and layout [c135f28]
+  - [x] Test inventory slot layouts and category tab actions
+  - [x] Test chat prompt string editor state machine
+- [~] Task: Implement `PaperChestConfigView` and `PaperChestConfigListener`
   - [ ] Create 54-slot zero-dependency Bukkit inventory GUI with category tabs and visual toggle states
   - [ ] Implement click actions for adjusting toggles, cooldowns, and distances
 - [ ] Task: Implement chat-assisted text editor for Discord Webhook URLs and string values
