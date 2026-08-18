@@ -11,7 +11,7 @@
   - [x] Verify all unit tests pass (Green Phase)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [edc1884]
 
-## Phase 2: Claim Management Engine & Persistent Claim Store (TDD)
+## Phase 2: Claim Management Engine & Persistent Claim Store (TDD) [checkpoint: dc19277]
 - [x] Task: Write unit tests for `ClaimManager` and Double Chest claiming [bf7a9b2]
   - [x] Write tests for `ClaimManager` registering, unclaiming, checking ownership, and batch claiming nearby containers
   - [x] Write tests for linked double chest claim propagation (claiming one half claims both)
@@ -20,7 +20,7 @@
   - [x] Implement `ClaimManager` with thread-safe maps, double-chest linking, and JSON persistence
   - [x] Integrate `ClaimManager` with `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
   - [x] Verify all unit tests pass (Green Phase)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [dc19277]
 
 ## Phase 3: In-Game Commands, Wand Claiming & Multi-Channel Trust UX
 - [ ] Task: Write tests for Claim Commands and One-Click Trust actions
