@@ -50,4 +50,7 @@
 - [x] **Track: Strict Player vs Admin Command & Permission Segregation Audit**
   *Link: [./tracks/strict_permissions_audit_20260818/index.md](./tracks/strict_permissions_audit_20260818/index.md)*
 
+- [x] **Track: Player Mass-Claiming, Anti-Sniping Historical Protection & Claim Transfers**
+  *Link: [./tracks/mass_claim_and_anti_sniping_20260818/index.md](./tracks/mass_claim_and_anti_sniping_20260818/index.md)*
+
 

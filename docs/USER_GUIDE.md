@@ -36,15 +36,26 @@ STEP 3: Want to see who took items from your chest?
 
 ## 2. 🔒 How Your Containers Are Protected
 
-### 1. Automatic Claiming on Placement
+### 1. Automatic Claiming on Placement & Safe Mass Claiming
 Whenever you place a **Chest, Trapped Chest, Barrel, Shulker Box, or Crafter**, ChestLogger automatically logs you as the registered owner.
 * **Double Chests:** If you place a chest next to an existing one to create a double chest, both sides are automatically linked under your ownership.
-* **Wilderness Containers:** Unclaimed chests found in dungeons or ruins can be claimed by standing near them, looking at the chest, and typing:
+* **Mass Claiming Storage Rooms (`/chestlog claim <radius>`):** Built a massive warehouse or base? Stand in the middle and type:
   ```bash
-  /chestlog claim
+  /chestlog claim 12
+  ```
+  This automatically claims all containers within 12 blocks for you in a single click (up to 16 blocks radius for players). Any chests belonging to other players or inside another player's land claims are automatically skipped and protected!
+* **Transferring Chest Ownership (`/chestlog transfer <newOwner>`):** Want to hand over a chest or warehouse section to a friend? Look at the container and type:
+  ```bash
+  /chestlog transfer Alex
   ```
 
-### 2. How the Server Catches Thieves
+### 2. Built-in Anti-Sniping Protection (No Stolen Claims!)
+What if someone tries to claim your chests before you had a chance to claim them?
+* **Transaction Provenance Defense:** ChestLogger checks the original block placement history. If you placed the container, an untrusted stranger who types `/chestlog claim` will be blocked with:  
+  `§c[ChestLogger] This container was placed by <YourName> and cannot be claimed by you!`
+* **Land Claim Hook:** On Paper servers with GriefPrevention, Towny, Lands, or WorldGuard, ChestLogger automatically respects your territory. Strangers can never claim containers inside your land claims.
+
+### 3. How the Server Catches Thieves
 If an unauthorized stranger opens or breaks your chest:
 * If you are **Offline** or **far away (>24 blocks)**, ChestLogger instantly flags the theft as a security incident and alerts online server staff.
 * If someone loots multiple chests in your base rapidly, an emergency **`CRITICAL_RAID`** alert is triggered.
@@ -171,11 +182,11 @@ ChestLogger includes an item tracking system that lets you view the entire histo
 
 | Command | Shorthand | What It Does |
 |---|---|---|
-| `/chestlog i` | `/cl i` | Toggle click inspection (Left-click for chat, Right-click for GUI) |
-| `/chestlog wand` | `/cl wand` | Shows your inspection tool details and quick tips |
-| `/chestlog trace` | `/cl trace` | Trace the full history and origin of the item in your main hand |
-| `/chestlog claim` | `/cl claim` | Claim ownership of the container you are currently looking at |
+| `/chestlog claim` | `/cl claim` | Claim ownership of the container you are looking at |
+| `/chestlog claim <radius>` | `/cl claim <radius>` | Mass-claim all containers around you (up to 16 blocks) |
+| `/chestlog transfer <player>` | `/cl transfer <player>` | Transfer ownership of your container to another player |
 | `/chestlog unclaim` | `/cl unclaim` | Release your claim from the container you are looking at |
 | `/chestlog trust <player>` | `/cl trust <player>` | Trust a teammate so they can access your chests without alerts |
 | `/chestlog untrust <player>` | `/cl untrust <player>` | Remove a player from your trust list |
 | `/chestlog trustlist` | `/cl trustlist` | List all players you currently trust |
+| `/chestlog trace` *(or `trace hand`)* | `/cl trace` | Trace the full history and origin of the item in your main hand |

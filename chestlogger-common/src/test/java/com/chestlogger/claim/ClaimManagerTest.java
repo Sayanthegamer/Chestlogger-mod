@@ -157,6 +157,31 @@ class ClaimManagerTest {
         assertThat(claimManager.getOwnerName(DIM_OVERWORLD, pos)).isEqualTo("AliceNewName");
     }
 
+    @Test
+    @DisplayName("Transferring single and double chest claims successfully updates ownership and indexes")
+    void testTransferClaimSingleAndDouble() {
+        long singlePos = BlockPosUtil.pack(50, 64, 50);
+        claimManager.claim(DIM_OVERWORLD, singlePos, alice, "Alice");
+
+        boolean singleTransferred = claimManager.transferClaim(DIM_OVERWORLD, singlePos, bob, "Bob");
+        assertThat(singleTransferred).isTrue();
+        assertThat(claimManager.getOwner(DIM_OVERWORLD, singlePos)).isEqualTo(bob);
+        assertThat(claimManager.getOwnerName(DIM_OVERWORLD, singlePos)).isEqualTo("Bob");
+
+        long left = BlockPosUtil.pack(10, 64, 10);
+        long right = BlockPosUtil.pack(11, 64, 10);
+        claimManager.claim(DIM_OVERWORLD, left, right, alice, "Alice");
+
+        boolean doubleTransferred = claimManager.transferClaim(DIM_OVERWORLD, left, bob, "Bob");
+        assertThat(doubleTransferred).isTrue();
+        assertThat(claimManager.getOwner(DIM_OVERWORLD, left)).isEqualTo(bob);
+        assertThat(claimManager.getOwner(DIM_OVERWORLD, right)).isEqualTo(bob);
+        assertThat(claimManager.getClaimsByOwner(alice).stream().map(ClaimEntry::packedBlockPos).toList()).doesNotContain(left);
+        assertThat(claimManager.getClaimsByOwner(bob).stream().map(ClaimEntry::packedBlockPos).toList()).contains(left, right);
+
+        assertThat(claimManager.transferClaim(DIM_OVERWORLD, BlockPosUtil.pack(999, 64, 999), bob, "Bob")).isFalse();
+    }
+
     // ---------------------------------------------------------------------------------------------
     // 4. Double-chest partner claiming
     // ---------------------------------------------------------------------------------------------

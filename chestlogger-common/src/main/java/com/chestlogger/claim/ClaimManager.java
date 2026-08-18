@@ -165,6 +165,32 @@ public final class ClaimManager {
     }
 
     /**
+     * Transfers ownership of a container to a new owner. If the container is part of a double chest,
+     * transfers both halves atomically.
+     *
+     * @param dimension Dimension identifier.
+     * @param packedPos Packed 64-bit coordinate.
+     * @param newOwnerUuid UUID of the new owner.
+     * @param newOwnerName Display name of the new owner.
+     * @return true if container was claimed and successfully transferred, false otherwise.
+     */
+    public boolean transferClaim(String dimension, long packedPos, UUID newOwnerUuid, String newOwnerName) {
+        if (dimension == null || dimension.isBlank() || newOwnerUuid == null || newOwnerName == null) {
+            return false;
+        }
+        String key = toKey(dimension, packedPos);
+        ClaimEntry entry = claimsByKey.get(key);
+        if (entry == null) {
+            return false;
+        }
+        if (entry.partnerPackedPos() != null) {
+            return claim(dimension, packedPos, entry.partnerPackedPos(), newOwnerUuid, newOwnerName);
+        } else {
+            return claim(dimension, packedPos, newOwnerUuid, newOwnerName);
+        }
+    }
+
+    /**
      * Checks if a container coordinate is claimed.
      */
     public boolean isClaimed(String dimension, long packedPos) {

@@ -197,17 +197,17 @@ class PaperTrustCommandTest {
         Player aliceProxy = alice.createProxy();
 
         List<String> completions = executor.onTabComplete(aliceProxy, mockCommand, "chestlog", new String[]{""});
-        assertThat(completions).contains("trust", "untrust", "trustlist", "claim", "unclaim", "trace");
+        assertThat(completions).contains("trust", "untrust", "trustlist", "claim", "transfer", "unclaim", "trace");
         assertThat(completions).doesNotContain("rollback", "stats", "inspect", "config", "settings", "web");
 
         TestPlayer admin = new TestPlayer("AdminBob", UUID.randomUUID(), Set.of("chestlogger.admin"));
         Player adminProxy = admin.createProxy();
 
         List<String> adminCompletions = executor.onTabComplete(adminProxy, mockCommand, "chestlog", new String[]{""});
-        assertThat(adminCompletions).contains("trust", "untrust", "trustlist", "claim", "unclaim", "trace", "inspect", "rollback", "stats", "config", "settings", "web");
+        assertThat(adminCompletions).contains("trust", "untrust", "trustlist", "claim", "transfer", "unclaim", "trace", "inspect", "rollback", "stats", "config", "settings", "web");
 
         List<String> trCompletions = executor.onTabComplete(aliceProxy, mockCommand, "chestlog", new String[]{"tr"});
-        assertThat(trCompletions).contains("trust", "trace");
+        assertThat(trCompletions).contains("trust", "trace", "transfer");
     }
 
     @Test

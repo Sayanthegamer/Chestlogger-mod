@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import com.chestlogger.claim.AntiSnipingGuard;
 import com.chestlogger.provenance.ItemProvenanceResolver;
 import com.chestlogger.provenance.ProvenanceGraph;
 import com.chestlogger.provenance.ProvenanceNode;
@@ -143,8 +144,39 @@ public final class ChestLoggerCommands {
                 .requires(CommandSourceStack::isPlayer)
                 .executes(ctx -> executeClaim(ctx.getSource(), 0))
                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32))
-                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
-                        .executes(ctx -> executeClaim(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "radius"))));
+                        .executes(ctx -> executeClaim(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "radius"))))
+                .then(Commands.literal("transfer")
+                        .then(Commands.argument("newOwner", StringArgumentType.word())
+                                .suggests((ctx, builder) -> {
+                                    var server = ctx.getSource().getServer();
+                                    if (server != null) {
+                                        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                                            String name = p.getGameProfile().name();
+                                            if (name.toLowerCase(Locale.ROOT).startsWith(builder.getRemainingLowerCase())) {
+                                                builder.suggest(name);
+                                            }
+                                        }
+                                    }
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> executeTransferClaim(ctx.getSource(), StringArgumentType.getString(ctx, "newOwner")))));
+
+        var transferNode = Commands.literal("transfer")
+                .requires(CommandSourceStack::isPlayer)
+                .then(Commands.argument("newOwner", StringArgumentType.word())
+                        .suggests((ctx, builder) -> {
+                            var server = ctx.getSource().getServer();
+                            if (server != null) {
+                                for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                                    String name = p.getGameProfile().name();
+                                    if (name.toLowerCase(Locale.ROOT).startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(name);
+                                    }
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
+                        .executes(ctx -> executeTransferClaim(ctx.getSource(), StringArgumentType.getString(ctx, "newOwner"))));
 
         var unclaimNode = Commands.literal("unclaim")
                 .requires(CommandSourceStack::isPlayer)
@@ -155,6 +187,7 @@ public final class ChestLoggerCommands {
                 .then(iNode)
                 .then(wandNode)
                 .then(claimNode)
+                .then(transferNode)
                 .then(unclaimNode)
                 .then(traceNode)
                 .then(trustNode)
@@ -733,16 +766,17 @@ public final class ChestLoggerCommands {
         }
 
         String dim = player.level().dimension().identifier().toString();
+        boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
 
         if (radius > 0) {
-            boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
-            if (!isOp) {
-                source.sendFailure(Component.literal("§c[ChestLogger] Radius claiming requires admin permissions."));
+            if (radius > 16 && !isOp) {
+                source.sendFailure(Component.literal("§c[ChestLogger] Maximum radius for regular players is 16 blocks (Admins can claim up to 32)."));
                 return 0;
             }
 
             BlockPos center = player.blockPosition();
             int claimed = 0;
+            int skipped = 0;
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dy = -radius; dy <= radius; dy++) {
                     for (int dz = -radius; dz <= radius; dz++) {
@@ -751,7 +785,31 @@ public final class ChestLoggerCommands {
                             BlockEntity be = player.level().getBlockEntity(p);
                             if (be instanceof Container) {
                                 long packed = BlockPosUtil.pack(p.getX(), p.getY(), p.getZ());
-                                claimManager.claim(dim, packed, player.getUUID(), player.getName().getString());
+                                UUID existingOwner = claimManager.getOwner(dim, packed);
+                                if (existingOwner != null) {
+                                    if (existingOwner.equals(player.getUUID())) {
+                                        continue; // already owned by claimant
+                                    } else if (!isOp) {
+                                        skipped++;
+                                        continue; // skip other player's claimed containers
+                                    }
+                                } else {
+                                    var snipingResult = AntiSnipingGuard.evaluateClaim(
+                                            ChestLoggerMod.getQueryEngine(),
+                                            ChestLoggerMod.getTrustManager(),
+                                            dim, packed, player.getUUID(), isOp
+                                    );
+                                    if (!snipingResult.allowed()) {
+                                        skipped++;
+                                        continue; // skip containers placed/used by other players
+                                    }
+                                }
+                                Long partner = findDoubleChestPartner(player.level(), p);
+                                if (partner != null) {
+                                    claimManager.claim(dim, packed, partner, player.getUUID(), player.getName().getString());
+                                } else {
+                                    claimManager.claim(dim, packed, player.getUUID(), player.getName().getString());
+                                }
                                 claimed++;
                             }
                         }
@@ -759,7 +817,8 @@ public final class ChestLoggerCommands {
                 }
             }
             final int count = claimed;
-            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Batch claimed %d container(s) within %d blocks.", count, radius)), true);
+            final int skipCount = skipped;
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Mass-claimed %d container(s) within %d blocks (%d skipped: owned/protected by others).", count, radius, skipCount)), true);
             return 1;
         }
 
@@ -780,11 +839,22 @@ public final class ChestLoggerCommands {
         long packed = BlockPosUtil.pack(targetPos.getX(), targetPos.getY(), targetPos.getZ());
         UUID existingOwner = claimManager.getOwner(dim, packed);
         String existingName = claimManager.getOwnerName(dim, packed);
-        boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
 
         if (existingOwner != null && !existingOwner.equals(player.getUUID()) && !isOp) {
             source.sendFailure(Component.literal("§c[ChestLogger] Container is already claimed by " + (existingName != null ? existingName : "another player") + "!"));
             return 0;
+        }
+
+        if (existingOwner == null) {
+            var snipingResult = AntiSnipingGuard.evaluateClaim(
+                    ChestLoggerMod.getQueryEngine(),
+                    ChestLoggerMod.getTrustManager(),
+                    dim, packed, player.getUUID(), isOp
+            );
+            if (!snipingResult.allowed()) {
+                source.sendFailure(Component.literal("§c[ChestLogger] Claim blocked: " + snipingResult.reason()));
+                return 0;
+            }
         }
 
         Long partnerPacked = findDoubleChestPartner(player.level(), targetPos);
@@ -796,6 +866,74 @@ public final class ChestLoggerCommands {
             source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Container at [%d, %d, %d] successfully claimed!", targetPos.getX(), targetPos.getY(), targetPos.getZ())), false);
         }
         return 1;
+    }
+
+    private static int executeTransferClaim(CommandSourceStack source, String newOwnerName) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("§cThis command can only be executed by a player."));
+            return 0;
+        }
+
+        var claimManager = ChestLoggerMod.getClaimManager();
+        if (claimManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Claim manager is not active."));
+            return 0;
+        }
+
+        net.minecraft.world.phys.HitResult hit = player.pick(6.0D, 0.0F, false);
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You must be looking at a container to transfer ownership."));
+            return 0;
+        }
+
+        BlockPos targetPos = ((net.minecraft.world.phys.BlockHitResult) hit).getBlockPos();
+        BlockEntity be = player.level().getBlockEntity(targetPos);
+        if (!(be instanceof Container)) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Target block is not a container."));
+            return 0;
+        }
+
+        String dim = player.level().dimension().identifier().toString();
+        long packed = BlockPosUtil.pack(targetPos.getX(), targetPos.getY(), targetPos.getZ());
+        UUID existingOwner = claimManager.getOwner(dim, packed);
+        boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
+
+        if (existingOwner == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] This container is not claimed. Claim it first with /chestlog claim."));
+            return 0;
+        }
+
+        if (!existingOwner.equals(player.getUUID()) && !isOp) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You do not own this container!"));
+            return 0;
+        }
+
+        UUID targetUuid = null;
+        String resolvedName = newOwnerName;
+        if (source.getServer() != null) {
+            ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayerByName(newOwnerName);
+            if (targetPlayer != null) {
+                targetUuid = targetPlayer.getUUID();
+                resolvedName = targetPlayer.getGameProfile().name();
+            } else {
+                targetUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + newOwnerName.toLowerCase(Locale.ROOT)).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        }
+        if (targetUuid == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Could not resolve player: " + newOwnerName));
+            return 0;
+        }
+
+        boolean success = claimManager.transferClaim(dim, packed, targetUuid, resolvedName);
+        if (success) {
+            final String finalName = resolvedName;
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Container ownership at [%d, %d, %d] successfully transferred to %s!", targetPos.getX(), targetPos.getY(), targetPos.getZ(), finalName)), true);
+            return 1;
+        } else {
+            source.sendFailure(Component.literal("§c[ChestLogger] Failed to transfer container ownership."));
+            return 0;
+        }
     }
 
     private static int executeUnclaim(CommandSourceStack source) {

@@ -13,6 +13,8 @@ import com.chestlogger.rollback.RollbackPlan;
 import com.chestlogger.rollback.RollbackResult;
 import com.chestlogger.web.EmbeddedHttpServer;
 import com.chestlogger.web.WebConfig;
+import com.chestlogger.claim.AntiSnipingGuard;
+import com.chestlogger.paper.claim.PaperLandClaimHook;
 import com.chestlogger.security.TrustManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -104,6 +106,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             case "i", "inspect" -> handleInspect(sender, args);
             case "wand" -> handleWand(sender);
             case "claim" -> handleClaim(sender, args);
+            case "transfer" -> handleTransferClaim(sender, args.length > 1 ? args[1] : null);
             case "unclaim" -> handleUnclaim(sender);
             case "rb", "rollback" -> handleRollback(sender, args);
             case "stats" -> handleStats(sender);
@@ -627,15 +630,28 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             return;
         }
 
+        if (args.length > 1 && "transfer".equalsIgnoreCase(args[1])) {
+            handleTransferClaim(sender, args.length > 2 ? args[2] : null);
+            return;
+        }
+
+        boolean isAdmin = player.hasPermission("chestlogger.admin") || player.isOp();
+
         // Check if radius claim is requested: /chestlog claim <radius>
-        if (args.length > 1 && player.hasPermission("chestlogger.admin")) {
+        if (args.length > 1) {
             try {
                 int radius = Integer.parseInt(args[1]);
                 if (radius < 1 || radius > 32) {
                     player.sendMessage(ChatColor.RED + "Radius must be between 1 and 32 blocks.");
                     return;
                 }
+                if (radius > 16 && !isAdmin) {
+                    player.sendMessage(ChatColor.RED + "Maximum radius for regular players is 16 blocks (Admins can claim up to 32).");
+                    return;
+                }
+
                 int claimedCount = 0;
+                int skippedCount = 0;
                 Location center = player.getLocation();
                 org.bukkit.World world = center.getWorld();
                 int cx = center.getBlockX();
@@ -650,14 +666,43 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
                                 org.bukkit.block.Block b = world.getBlockAt(cx + dx, cy + dy, cz + dz);
                                 if (isContainerBlock(b)) {
                                     long p = BlockPosUtil.pack(cx + dx, cy + dy, cz + dz);
-                                    claimManager.claim(dimension, p, player.getUniqueId(), player.getName());
+                                    UUID existingOwner = claimManager.getOwner(dimension, p);
+                                    if (existingOwner != null) {
+                                        if (existingOwner.equals(player.getUniqueId())) {
+                                            continue; // already owned
+                                        } else if (!isAdmin) {
+                                            skippedCount++;
+                                            continue;
+                                        }
+                                    } else {
+                                        var landCheck = PaperLandClaimHook.checkCanClaimAt(player, b.getLocation());
+                                        if (!landCheck.allowed() && !isAdmin) {
+                                            skippedCount++;
+                                            continue;
+                                        }
+                                        var snipingResult = AntiSnipingGuard.evaluateClaim(
+                                                queryEngine,
+                                                null,
+                                                dimension, p, player.getUniqueId(), isAdmin
+                                        );
+                                        if (!snipingResult.allowed()) {
+                                            skippedCount++;
+                                            continue;
+                                        }
+                                    }
+                                    Long partnerPos = findDoubleChestPartner(b);
+                                    if (partnerPos != null) {
+                                        claimManager.claim(dimension, p, partnerPos, player.getUniqueId(), player.getName());
+                                    } else {
+                                        claimManager.claim(dimension, p, player.getUniqueId(), player.getName());
+                                    }
                                     claimedCount++;
                                 }
                             }
                         }
                     }
                 }
-                player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Batch claimed %d container(s) within %d blocks.", claimedCount, radius));
+                player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Mass-claimed %d container(s) within %d blocks (%d skipped: owned/protected by others).", claimedCount, radius, skippedCount));
                 return;
             } catch (NumberFormatException ignored) {}
         }
@@ -674,10 +719,28 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
 
         UUID existingOwner = claimManager.getOwner(dimension, packed);
         String existingOwnerName = claimManager.getOwnerName(dimension, packed);
-        if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !player.hasPermission("chestlogger.admin")) {
+        if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !isAdmin) {
             player.sendMessage(ChatColor.RED + String.format(Locale.ROOT, "[ChestLogger] Container is already claimed by %s!",
                     existingOwnerName != null ? existingOwnerName : "another player"));
             return;
+        }
+
+        var landCheck = PaperLandClaimHook.checkCanClaimAt(player, target.getLocation());
+        if (!landCheck.allowed() && !isAdmin) {
+            player.sendMessage(ChatColor.RED + String.format(Locale.ROOT, "[ChestLogger] Claim blocked: Container is inside %s's territory (%s)!", landCheck.ownerName(), landCheck.pluginName()));
+            return;
+        }
+
+        if (existingOwner == null) {
+            var snipingResult = AntiSnipingGuard.evaluateClaim(
+                    queryEngine,
+                    null,
+                    dimension, packed, player.getUniqueId(), isAdmin
+            );
+            if (!snipingResult.allowed()) {
+                player.sendMessage(ChatColor.RED + "[ChestLogger] Claim blocked: " + snipingResult.reason());
+                return;
+            }
         }
 
         // Check for double chest partner
@@ -690,6 +753,66 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             claimManager.claim(dimension, packed, player.getUniqueId(), player.getName());
             player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Container at [%d, %d, %d] successfully claimed!",
                     target.getX(), target.getY(), target.getZ()));
+        }
+    }
+
+    private void handleTransferClaim(CommandSender sender, String newOwnerName) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be executed by a player.");
+            return;
+        }
+
+        if (newOwnerName == null || newOwnerName.isBlank()) {
+            player.sendMessage(ChatColor.RED + "Usage: /chestlog transfer <newOwner>");
+            return;
+        }
+
+        com.chestlogger.claim.ClaimManager claimManager = null;
+        if (plugin instanceof ChestLoggerPlugin clp) {
+            claimManager = clp.getClaimManager();
+        }
+        if (claimManager == null) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Claim manager is not available.");
+            return;
+        }
+
+        org.bukkit.block.Block target = player.getTargetBlockExact(6);
+        if (target == null || !isContainerBlock(target)) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You must be looking at a container to transfer ownership.");
+            return;
+        }
+
+        String dimension = target.getWorld() != null ? target.getWorld().getName() : "world";
+        long packed = BlockPosUtil.pack(target.getX(), target.getY(), target.getZ());
+        boolean isAdmin = player.hasPermission("chestlogger.admin") || player.isOp();
+
+        if (!claimManager.isClaimed(dimension, packed)) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] This container is not claimed. Claim it first with /chestlog claim.");
+            return;
+        }
+
+        UUID existingOwner = claimManager.getOwner(dimension, packed);
+        if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !isAdmin) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You do not own this container!");
+            return;
+        }
+
+        UUID targetUuid;
+        String resolvedName = newOwnerName;
+        Player onlineTarget = org.bukkit.Bukkit.getPlayerExact(newOwnerName);
+        if (onlineTarget != null) {
+            targetUuid = onlineTarget.getUniqueId();
+            resolvedName = onlineTarget.getName();
+        } else {
+            targetUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + newOwnerName.toLowerCase(Locale.ROOT)).getBytes(StandardCharsets.UTF_8));
+        }
+
+        boolean success = claimManager.transferClaim(dimension, packed, targetUuid, resolvedName);
+        if (success) {
+            player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Container ownership at [%d, %d, %d] successfully transferred to %s!",
+                    target.getX(), target.getY(), target.getZ(), resolvedName));
+        } else {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Failed to transfer container ownership.");
         }
     }
 
@@ -890,6 +1013,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             // Player-accessible subcommands
             if (sender.hasPermission("chestlogger.claim") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.claim")) {
                 subcommands.add("claim");
+                subcommands.add("transfer");
                 subcommands.add("unclaim");
             }
             if (sender.hasPermission("chestlogger.trust") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.trust")) {
@@ -923,6 +1047,12 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
 
             return subcommands.stream().filter(s -> s.startsWith(current)).toList();
         }
+        if (args.length == 2 && "claim".equalsIgnoreCase(args[0])) {
+            String current = args[1].toLowerCase(Locale.ROOT);
+            if ("transfer".startsWith(current)) {
+                return List.of("transfer");
+            }
+        }
         if (args.length == 2 && ("config".equalsIgnoreCase(args[0]) || "settings".equalsIgnoreCase(args[0]))) {
             String current = args[1].toLowerCase(Locale.ROOT);
             return List.of("reload", "get", "set").stream().filter(s -> s.startsWith(current)).toList();
@@ -939,8 +1069,9 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         if (args.length == 2 && "trace".equalsIgnoreCase(args[0])) {
             return List.of("hand");
         }
-        if (args.length == 2 && "trust".equalsIgnoreCase(args[0])) {
-            String current = args[1].toLowerCase(Locale.ROOT);
+        if ((args.length == 2 && ("trust".equalsIgnoreCase(args[0]) || "transfer".equalsIgnoreCase(args[0])))
+                || (args.length == 3 && "claim".equalsIgnoreCase(args[0]) && "transfer".equalsIgnoreCase(args[1]))) {
+            String current = args[args.length - 1].toLowerCase(Locale.ROOT);
             List<String> suggestions = new ArrayList<>();
             try {
                 if (org.bukkit.Bukkit.getServer() != null) {

@@ -44,10 +44,12 @@ When reading commands in this manual:
 
 These commands can be run by **ANY player** on the server to protect their chests, manage friends, and inspect their own storage.
 
-### 🛡️ Container Claiming
+### 🛡️ Container Claiming & Transfers
 | Command Syntax | Who Can Run | Description | Example Command |
 |---|---|---|---|
-| `/chestlog claim` | Player | Claims ownership of the container you are currently looking at (up to 6 blocks away). | `/chestlog claim` |
+| `/chestlog claim` | Player | Claims ownership of the container you are looking at (up to 6 blocks away). | `/chestlog claim` |
+| `/chestlog claim <radius>` | Player / Admin | Mass-claims all containers within `<radius>` blocks (Players: 1–16, Admins: 1–32). Skips other players' chests! | `/chestlog claim 12` |
+| `/chestlog transfer <player>` | Player / Admin | Transfers ownership of your container to `<player>`. | `/chestlog transfer Alex` |
 | `/chestlog unclaim` | Player | Removes your claim from the container you are looking at. | `/chestlog unclaim` |
 
 ---
