@@ -1,15 +1,15 @@
 # Implementation Plan: Repository Housekeeping & Custom GUI Audit
 
-## Phase 1: Repository Housekeeping & Obsolete Code Purge
+## Phase 1: Repository Housekeeping & Obsolete Code Purge [checkpoint: db084a5]
 - [x] Task: Remove legacy root `src/` directory and unreferenced leftover files [db084a5]
   - [x] Delete root `src/main/` and `src/test/` directories
   - [x] Clean up any orphaned root test logs or temporary artifacts
 - [x] Task: Verify build and test integrity post-removal [db084a5]
   - [x] Execute `./gradlew test` to ensure zero compilation or classpath breakage
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [db084a5]
 
 ## Phase 2: Fabric Provenance Networking & TDD Unit Tests
-- [ ] Task: Write unit tests for `ChestLogProvenancePayload` codec (`ChestLogProvenancePayloadTest.java`)
+- [~] Task: Write unit tests for `ChestLogProvenancePayload` codec (`ChestLogProvenancePayloadTest.java`)
   - [ ] Test roundtrip encoding and decoding of provenance graph metadata and node list
 - [ ] Task: Implement `ChestLogProvenancePayload.java` and register in `ChestLogNetworking`
   - [ ] Register clientbound payload type in `ChestLogNetworking.java`
