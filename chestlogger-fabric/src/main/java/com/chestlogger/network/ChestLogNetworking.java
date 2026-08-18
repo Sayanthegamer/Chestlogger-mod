@@ -27,11 +27,64 @@ public final class ChestLogNetworking {
                 ChestLogPagePayload.TYPE,
                 ChestLogPagePayload.STREAM_CODEC
         );
+        PayloadTypeRegistry.clientboundPlay().register(
+                ChestLogConfigPayload.TYPE,
+                ChestLogConfigPayload.STREAM_CODEC
+        );
 
         // Register serverbound payload (Client -> Server)
         PayloadTypeRegistry.serverboundPlay().register(
                 ChestLogPageRequestPayload.TYPE,
                 ChestLogPageRequestPayload.STREAM_CODEC
+        );
+        PayloadTypeRegistry.serverboundPlay().register(
+                ChestLogConfigUpdatePayload.TYPE,
+                ChestLogConfigUpdatePayload.STREAM_CODEC
+        );
+
+        // Register serverbound config update packet listener
+        ServerPlayNetworking.registerGlobalReceiver(
+                ChestLogConfigUpdatePayload.TYPE,
+                (payload, context) -> {
+                    ServerPlayer player = context.player();
+                    if (!context.server().getPlayerList().isOp(new NameAndId(player.getGameProfile()))) {
+                        return; // Security: Strictly reject unauthorized requests
+                    }
+
+                    com.chestlogger.config.ConfigManager configManager = ChestLoggerMod.getConfigManager();
+                    if (configManager != null) {
+                        com.chestlogger.alert.AlertConfig currentAlert = configManager.getAlertConfig();
+                        com.chestlogger.alert.AlertConfig updatedAlert = new com.chestlogger.alert.AlertConfig(
+                                payload.alertEnabled(),
+                                payload.discordWebhookUrl(),
+                                payload.botUsername(),
+                                payload.avatarUrl(),
+                                currentAlert != null ? currentAlert.quantityThreshold() : 64,
+                                new java.util.HashSet<>(payload.trackedItems()),
+                                currentAlert != null ? currentAlert.alertOnContainerBreak() : true,
+                                currentAlert != null ? currentAlert.alertOnValuableTheft() : true,
+                                payload.alertCooldownSeconds()
+                        );
+
+                        configManager.updateAlertConfig(updatedAlert);
+                        configManager.setActionBarNoticeEnabled(payload.actionBarNoticeEnabled());
+                        configManager.setInGameChatAlertEnabled(payload.inGameChatAlertEnabled());
+                        configManager.setMaxOwnerAlertDistance(payload.maxOwnerAlertDistance());
+                        configManager.setTrackedItems(new java.util.HashSet<>(payload.trackedItems()));
+
+                        configManager.updateWebConfig(web -> {
+                            web.setEnabled(payload.webEnabled());
+                            web.setHost(payload.webHost());
+                            web.setPort(payload.webPort());
+                        });
+
+                        configManager.saveAll();
+
+                        player.sendSystemMessage(
+                                net.minecraft.network.chat.Component.literal("§a[ChestLogger] Settings updated and hot-reloaded successfully!")
+                        );
+                    }
+                }
         );
 
         // Register serverbound packet listener
