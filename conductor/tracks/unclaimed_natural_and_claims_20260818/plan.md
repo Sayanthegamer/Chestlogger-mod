@@ -23,11 +23,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [dc19277]
 
 ## Phase 3: In-Game Commands, Wand Claiming & Multi-Channel Trust UX
-- [ ] Task: Write tests for Claim Commands and One-Click Trust actions
-  - [ ] Unit & Integration tests for `/chestlog claim`, `/chestlog unclaim`, and wand claim interactions
-  - [ ] Tests for one-click `[Trust]` chat component generation in broadcasters
-  - [ ] Tests for Web API `POST /api/v1/trust` endpoint
-- [ ] Task: Implement Claim commands & Interactive Wand claiming on Fabric & Paper
+- [x] Task: Write tests for Claim Commands and One-Click Trust actions [a745cc8]
+  - [x] Unit & Integration tests for `/chestlog claim`, `/chestlog unclaim`, and wand claim interactions
+  - [x] Tests for one-click `[Trust]` chat component generation in broadcasters
+  - [x] Tests for Web API `POST /api/v1/trust` endpoint
+- [~] Task: Implement Claim commands & Interactive Wand claiming on Fabric & Paper
   - [ ] Register `/chestlog claim [radius]` and `/chestlog unclaim` in Fabric and Paper command executors
   - [ ] Implement wand sneak-right-click container claiming in `FabricWandListener` and `PaperWandListener`
   - [ ] Add clickable `[Trust Player]` button to `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
