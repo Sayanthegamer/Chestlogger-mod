@@ -279,4 +279,55 @@ class SmartTheftEvaluatorTest {
         assertThat(incident.itemId()).isEqualTo("minecraft:netherite_ingot");
         assertThat(incident.deltaQuantity()).isEqualTo(-1);
     }
+
+    @Test
+    @DisplayName("Unclaimed natural container: looting unowned world-gen chest is classified as UNCLAIMED_NATURAL and not alert worthy")
+    void testUnclaimedNaturalContainerSuppression() {
+        long pos = BlockPosUtil.pack(50, 64, 50);
+        TransactionLogEntry dungeonChestEntry = createExtractionEntry(bobGriefer, "BobExplorer", pos, 1_000_000L, "minecraft:diamond", 8);
+
+        // ownerUuid is null (world-gen container)
+        IncidentClassification classification = evaluator.classify(dungeonChestEntry, null, OwnerPresenceState.offline());
+        assertThat(classification).isEqualTo(IncidentClassification.UNCLAIMED_NATURAL);
+        assertThat(classification.isTheft()).isFalse();
+        assertThat(classification.isAlertWorthy()).isFalse();
+
+        Optional<SecurityIncident> result = evaluator.evaluate(dungeonChestEntry, null, null, OwnerPresenceState.offline());
+        // Either empty or contains an UNCLAIMED_NATURAL non-alert incident
+        if (result.isPresent()) {
+            SecurityIncident inc = result.get();
+            assertThat(inc.classification()).isEqualTo(IncidentClassification.UNCLAIMED_NATURAL);
+            assertThat(inc.isTheft()).isFalse();
+            assertThat(inc.classification().isAlertWorthy()).isFalse();
+        }
+    }
+
+    @Test
+    @DisplayName("Unclaimed natural container does not trigger CRITICAL_RAID across multiple dungeon chests")
+    void testUnclaimedContainersDoNotTriggerRaidBurst() {
+        long dungeon1 = BlockPosUtil.pack(100, 20, 100);
+        long dungeon2 = BlockPosUtil.pack(200, 20, 200);
+        long dungeon3 = BlockPosUtil.pack(300, 20, 300);
+
+        long t0 = 1_000_000L;
+        long t1 = 1_010_000L;
+        long t2 = 1_020_000L;
+
+        // Bob loots 3 dungeon chests in rapid succession
+        TransactionLogEntry e1 = createExtractionEntry(bobGriefer, "Bob", dungeon1, t0, "minecraft:golden_apple", 2);
+        TransactionLogEntry e2 = createExtractionEntry(bobGriefer, "Bob", dungeon2, t1, "minecraft:diamond", 5);
+        TransactionLogEntry e3 = createExtractionEntry(bobGriefer, "Bob", dungeon3, t2, "minecraft:enchanted_golden_apple", 1);
+
+        evaluator.evaluate(e1, null, null, OwnerPresenceState.offline());
+        evaluator.evaluate(e2, null, null, OwnerPresenceState.offline());
+        Optional<SecurityIncident> inc3 = evaluator.evaluate(e3, null, null, OwnerPresenceState.offline());
+
+        // Should NOT trigger CRITICAL_RAID
+        if (inc3.isPresent()) {
+            assertThat(inc3.get().classification()).isNotEqualTo(IncidentClassification.CRITICAL_RAID);
+            assertThat(inc3.get().isRaidBurst()).isFalse();
+        }
+        assertThat(raidTracker.getDistinctContainerCount(bobGriefer, t2)).isEqualTo(0);
+    }
 }
+
