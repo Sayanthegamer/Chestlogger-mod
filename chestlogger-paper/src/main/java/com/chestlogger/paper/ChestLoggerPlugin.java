@@ -45,6 +45,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
     private PaperRollbackExecutor rollbackExecutor;
     private EmbeddedHttpServer webServer;
     private WebConfig webConfig;
+    private com.chestlogger.config.ConfigManager configManager;
     private com.chestlogger.inspect.InspectModeManager inspectModeManager;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private com.chestlogger.security.TrustManager trustManager;
@@ -135,9 +136,9 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         this.sessionManager = new QuerySessionManager();
         this.rollbackExecutor = new PaperRollbackExecutor(eventQueue);
 
-        // 5. Embedded Web Admin Server
-        File webConfigFile = new File(dataDir, "web.json");
-        this.webConfig = WebConfig.load(webConfigFile);
+        // 5. Config Manager & Embedded Web Admin Server
+        this.configManager = new com.chestlogger.config.ConfigManager(getDataFolder().toPath());
+        this.webConfig = configManager.getWebConfig();
         this.webServer = new EmbeddedHttpServer(
                 webConfig,
                 () -> eventQueue,
@@ -153,19 +154,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         }
 
         // 6. Security Alerts & Trust Engine Initialization
-        File alertConfigFile = new File(getDataFolder(), "chestlogger_alerts.json");
-        com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
-        if (alertConfigFile.exists()) {
-            try {
-                alertConfig = com.chestlogger.alert.AlertConfig.fromJson(java.nio.file.Files.readString(alertConfigFile.toPath()));
-            } catch (Exception e) {
-                getLogger().warning("[ChestLogger] Failed to read chestlogger_alerts.json: " + e.getMessage());
-            }
-        } else {
-            try {
-                java.nio.file.Files.writeString(alertConfigFile.toPath(), alertConfig.toJson());
-            } catch (Exception ignored) {}
-        }
+        com.chestlogger.alert.AlertConfig alertConfig = configManager.getAlertConfig();
         this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
 
         File trustFile = new File(getDataFolder(), "trust_data.json");
@@ -188,6 +177,19 @@ public final class ChestLoggerPlugin extends JavaPlugin {
 
         this.theftEvaluator = new com.chestlogger.security.SmartTheftEvaluator(trustManager, alertConfig, new com.chestlogger.security.RaidVelocityTracker());
         this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig, alertDispatcher, claimManager);
+
+        // Live hot-reloading listener
+        this.configManager.addAlertConfigListener(newAlertCfg -> {
+            if (alertDispatcher != null) {
+                alertDispatcher.updateConfig(newAlertCfg);
+            }
+            if (theftEvaluator != null) {
+                theftEvaluator.updateAlertConfig(newAlertCfg);
+            }
+            if (securityBroadcaster != null) {
+                securityBroadcaster.updateAlertConfig(newAlertCfg);
+            }
+        });
 
         // 7. Register Bukkit Events and Commands
         this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
@@ -394,5 +396,9 @@ public final class ChestLoggerPlugin extends JavaPlugin {
 
     public PaperSecurityAlertBroadcaster getSecurityBroadcaster() {
         return securityBroadcaster;
+    }
+
+    public com.chestlogger.config.ConfigManager getConfigManager() {
+        return configManager;
     }
 }

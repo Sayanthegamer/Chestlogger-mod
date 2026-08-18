@@ -150,4 +150,8 @@ public class ChestLoggerMod implements ModInitializer {
     public static com.chestlogger.alert.FabricSecurityAlertBroadcaster getSecurityBroadcaster() {
         return lifecycleManager != null ? lifecycleManager.getSecurityBroadcaster() : null;
     }
+
+    public static com.chestlogger.config.ConfigManager getConfigManager() {
+        return lifecycleManager != null ? lifecycleManager.getConfigManager() : null;
+    }
 }

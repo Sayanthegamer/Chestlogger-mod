@@ -7,6 +7,7 @@ import com.chestlogger.index.IndexPointer;
 import com.chestlogger.index.IndexRebuilder;
 import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.query.QueryEngine;
+import com.chestlogger.config.ConfigManager;
 import com.chestlogger.recovery.RecoveryReport;
 import com.chestlogger.recovery.TailRecoveryEngine;
 import com.chestlogger.claim.ClaimManager;
@@ -46,6 +47,7 @@ public final class ChestLoggerLifecycleManager {
     private StringTableDictionary stringDictionary;
 
     private Thread writerThread;
+    private ConfigManager configManager;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private TrustManager trustManager;
     private ClaimManager claimManager;
@@ -161,20 +163,9 @@ public final class ChestLoggerLifecycleManager {
         segmentWriter = new LogSegmentWriter(dataDir, "chestlog", activeSegIdx, nextSequenceId, compressor, profile, stringDictionary);
         queryEngine = new QueryEngine(dataDir, compressor, indexManager, () -> stringDictionary);
 
-        // Security Alerts & Trust Engine
-        File alertConfigFile = new File(dataDir, "chestlogger_alerts.json");
-        com.chestlogger.alert.AlertConfig alertConfig = com.chestlogger.alert.AlertConfig.defaults();
-        if (alertConfigFile.exists()) {
-            try {
-                alertConfig = com.chestlogger.alert.AlertConfig.fromJson(java.nio.file.Files.readString(alertConfigFile.toPath()));
-            } catch (Exception e) {
-                LOGGER.warn("[ChestLogger] Failed to read alert config: {}", e.getMessage());
-            }
-        } else {
-            try {
-                java.nio.file.Files.writeString(alertConfigFile.toPath(), alertConfig.toJson());
-            } catch (Exception ignored) {}
-        }
+        // Security Alerts, Claims & Config Engine
+        this.configManager = new ConfigManager(dataDir.toPath());
+        com.chestlogger.alert.AlertConfig alertConfig = configManager.getAlertConfig();
         this.alertDispatcher = new com.chestlogger.alert.DiscordAlertDispatcher(alertConfig);
 
         File trustFile = new File(dataDir, "trust_data.json");
@@ -197,6 +188,19 @@ public final class ChestLoggerLifecycleManager {
 
         this.theftEvaluator = new SmartTheftEvaluator(trustManager, alertConfig, new RaidVelocityTracker());
         this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig, alertDispatcher, claimManager);
+
+        // Live hot-reloading listener
+        this.configManager.addAlertConfigListener(newAlertCfg -> {
+            if (alertDispatcher != null) {
+                alertDispatcher.updateConfig(newAlertCfg);
+            }
+            if (theftEvaluator != null) {
+                theftEvaluator.updateAlertConfig(newAlertCfg);
+            }
+            if (securityBroadcaster != null) {
+                securityBroadcaster.updateAlertConfig(newAlertCfg);
+            }
+        });
 
         running.set(true);
 
@@ -355,5 +359,9 @@ public final class ChestLoggerLifecycleManager {
 
     public FabricSecurityAlertBroadcaster getSecurityBroadcaster() {
         return securityBroadcaster;
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 }

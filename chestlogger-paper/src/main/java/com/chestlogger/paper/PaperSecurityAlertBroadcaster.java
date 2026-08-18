@@ -31,7 +31,7 @@ public final class PaperSecurityAlertBroadcaster {
 
     private final Plugin plugin;
     private final SmartTheftEvaluator evaluator;
-    private final AlertConfig alertConfig;
+    private volatile AlertConfig alertConfig;
     private final com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private final ClaimManager claimManager;
 
@@ -49,6 +49,14 @@ public final class PaperSecurityAlertBroadcaster {
         this.alertConfig = Objects.requireNonNull(alertConfig, "alertConfig cannot be null");
         this.alertDispatcher = alertDispatcher;
         this.claimManager = claimManager != null ? claimManager : new ClaimManager();
+    }
+
+    public AlertConfig getAlertConfig() {
+        return alertConfig;
+    }
+
+    public void updateAlertConfig(AlertConfig newConfig) {
+        this.alertConfig = Objects.requireNonNull(newConfig, "alertConfig cannot be null");
     }
 
     /**

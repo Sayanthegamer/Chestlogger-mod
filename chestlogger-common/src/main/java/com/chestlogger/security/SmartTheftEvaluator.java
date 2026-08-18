@@ -20,7 +20,7 @@ import java.util.UUID;
 public final class SmartTheftEvaluator {
 
     private final TrustManager trustManager;
-    private final AlertConfig alertConfig;
+    private volatile AlertConfig alertConfig;
     private final RaidVelocityTracker raidVelocityTracker;
 
     /**
@@ -44,6 +44,10 @@ public final class SmartTheftEvaluator {
         this.trustManager = trustManager != null ? trustManager : new TrustManager();
         this.alertConfig = alertConfig != null ? alertConfig : AlertConfig.defaults();
         this.raidVelocityTracker = raidVelocityTracker != null ? raidVelocityTracker : new RaidVelocityTracker();
+    }
+
+    public void updateAlertConfig(AlertConfig newConfig) {
+        this.alertConfig = newConfig != null ? newConfig : AlertConfig.defaults();
     }
 
     /**

@@ -24,13 +24,14 @@ public final class DiscordAlertDispatcher implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger("ChestLoggerAlerts");
 
-    private final AlertConfig config;
+    private volatile AlertConfig config;
     private final HttpClient httpClient;
     private final BlockingQueue<String> dispatchQueue;
     private final ExecutorService workerExecutor;
     private final ScheduledExecutorService rateLimiterExecutor;
     private final AtomicInteger availableTokens;
     private volatile boolean running;
+    private volatile boolean workerStarted;
 
     public DiscordAlertDispatcher(AlertConfig config) {
         this.config = Objects.requireNonNull(config, "config cannot be null");
@@ -60,7 +61,16 @@ public final class DiscordAlertDispatcher implements AutoCloseable {
         }
     }
 
+    public synchronized void updateConfig(AlertConfig newConfig) {
+        this.config = Objects.requireNonNull(newConfig, "config cannot be null");
+        if (config.enabled() && config.webhookUrl() != null && !config.webhookUrl().isBlank() && !workerStarted) {
+            startWorker();
+            startTokenRefill();
+        }
+    }
+
     private void startWorker() {
+        this.workerStarted = true;
         workerExecutor.submit(() -> {
             while (running && !Thread.currentThread().isInterrupted()) {
                 try {
