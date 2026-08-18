@@ -1,6 +1,6 @@
 # Implementation Plan: Unclaimed Natural Containers, Claim System & Trust UX (`unclaimed_natural_and_claims_20260818`)
 
-## Phase 1: Security Core Hardening & `UNCLAIMED_NATURAL` Classification (TDD)
+## Phase 1: Security Core Hardening & `UNCLAIMED_NATURAL` Classification (TDD) [checkpoint: edc1884]
 - [x] Task: Write failing unit tests for `UNCLAIMED_NATURAL` classification and unowned raid burst suppression [843dbfd]
   - [x] Write unit tests for `IncidentClassification.UNCLAIMED_NATURAL` (`isTheft() == false`, `isAlertWorthy() == false`)
   - [x] Write unit tests for `SmartTheftEvaluator.evaluate()` and `classify()` when `ownerUuid == null`
@@ -9,7 +9,7 @@
   - [x] Add `UNCLAIMED_NATURAL` enum value to `IncidentClassification`
   - [x] Update `SmartTheftEvaluator.evaluate()` and `classify()` to return `UNCLAIMED_NATURAL` for unowned containers without recording raid velocity bursts
   - [x] Verify all unit tests pass (Green Phase)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [edc1884]
 
 ## Phase 2: Claim Management Engine & Persistent Claim Store (TDD)
 - [ ] Task: Write unit tests for `ClaimManager` and Double Chest claiming
