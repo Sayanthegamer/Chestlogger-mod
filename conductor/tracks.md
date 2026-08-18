@@ -44,4 +44,7 @@
 - [x] **Track: Fabric GUI Visual Polish & Column Alignment**
   *Link: [./tracks/fabric_gui_visual_polish_20260818/index.md](./tracks/fabric_gui_visual_polish_20260818/index.md)*
 
+- [ ] **Track: Comprehensive Project-Wide Audit & Finalized Video-Grade Tutorial Manual**
+  *Link: [./tracks/finalized_tutorial_manual_20260818/index.md](./tracks/finalized_tutorial_manual_20260818/index.md)*
+
 
