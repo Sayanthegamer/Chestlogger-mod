@@ -51,7 +51,7 @@ public class ChestLogProvenanceScreen extends Screen {
     protected void init() {
         super.init();
 
-        this.guiWidth = Math.min(480, this.width - 20);
+        this.guiWidth = Math.min(500, this.width - 20);
         this.guiHeight = Math.min(270, this.height - 20);
         this.guiLeft = (this.width - this.guiWidth) / 2;
         this.guiTop = (this.height - this.guiHeight) / 2;
@@ -161,11 +161,11 @@ public class ChestLogProvenanceScreen extends Screen {
         int left = this.guiLeft + 8;
         return switch (col) {
             case 0 -> left;              // Step (#1)
-            case 1 -> left + 36;         // Action (TAKE/PUT)
-            case 2 -> left + 90;         // Confidence ([HIGH])
-            case 3 -> left + 155;        // Actor (PlayerName)
-            case 4 -> left + 245;        // Item & Delta (+64 Diamond)
-            case 5 -> left + 355;        // Time & Position
+            case 1 -> left + 34;         // Action (Shift Extract)
+            case 2 -> left + 114;        // Confidence ([EXACT])
+            case 3 -> left + 172;        // Actor (Butter_offl...)
+            case 4 -> left + 252;        // Item & Delta (+1 Netherite Ingot)
+            case 5 -> left + 344;        // Time & Position (2026-08-16 23:31:49)
             default -> left;
         };
     }
@@ -204,14 +204,15 @@ public class ChestLogProvenanceScreen extends Screen {
             // 1. Step
             graphics.text(font, "§e#" + (node.stepIndex() + 1), getColumnX(0), textY, 0xFFFFFF55);
 
-            // 2. Action
-            graphics.text(font, "§f" + node.actionType(), getColumnX(1), textY, 0xFFFFFFFF);
+            // 2. Action (Clean Friendly Name)
+            String friendlyAction = formatActionName(node.actionType());
+            graphics.text(font, "§f" + friendlyAction, getColumnX(1), textY, 0xFFFFFFFF);
 
             // 3. Confidence Badge
             graphics.text(font, formatConfidenceBadge(node.confidence()), getColumnX(2), textY, 0xFFFFFFFF);
 
-            // 4. Actor
-            graphics.text(font, "§b" + truncate(node.actorName(), 12), getColumnX(3), textY, 0xFF55FFFF);
+            // 4. Actor (Clean Truncated)
+            graphics.text(font, "§b" + truncate(node.actorName(), 11), getColumnX(3), textY, 0xFF55FFFF);
 
             // 5. Item & Delta
             int itemColX = getColumnX(4);
@@ -234,10 +235,12 @@ public class ChestLogProvenanceScreen extends Screen {
             String timeStr = formatTimestamp(node.timestampMs());
             graphics.text(font, "§7" + timeStr, timeX, textY, 0xFFAAAAAA);
 
-            if (isHovered && node.notes() != null && !node.notes().isBlank()) {
+            if (isHovered) {
                 int[] coords = BlockPosUtil.unpack(node.packedPos());
-                this.hoveredTooltip = Component.literal(String.format("§eStep #%d\n§7Pos: §b%d, %d, %d (%s)\n§8%s",
-                        node.stepIndex() + 1, coords[0], coords[1], coords[2], node.dimension(), node.notes()));
+                String notesText = (node.notes() != null && !node.notes().isBlank()) ? "\n§8" + node.notes() : "";
+                this.hoveredTooltip = Component.literal(String.format("§eStep #%d: §f%s\n§7Actor: §b%s §8(%s)\n§7Delta: §f%s §7%s\n§7Pos: §b%d, %d, %d §8(%s)%s",
+                        node.stepIndex() + 1, node.actionType(), node.actorName(), node.actorType(),
+                        deltaStr, node.itemId(), coords[0], coords[1], coords[2], node.dimension(), notesText));
                 this.tooltipMouseX = mouseX;
                 this.tooltipMouseY = mouseY;
             }
@@ -287,12 +290,32 @@ public class ChestLogProvenanceScreen extends Screen {
         return false;
     }
 
+    private static String formatActionName(String rawAction) {
+        if (rawAction == null || rawAction.isBlank()) return "Unknown";
+        return switch (rawAction.toUpperCase()) {
+            case "SHIFT_CLICK_EXTRACT" -> "Shift Extract";
+            case "SHIFT_CLICK_INSERT" -> "Shift Insert";
+            case "HOPPER_EXTRACT" -> "Hopper Out";
+            case "HOPPER_INSERT" -> "Hopper In";
+            case "DROP_FROM_SLOT" -> "Drop";
+            case "DOUBLE_CLICK_COLLECT" -> "Collect";
+            case "HOTBAR_SWAP" -> "Hotbar Swap";
+            case "PICKUP" -> "Pickup";
+            case "PLACE" -> "Place";
+            case "DRAG_SPLIT" -> "Drag Split";
+            default -> {
+                String clean = rawAction.replace('_', ' ').toLowerCase();
+                yield Character.toUpperCase(clean.charAt(0)) + clean.substring(1);
+            }
+        };
+    }
+
     private static String formatConfidenceBadge(String confidence) {
         if (confidence == null) return "§7[UNKNOWN]";
         String upper = confidence.toUpperCase();
-        if (upper.contains("EXACT")) return "§a[EXACT_LINKAGE]";
-        if (upper.contains("HIGH")) return "§e[HIGH_CONFIDENCE]";
-        if (upper.contains("PROBABLE") || upper.contains("MEDIUM")) return "§6[PROBABLE]";
+        if (upper.contains("EXACT")) return "§a[EXACT]";
+        if (upper.contains("HIGH")) return "§e[HIGH]";
+        if (upper.contains("PROBABLE") || upper.contains("MEDIUM")) return "§6[PROB]";
         return "§7[" + upper + "]";
     }
 
