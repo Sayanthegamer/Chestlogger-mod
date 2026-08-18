@@ -14,7 +14,7 @@
 [![Java Version](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-[**Why ChestLogger?**](#-why-chestlogger) • [**Platforms**](#-platform-matrix) • [**Commands & Permissions**](#-commands--permissions) • [**Smart Theft Engine**](#-smart-theft--raid-detection-engine) • [**Item Provenance**](#-item-provenance--chain-of-custody) • [**Discord Alerts**](#-discord-webhook-security-alerts) • [**Web Dashboard**](#-embedded-web-dashboard--rest-api) • [**Installation**](#-installation) • [**Building**](#-building--compilation)
+[**Why ChestLogger?**](#-why-chestlogger) • [**Platforms**](#-platform-matrix) • [**Commands & Permissions**](#-commands--permissions) • [**📖 Full Moderator Guide**](docs/MODERATOR_GUIDE.md) • [**Smart Theft Engine**](#-smart-theft--raid-detection-engine) • [**Item Provenance**](#-item-provenance--chain-of-custody) • [**Discord Alerts**](#-discord-webhook-security-alerts) • [**Web Dashboard**](#-embedded-web-dashboard--rest-api) • [**Installation**](#-installation) • [**Building**](#-building--compilation)
 
 </div>
 
@@ -54,7 +54,8 @@ Both platforms share identical binary `.clog` log formatting, spatial index layo
 
 > 🔒 *On Fabric: Administrative commands require Operator Level 2+; trust commands are open to all players.*  
 > 🔒 *On Paper: Commands are protected via granular Bukkit permission nodes.*  
-> 💡 *Aliased as `/cl` or `/chestlog`.*
+> 💡 *Aliased as `/cl` or `/chestlog`.*  
+> 📖 *For the full comprehensive manual, GUI guides, and investigation playbooks, see the [**Moderator & Admin Guide**](docs/MODERATOR_GUIDE.md).*
 
 | Command | Permission (Paper) | Description |
 |---|---|---|
