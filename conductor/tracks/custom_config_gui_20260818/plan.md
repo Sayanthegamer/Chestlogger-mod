@@ -5,10 +5,10 @@
   - [x] Test `ConfigManager` managing `AlertConfig` and `WebConfig`
   - [x] Test atomic file saving and serialization validation
   - [x] Test listener notification propagation on configuration update
-- [~] Task: Implement `ConfigManager` in `chestlogger-common`
-  - [ ] Create `ConfigManager.java` managing configuration lifecycles and thread-safe listeners
-  - [ ] Integrate `ConfigManager` with `SmartTheftEvaluator`, `DiscordAlertDispatcher`, and Broadcasters
-  - [ ] Verify all unit tests pass (Green Phase)
+- [x] Task: Implement `ConfigManager` in `chestlogger-common` [40ca164]
+  - [x] Create `ConfigManager.java` managing configuration lifecycles and thread-safe listeners
+  - [x] Integrate `ConfigManager` with `SmartTheftEvaluator`, `DiscordAlertDispatcher`, and Broadcasters
+  - [x] Verify all unit tests pass (Green Phase)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Fabric Custom Networking & Client-Side Configuration Screen
