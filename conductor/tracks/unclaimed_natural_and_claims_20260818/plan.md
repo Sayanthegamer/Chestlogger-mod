@@ -27,13 +27,13 @@
   - [x] Unit & Integration tests for `/chestlog claim`, `/chestlog unclaim`, and wand claim interactions
   - [x] Tests for one-click `[Trust]` chat component generation in broadcasters
   - [x] Tests for Web API `POST /api/v1/trust` endpoint
-- [~] Task: Implement Claim commands & Interactive Wand claiming on Fabric & Paper
-  - [ ] Register `/chestlog claim [radius]` and `/chestlog unclaim` in Fabric and Paper command executors
-  - [ ] Implement wand sneak-right-click container claiming in `FabricWandListener` and `PaperWandListener`
-  - [ ] Add clickable `[Trust Player]` button to `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
-- [ ] Task: Implement Web UI and REST API One-Click Trust Actions
-  - [ ] Add `POST /api/v1/trust` handler in `com.chestlogger.web.HttpApiServer`
-  - [ ] Add "Trust Actor" action button to Web UI Incidents table with live feedback
+- [x] Task: Implement Claim commands & Interactive Wand claiming on Fabric & Paper [6f25fc3]
+  - [x] Register `/chestlog claim [radius]` and `/chestlog unclaim` in Fabric and Paper command executors
+  - [x] Implement wand sneak-right-click container claiming in `FabricWandListener` and `PaperWandListener`
+  - [x] Add clickable `[Trust Player]` button to `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
+- [x] Task: Implement Web UI and REST API One-Click Trust Actions [7e10c06]
+  - [x] Add `POST /api/v1/trust` handler in `com.chestlogger.web.HttpApiServer`
+  - [x] Add "Trust Actor" action button to Web UI Incidents table with live feedback
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
