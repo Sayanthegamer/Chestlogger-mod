@@ -38,10 +38,10 @@
   - [x] Add `/chestlog config` and `/chestlog config reload/get/set` in `PaperCommandExecutor.java`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [8565e6e]
 
-## Phase 4: System Integration, Test Verification & Quality Gates
-- [x] Task: Run comprehensive test suite across common, Fabric, and Paper modules
+## Phase 4: System Integration, Test Verification & Quality Gates [checkpoint: 970b5a5]
+- [x] Task: Run comprehensive test suite across common, Fabric, and Paper modules [970b5a5]
   - [x] Execute `./gradlew test --rerun-tasks` and verify zero regressions across all modules
   - [x] Verify 100% test pass rate
-- [~] Task: Track Completion Review & Verification
-  - [ ] Verify all acceptance criteria from `spec.md`
-  - [ ] Perform manual and automated verification checkpoint (Refer to workflow.md)
+- [x] Task: Track Completion Review & Verification [970b5a5]
+  - [x] Verify all acceptance criteria from `spec.md`
+  - [x] Perform manual and automated verification checkpoint (Refer to workflow.md)
