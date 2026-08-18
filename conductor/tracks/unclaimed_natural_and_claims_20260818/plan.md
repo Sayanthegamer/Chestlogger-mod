@@ -16,10 +16,10 @@
   - [x] Write tests for `ClaimManager` registering, unclaiming, checking ownership, and batch claiming nearby containers
   - [x] Write tests for linked double chest claim propagation (claiming one half claims both)
   - [x] Write tests for atomic JSON serialization/deserialization of `claims.json`
-- [~] Task: Implement `ClaimManager` in `chestlogger-common`
-  - [ ] Implement `ClaimManager` with thread-safe maps, double-chest linking, and JSON persistence
-  - [ ] Integrate `ClaimManager` with `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
-  - [ ] Verify all unit tests pass (Green Phase)
+- [x] Task: Implement `ClaimManager` in `chestlogger-common` [dc19277]
+  - [x] Implement `ClaimManager` with thread-safe maps, double-chest linking, and JSON persistence
+  - [x] Integrate `ClaimManager` with `FabricSecurityAlertBroadcaster` and `PaperSecurityAlertBroadcaster`
+  - [x] Verify all unit tests pass (Green Phase)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: In-Game Commands, Wand Claiming & Multi-Channel Trust UX
