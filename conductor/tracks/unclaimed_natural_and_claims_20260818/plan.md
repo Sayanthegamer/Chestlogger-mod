@@ -5,10 +5,10 @@
   - [x] Write unit tests for `IncidentClassification.UNCLAIMED_NATURAL` (`isTheft() == false`, `isAlertWorthy() == false`)
   - [x] Write unit tests for `SmartTheftEvaluator.evaluate()` and `classify()` when `ownerUuid == null`
   - [x] Write unit tests asserting `RaidVelocityTracker` is not updated when container is unowned
-- [~] Task: Implement `UNCLAIMED_NATURAL` and unowned container gating in `SmartTheftEvaluator`
-  - [ ] Add `UNCLAIMED_NATURAL` enum value to `IncidentClassification`
-  - [ ] Update `SmartTheftEvaluator.evaluate()` and `classify()` to return `UNCLAIMED_NATURAL` for unowned containers without recording raid velocity bursts
-  - [ ] Verify all unit tests pass (Green Phase)
+- [x] Task: Implement `UNCLAIMED_NATURAL` and unowned container gating in `SmartTheftEvaluator` [edc1884]
+  - [x] Add `UNCLAIMED_NATURAL` enum value to `IncidentClassification`
+  - [x] Update `SmartTheftEvaluator.evaluate()` and `classify()` to return `UNCLAIMED_NATURAL` for unowned containers without recording raid velocity bursts
+  - [x] Verify all unit tests pass (Green Phase)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Claim Management Engine & Persistent Claim Store (TDD)
