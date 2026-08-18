@@ -1,11 +1,11 @@
 # Implementation Plan: Unclaimed Natural Containers, Claim System & Trust UX (`unclaimed_natural_and_claims_20260818`)
 
 ## Phase 1: Security Core Hardening & `UNCLAIMED_NATURAL` Classification (TDD)
-- [ ] Task: Write failing unit tests for `UNCLAIMED_NATURAL` classification and unowned raid burst suppression
-  - [ ] Write unit tests for `IncidentClassification.UNCLAIMED_NATURAL` (`isTheft() == false`, `isAlertWorthy() == false`)
-  - [ ] Write unit tests for `SmartTheftEvaluator.evaluate()` and `classify()` when `ownerUuid == null`
-  - [ ] Write unit tests asserting `RaidVelocityTracker` is not updated when container is unowned
-- [ ] Task: Implement `UNCLAIMED_NATURAL` and unowned container gating in `SmartTheftEvaluator`
+- [x] Task: Write failing unit tests for `UNCLAIMED_NATURAL` classification and unowned raid burst suppression [843dbfd]
+  - [x] Write unit tests for `IncidentClassification.UNCLAIMED_NATURAL` (`isTheft() == false`, `isAlertWorthy() == false`)
+  - [x] Write unit tests for `SmartTheftEvaluator.evaluate()` and `classify()` when `ownerUuid == null`
+  - [x] Write unit tests asserting `RaidVelocityTracker` is not updated when container is unowned
+- [~] Task: Implement `UNCLAIMED_NATURAL` and unowned container gating in `SmartTheftEvaluator`
   - [ ] Add `UNCLAIMED_NATURAL` enum value to `IncidentClassification`
   - [ ] Update `SmartTheftEvaluator.evaluate()` and `classify()` to return `UNCLAIMED_NATURAL` for unowned containers without recording raid velocity bursts
   - [ ] Verify all unit tests pass (Green Phase)
