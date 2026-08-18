@@ -39,9 +39,9 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [8565e6e]
 
 ## Phase 4: System Integration, Test Verification & Quality Gates
-- [~] Task: Run comprehensive test suite across common, Fabric, and Paper modules
-  - [ ] Execute `./gradlew test` and verify zero regressions across all modules
-  - [ ] Verify 100% test pass rate
-- [ ] Task: Track Completion Review & Verification
+- [x] Task: Run comprehensive test suite across common, Fabric, and Paper modules
+  - [x] Execute `./gradlew test --rerun-tasks` and verify zero regressions across all modules
+  - [x] Verify 100% test pass rate
+- [~] Task: Track Completion Review & Verification
   - [ ] Verify all acceptance criteria from `spec.md`
   - [ ] Perform manual and automated verification checkpoint (Refer to workflow.md)
