@@ -26,6 +26,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Paper event listener handling interactive wand and click-to-inspect gestures.
@@ -82,6 +83,10 @@ public final class PaperWandListener implements Listener {
         }
 
         Action action = event.getAction();
+        if (action == Action.RIGHT_CLICK_BLOCK && player.isSneaking()) {
+            performWandClaim(player, loc, block);
+            return;
+        }
         if (action == Action.LEFT_CLICK_BLOCK) {
             performChatInspection(player, loc, block);
         } else if (action == Action.RIGHT_CLICK_BLOCK) {
@@ -200,5 +205,32 @@ public final class PaperWandListener implements Listener {
     public static String resolveItemId(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return "minecraft:air";
         return "minecraft:" + item.getType().name().toLowerCase();
+    }
+
+    private void performWandClaim(Player player, Location loc, Block block) {
+        if (plugin instanceof ChestLoggerPlugin clp) {
+            var claimManager = clp.getClaimManager();
+            if (claimManager != null) {
+                String dim = loc.getWorld() != null ? loc.getWorld().getName() : "world";
+                long pos = BlockPosUtil.pack(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+                UUID existingOwner = claimManager.getOwner(dim, pos);
+                String existingName = claimManager.getOwnerName(dim, pos);
+                if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !player.hasPermission("chestlogger.admin")) {
+                    player.sendActionBar(net.kyori.adventure.text.Component.text("§c[ChestLogger] Already claimed by " + (existingName != null ? existingName : "another player") + "!"));
+                    return;
+                }
+
+                Long partnerPos = PaperCommandExecutor.findDoubleChestPartner(block);
+                if (partnerPos != null) {
+                    claimManager.claim(dim, pos, partnerPos, player.getUniqueId(), player.getName());
+                } else {
+                    claimManager.claim(dim, pos, player.getUniqueId(), player.getName());
+                }
+
+                player.sendActionBar(net.kyori.adventure.text.Component.text("§a[ChestLogger] Successfully claimed " + block.getType().name().toLowerCase() + " at [" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "]!"));
+                player.sendMessage(ChatColor.GREEN + "[ChestLogger] Container claimed for " + player.getName() + " at [" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "].");
+            }
+        }
     }
 }

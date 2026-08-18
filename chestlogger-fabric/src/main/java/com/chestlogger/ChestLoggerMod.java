@@ -54,7 +54,10 @@ public class ChestLoggerMod implements ModInitializer {
                 () -> eventQueue,
                 ChestLoggerMod::getIndexManager,
                 ChestLoggerMod::getQueryEngine,
-                ChestLoggerMod::getSessionManager
+                ChestLoggerMod::getSessionManager,
+                () -> null,
+                ChestLoggerMod::getTrustManager,
+                ChestLoggerMod::getClaimManager
         );
 
         ChestLogNetworking.init();

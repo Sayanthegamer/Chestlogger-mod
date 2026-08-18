@@ -135,10 +135,23 @@ public final class ChestLoggerCommands {
         var trustlistNode = Commands.literal("trustlist")
                 .executes(ctx -> executeTrustList(ctx.getSource()));
 
+        var claimNode = Commands.literal("claim")
+                .requires(CommandSourceStack::isPlayer)
+                .executes(ctx -> executeClaim(ctx.getSource(), 0))
+                .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32))
+                        .requires(source -> !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()))))
+                        .executes(ctx -> executeClaim(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "radius"))));
+
+        var unclaimNode = Commands.literal("unclaim")
+                .requires(CommandSourceStack::isPlayer)
+                .executes(ctx -> executeUnclaim(ctx.getSource()));
+
         var mainCommand = Commands.literal("chestlog")
                 .then(inspectNode)
                 .then(iNode)
                 .then(wandNode)
+                .then(claimNode)
+                .then(unclaimNode)
                 .then(traceNode)
                 .then(trustNode)
                 .then(untrustNode)
@@ -692,5 +705,141 @@ public final class ChestLoggerCommands {
         source.sendSuccess(() -> Component.literal("§6=== Trusted Players (" + list.size() + ") ==="), false);
         source.sendSuccess(() -> Component.literal("§f" + String.join(", ", names)), false);
         return 1;
+    }
+
+    private static int executeClaim(CommandSourceStack source, int radius) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("§cThis command can only be executed by a player."));
+            return 0;
+        }
+
+        var claimManager = ChestLoggerMod.getClaimManager();
+        if (claimManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Claim manager is not active."));
+            return 0;
+        }
+
+        String dim = player.level().dimension().identifier().toString();
+
+        if (radius > 0) {
+            boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
+            if (!isOp) {
+                source.sendFailure(Component.literal("§c[ChestLogger] Radius claiming requires admin permissions."));
+                return 0;
+            }
+
+            BlockPos center = player.blockPosition();
+            int claimed = 0;
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    for (int dz = -radius; dz <= radius; dz++) {
+                        if (dx * dx + dy * dy + dz * dz <= radius * radius) {
+                            BlockPos p = center.offset(dx, dy, dz);
+                            BlockEntity be = player.level().getBlockEntity(p);
+                            if (be instanceof Container) {
+                                long packed = BlockPosUtil.pack(p.getX(), p.getY(), p.getZ());
+                                claimManager.claim(dim, packed, player.getUUID(), player.getName().getString());
+                                claimed++;
+                            }
+                        }
+                    }
+                }
+            }
+            final int count = claimed;
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Batch claimed %d container(s) within %d blocks.", count, radius)), true);
+            return 1;
+        }
+
+        // Raycast / line-of-sight check for targeted container block
+        net.minecraft.world.phys.HitResult hit = player.pick(6.0D, 0.0F, false);
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You must be looking at a container to claim it."));
+            return 0;
+        }
+
+        BlockPos targetPos = ((net.minecraft.world.phys.BlockHitResult) hit).getBlockPos();
+        BlockEntity be = player.level().getBlockEntity(targetPos);
+        if (!(be instanceof Container)) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Target block is not a container."));
+            return 0;
+        }
+
+        long packed = BlockPosUtil.pack(targetPos.getX(), targetPos.getY(), targetPos.getZ());
+        UUID existingOwner = claimManager.getOwner(dim, packed);
+        String existingName = claimManager.getOwnerName(dim, packed);
+        boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
+
+        if (existingOwner != null && !existingOwner.equals(player.getUUID()) && !isOp) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Container is already claimed by " + (existingName != null ? existingName : "another player") + "!"));
+            return 0;
+        }
+
+        Long partnerPacked = findDoubleChestPartner(player.level(), targetPos);
+        if (partnerPacked != null) {
+            claimManager.claim(dim, packed, partnerPacked, player.getUUID(), player.getName().getString());
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Double chest at [%d, %d, %d] successfully claimed!", targetPos.getX(), targetPos.getY(), targetPos.getZ())), false);
+        } else {
+            claimManager.claim(dim, packed, player.getUUID(), player.getName().getString());
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Container at [%d, %d, %d] successfully claimed!", targetPos.getX(), targetPos.getY(), targetPos.getZ())), false);
+        }
+        return 1;
+    }
+
+    private static int executeUnclaim(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("§cThis command can only be executed by a player."));
+            return 0;
+        }
+
+        var claimManager = ChestLoggerMod.getClaimManager();
+        if (claimManager == null) {
+            source.sendFailure(Component.literal("§c[ChestLogger] Claim manager is not active."));
+            return 0;
+        }
+
+        net.minecraft.world.phys.HitResult hit = player.pick(6.0D, 0.0F, false);
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You must be looking at a container to unclaim it."));
+            return 0;
+        }
+
+        BlockPos targetPos = ((net.minecraft.world.phys.BlockHitResult) hit).getBlockPos();
+        String dim = player.level().dimension().identifier().toString();
+        long packed = BlockPosUtil.pack(targetPos.getX(), targetPos.getY(), targetPos.getZ());
+
+        if (!claimManager.isClaimed(dim, packed)) {
+            source.sendFailure(Component.literal("§e[ChestLogger] This container is not claimed."));
+            return 0;
+        }
+
+        UUID existingOwner = claimManager.getOwner(dim, packed);
+        boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
+
+        if (existingOwner != null && !existingOwner.equals(player.getUUID()) && !isOp) {
+            source.sendFailure(Component.literal("§c[ChestLogger] You do not own this container!"));
+            return 0;
+        }
+
+        claimManager.unclaim(dim, packed);
+        source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "§a[ChestLogger] Container claim removed from [%d, %d, %d].", targetPos.getX(), targetPos.getY(), targetPos.getZ())), false);
+        return 1;
+    }
+
+    public static Long findDoubleChestPartner(net.minecraft.world.level.Level level, BlockPos pos) {
+        if (level == null || pos == null) return null;
+        net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
+            net.minecraft.world.level.block.state.properties.ChestType type = state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE);
+            if (type == net.minecraft.world.level.block.state.properties.ChestType.LEFT || type == net.minecraft.world.level.block.state.properties.ChestType.RIGHT) {
+                net.minecraft.core.Direction connectedDir = net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state);
+                BlockPos partnerPos = pos.relative(connectedDir);
+                if (level.getBlockState(partnerPos).is(state.getBlock())) {
+                    return BlockPosUtil.pack(partnerPos.getX(), partnerPos.getY(), partnerPos.getZ());
+                }
+            }
+        }
+        return null;
     }
 }

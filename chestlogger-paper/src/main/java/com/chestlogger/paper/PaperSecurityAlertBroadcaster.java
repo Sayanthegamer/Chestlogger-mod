@@ -149,6 +149,10 @@ public final class PaperSecurityAlertBroadcaster {
                 .clickEvent(ClickEvent.runCommand(String.format(Locale.ROOT, "/chestlog inspect %d %d %d", x, y, z)))
                 .hoverEvent(HoverEvent.showText(Component.text("Click to inspect container at [" + x + ", " + y + ", " + z + "]", NamedTextColor.GRAY)));
 
+        Component trustBtn = Component.text("[Trust]", NamedTextColor.GOLD, TextDecoration.BOLD)
+                .clickEvent(ClickEvent.runCommand(String.format(Locale.ROOT, "/chestlog trust %s", incident.actorName())))
+                .hoverEvent(HoverEvent.showText(Component.text("Click to trust " + incident.actorName() + " to allow container access", NamedTextColor.YELLOW)));
+
         Component chatComponent = Component.text()
                 .append(Component.text("[ChestLogger] ", NamedTextColor.RED, TextDecoration.BOLD))
                 .append(Component.text(incident.classification().name() + ": ", NamedTextColor.GOLD, TextDecoration.BOLD))
@@ -157,6 +161,8 @@ public final class PaperSecurityAlertBroadcaster {
                 .append(teleportBtn)
                 .append(Component.space())
                 .append(inspectBtn)
+                .append(Component.space())
+                .append(trustBtn)
                 .build();
 
         // Dispatch to online admins

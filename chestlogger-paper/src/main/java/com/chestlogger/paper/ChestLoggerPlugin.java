@@ -143,7 +143,10 @@ public final class ChestLoggerPlugin extends JavaPlugin {
                 () -> eventQueue,
                 () -> indexManager,
                 () -> queryEngine,
-                () -> sessionManager
+                () -> sessionManager,
+                () -> null,
+                () -> trustManager,
+                () -> claimManager
         );
         if (webConfig.isEnabled()) {
             webServer.start();

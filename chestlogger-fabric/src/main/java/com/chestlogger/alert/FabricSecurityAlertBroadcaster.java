@@ -146,10 +146,19 @@ public final class FabricSecurityAlertBroadcaster {
                         .withClickEvent(new ClickEvent.RunCommand(String.format(Locale.ROOT, "/chestlog inspect %d %d %d", x, y, z)))
                         .withHoverEvent(new HoverEvent.ShowText(Component.literal("Inspect container at " + x + " " + y + " " + z))));
 
+        Component trustButton = Component.literal("[Trust]")
+                .setStyle(Style.EMPTY
+                        .withColor(ChatFormatting.YELLOW)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand(String.format(Locale.ROOT, "/chestlog trust %s", incident.actorName())))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Trust " + incident.actorName() + " to allow container access"))));
+
         Component chatMsg = Component.literal("§c§l[ChestLogger] §6§l" + incident.classification().name() + ": §e" + incident.summary() + " ")
                 .append(tpButton)
                 .append(Component.literal(" "))
-                .append(inspectButton);
+                .append(inspectButton)
+                .append(Component.literal(" "))
+                .append(trustButton);
 
         Component actionMsg = Component.literal(String.format(Locale.ROOT, "§c§l[ALERT] §6%s at [%d, %d, %d] by %s",
                 incident.classification().name(), x, y, z, incident.actorName()));

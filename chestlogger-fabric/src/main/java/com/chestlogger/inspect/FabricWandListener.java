@@ -70,6 +70,11 @@ public final class FabricWandListener {
                 return InteractionResult.SUCCESS;
             }
 
+            if (serverPlayer.isShiftKeyDown()) {
+                performWandClaim(serverPlayer, pos);
+                return InteractionResult.SUCCESS;
+            }
+
             // Right-click opens Fabric GUI
             openGuiInspection(serverPlayer, pos);
             return InteractionResult.SUCCESS;
@@ -215,5 +220,35 @@ public final class FabricWandListener {
         } catch (Exception e) {
             player.sendSystemMessage(Component.literal("§c[ChestLogger] Inspection GUI load failed: " + e.getMessage()));
         }
+    }
+
+    private static void performWandClaim(ServerPlayer player, BlockPos pos) {
+        var claimManager = ChestLoggerMod.getClaimManager();
+        if (claimManager == null) {
+            player.sendSystemMessage(Component.literal("§c[ChestLogger] Claim manager is not active."));
+            return;
+        }
+
+        String dim = player.level().dimension().identifier().toString();
+        long packed = BlockPosUtil.pack(pos.getX(), pos.getY(), pos.getZ());
+
+        UUID existingOwner = claimManager.getOwner(dim, packed);
+        String existingName = claimManager.getOwnerName(dim, packed);
+        boolean isOp = player.level() instanceof net.minecraft.server.level.ServerLevel sl && sl.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(player.getGameProfile()));
+
+        if (existingOwner != null && !existingOwner.equals(player.getUUID()) && !isOp) {
+            player.sendSystemMessage(Component.literal("§c[ChestLogger] Container already claimed by " + (existingName != null ? existingName : "another player") + "!"), true);
+            return;
+        }
+
+        Long partnerPacked = ChestLoggerCommands.findDoubleChestPartner(player.level(), pos);
+        if (partnerPacked != null) {
+            claimManager.claim(dim, packed, partnerPacked, player.getUUID(), player.getName().getString());
+        } else {
+            claimManager.claim(dim, packed, player.getUUID(), player.getName().getString());
+        }
+
+        player.sendSystemMessage(Component.literal("§a[ChestLogger] Container at [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "] successfully claimed!"), true);
+        player.sendSystemMessage(Component.literal("§a[ChestLogger] Container claimed for " + player.getName().getString() + " at [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]."), false);
     }
 }

@@ -103,6 +103,8 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         switch (subCommand) {
             case "i", "inspect" -> handleInspect(sender, args);
             case "wand" -> handleWand(sender);
+            case "claim" -> handleClaim(sender, args);
+            case "unclaim" -> handleUnclaim(sender);
             case "rb", "rollback" -> handleRollback(sender, args);
             case "stats" -> handleStats(sender);
             case "web" -> handleWeb(sender, args);
@@ -593,6 +595,8 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         sender.sendMessage(ChatColor.GOLD + "=== ChestLogger Commands ===");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [page]" + ChatColor.WHITE + " - Toggle inspect mode or inspect targeted container");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog claim [radius]" + ChatColor.WHITE + " - Claim container or radius of containers");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog unclaim" + ChatColor.WHITE + " - Remove claim on targeted container");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trace <x> <y> <z> [slot]" + ChatColor.WHITE + " - Trace item provenance at container slot");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trace [hand]" + ChatColor.WHITE + " - Trace item provenance for item in hand");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trust <player>" + ChatColor.WHITE + " - Trust a player to access your containers");
@@ -603,11 +607,180 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
     }
 
+    private void handleClaim(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be executed by a player.");
+            return;
+        }
+
+        com.chestlogger.claim.ClaimManager claimManager = null;
+        if (plugin instanceof ChestLoggerPlugin clp) {
+            claimManager = clp.getClaimManager();
+        }
+        if (claimManager == null) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Claim manager is not available.");
+            return;
+        }
+
+        // Check if radius claim is requested: /chestlog claim <radius>
+        if (args.length > 1 && player.hasPermission("chestlogger.admin")) {
+            try {
+                int radius = Integer.parseInt(args[1]);
+                if (radius < 1 || radius > 32) {
+                    player.sendMessage(ChatColor.RED + "Radius must be between 1 and 32 blocks.");
+                    return;
+                }
+                int claimedCount = 0;
+                Location center = player.getLocation();
+                org.bukkit.World world = center.getWorld();
+                int cx = center.getBlockX();
+                int cy = center.getBlockY();
+                int cz = center.getBlockZ();
+                String dimension = world != null ? world.getName() : "world";
+
+                for (int dx = -radius; dx <= radius; dx++) {
+                    for (int dy = -radius; dy <= radius; dy++) {
+                        for (int dz = -radius; dz <= radius; dz++) {
+                            if (dx * dx + dy * dy + dz * dz <= radius * radius) {
+                                org.bukkit.block.Block b = world.getBlockAt(cx + dx, cy + dy, cz + dz);
+                                if (isContainerBlock(b)) {
+                                    long p = BlockPosUtil.pack(cx + dx, cy + dy, cz + dz);
+                                    claimManager.claim(dimension, p, player.getUniqueId(), player.getName());
+                                    claimedCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+                player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Batch claimed %d container(s) within %d blocks.", claimedCount, radius));
+                return;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // Single targeted container raycast
+        org.bukkit.block.Block target = player.getTargetBlockExact(6);
+        if (target == null || !isContainerBlock(target)) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You must be looking at a container (chest, barrel, shulker box) to claim it.");
+            return;
+        }
+
+        String dimension = target.getWorld() != null ? target.getWorld().getName() : "world";
+        long packed = BlockPosUtil.pack(target.getX(), target.getY(), target.getZ());
+
+        UUID existingOwner = claimManager.getOwner(dimension, packed);
+        String existingOwnerName = claimManager.getOwnerName(dimension, packed);
+        if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !player.hasPermission("chestlogger.admin")) {
+            player.sendMessage(ChatColor.RED + String.format(Locale.ROOT, "[ChestLogger] Container is already claimed by %s!",
+                    existingOwnerName != null ? existingOwnerName : "another player"));
+            return;
+        }
+
+        // Check for double chest partner
+        Long partnerPos = findDoubleChestPartner(target);
+        if (partnerPos != null) {
+            claimManager.claim(dimension, packed, partnerPos, player.getUniqueId(), player.getName());
+            player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Double chest at [%d, %d, %d] successfully claimed!",
+                    target.getX(), target.getY(), target.getZ()));
+        } else {
+            claimManager.claim(dimension, packed, player.getUniqueId(), player.getName());
+            player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Container at [%d, %d, %d] successfully claimed!",
+                    target.getX(), target.getY(), target.getZ()));
+        }
+    }
+
+    private void handleUnclaim(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be executed by a player.");
+            return;
+        }
+
+        com.chestlogger.claim.ClaimManager claimManager = null;
+        if (plugin instanceof ChestLoggerPlugin clp) {
+            claimManager = clp.getClaimManager();
+        }
+        if (claimManager == null) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] Claim manager is not available.");
+            return;
+        }
+
+        org.bukkit.block.Block target = player.getTargetBlockExact(6);
+        if (target == null) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You must be looking at a container to unclaim it.");
+            return;
+        }
+
+        String dimension = target.getWorld() != null ? target.getWorld().getName() : "world";
+        long packed = BlockPosUtil.pack(target.getX(), target.getY(), target.getZ());
+
+        if (!claimManager.isClaimed(dimension, packed)) {
+            player.sendMessage(ChatColor.YELLOW + "[ChestLogger] This container is not claimed.");
+            return;
+        }
+
+        UUID existingOwner = claimManager.getOwner(dimension, packed);
+        if (existingOwner != null && !existingOwner.equals(player.getUniqueId()) && !player.hasPermission("chestlogger.admin")) {
+            player.sendMessage(ChatColor.RED + "[ChestLogger] You do not own this container!");
+            return;
+        }
+
+        claimManager.unclaim(dimension, packed);
+        player.sendMessage(ChatColor.GREEN + String.format(Locale.ROOT, "[ChestLogger] Container claim removed from [%d, %d, %d].",
+                target.getX(), target.getY(), target.getZ()));
+    }
+
+    public static boolean isContainerBlock(org.bukkit.block.Block b) {
+        if (b == null) return false;
+        org.bukkit.Material mat = b.getType();
+        return mat == org.bukkit.Material.CHEST
+                || mat == org.bukkit.Material.TRAPPED_CHEST
+                || mat == org.bukkit.Material.BARREL
+                || mat.name().endsWith("_SHULKER_BOX")
+                || mat == org.bukkit.Material.SHULKER_BOX;
+    }
+
+    public static Long findDoubleChestPartner(org.bukkit.block.Block b) {
+        if (b == null || (b.getType() != org.bukkit.Material.CHEST && b.getType() != org.bukkit.Material.TRAPPED_CHEST)) {
+            return null;
+        }
+        if (b.getBlockData() instanceof org.bukkit.block.data.type.Chest chestData) {
+            if (chestData.getType() == org.bukkit.block.data.type.Chest.Type.LEFT || chestData.getType() == org.bukkit.block.data.type.Chest.Type.RIGHT) {
+                org.bukkit.block.BlockFace facing = chestData.getFacing();
+                org.bukkit.block.BlockFace partnerFace = (chestData.getType() == org.bukkit.block.data.type.Chest.Type.LEFT)
+                        ? getRightSideFace(facing) : getLeftSideFace(facing);
+                org.bukkit.block.Block partner = b.getRelative(partnerFace);
+                if (partner.getType() == b.getType()) {
+                    return BlockPosUtil.pack(partner.getX(), partner.getY(), partner.getZ());
+                }
+            }
+        }
+        return null;
+    }
+
+    private static org.bukkit.block.BlockFace getLeftSideFace(org.bukkit.block.BlockFace facing) {
+        return switch (facing) {
+            case NORTH -> org.bukkit.block.BlockFace.WEST;
+            case SOUTH -> org.bukkit.block.BlockFace.EAST;
+            case WEST -> org.bukkit.block.BlockFace.SOUTH;
+            case EAST -> org.bukkit.block.BlockFace.NORTH;
+            default -> org.bukkit.block.BlockFace.SELF;
+        };
+    }
+
+    private static org.bukkit.block.BlockFace getRightSideFace(org.bukkit.block.BlockFace facing) {
+        return switch (facing) {
+            case NORTH -> org.bukkit.block.BlockFace.EAST;
+            case SOUTH -> org.bukkit.block.BlockFace.WEST;
+            case WEST -> org.bukkit.block.BlockFace.NORTH;
+            case EAST -> org.bukkit.block.BlockFace.SOUTH;
+            default -> org.bukkit.block.BlockFace.SELF;
+        };
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             String current = args[0].toLowerCase(Locale.ROOT);
-            List<String> subcommands = List.of("i", "inspect", "wand", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web");
+            List<String> subcommands = List.of("i", "inspect", "wand", "claim", "unclaim", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web");
             return subcommands.stream().filter(s -> s.startsWith(current)).toList();
         }
         if (args.length == 2 && "web".equalsIgnoreCase(args[0])) {
