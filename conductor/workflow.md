@@ -11,6 +11,16 @@
 5.  **User Experience First:** Every decision should prioritize user experience
 6.  **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use
     `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+7.  **Subagent Delegation Standard:** Always delegate complex implementations,
+    test writing, and large refactors across specialized subagents (e.g. Test Engineers,
+    Code Implementers, Reviewers) to parallelize workloads and ensure modular execution.
+
+## Subagent Delegation Protocol
+
+Whenever handling implementations, writing comprehensive test suites, performing large-scale refactors, or tackling multi-file features:
+1. **Decompose & Delegate**: Break large tasks into modular components and invoke specialized subagents using `invoke_subagent`.
+2. **Parallel & Concurrent Execution**: Spawn subagents concurrently when sub-tasks can be researched or drafted in parallel.
+3. **Reactive Oversight**: Coordinate subagents reactively, review and validate their outputs, and merge deliverables into the primary branch.
 
 ## Task Workflow
 
