@@ -9,6 +9,7 @@ import com.chestlogger.index.PersistentIndexManager;
 import com.chestlogger.query.QueryEngine;
 import com.chestlogger.recovery.RecoveryReport;
 import com.chestlogger.recovery.TailRecoveryEngine;
+import com.chestlogger.claim.ClaimManager;
 import com.chestlogger.alert.FabricSecurityAlertBroadcaster;
 import com.chestlogger.security.RaidVelocityTracker;
 import com.chestlogger.security.SmartTheftEvaluator;
@@ -47,6 +48,7 @@ public final class ChestLoggerLifecycleManager {
     private Thread writerThread;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private TrustManager trustManager;
+    private ClaimManager claimManager;
     private SmartTheftEvaluator theftEvaluator;
     private FabricSecurityAlertBroadcaster securityBroadcaster;
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -184,8 +186,17 @@ public final class ChestLoggerLifecycleManager {
             LOGGER.warn("[ChestLogger] Failed to load trust_data.json: {}", e.getMessage());
         }
 
+        File claimsFile = new File(dataDir, "claims.json");
+        this.claimManager = new ClaimManager(claimsFile.toPath());
+        try {
+            this.claimManager.load();
+            LOGGER.info("[ChestLogger] Loaded claims database with {} claimed container blocks.", claimManager.getClaimCount());
+        } catch (Exception e) {
+            LOGGER.warn("[ChestLogger] Failed to load claims.json: {}", e.getMessage());
+        }
+
         this.theftEvaluator = new SmartTheftEvaluator(trustManager, alertConfig, new RaidVelocityTracker());
-        this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig, alertDispatcher);
+        this.securityBroadcaster = new FabricSecurityAlertBroadcaster(() -> currentServer, theftEvaluator, alertConfig, alertDispatcher, claimManager);
 
         running.set(true);
 
@@ -287,6 +298,15 @@ public final class ChestLoggerLifecycleManager {
             alertDispatcher = null;
         }
 
+        if (claimManager != null) {
+            try {
+                claimManager.save();
+                LOGGER.info("[ChestLogger] Saved claims database successfully.");
+            } catch (Exception e) {
+                LOGGER.error("Failed to save claims.json on shutdown: {}", e.getMessage());
+            }
+        }
+
         if (trustManager != null) {
             try {
                 trustManager.save();
@@ -323,6 +343,10 @@ public final class ChestLoggerLifecycleManager {
 
     public TrustManager getTrustManager() {
         return trustManager;
+    }
+
+    public ClaimManager getClaimManager() {
+        return claimManager;
     }
 
     public SmartTheftEvaluator getTheftEvaluator() {

@@ -48,6 +48,7 @@ public final class ChestLoggerPlugin extends JavaPlugin {
     private com.chestlogger.inspect.InspectModeManager inspectModeManager;
     private com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
     private com.chestlogger.security.TrustManager trustManager;
+    private com.chestlogger.claim.ClaimManager claimManager;
     private com.chestlogger.security.SmartTheftEvaluator theftEvaluator;
     private PaperSecurityAlertBroadcaster securityBroadcaster;
 
@@ -173,8 +174,17 @@ public final class ChestLoggerPlugin extends JavaPlugin {
             getLogger().warning("[ChestLogger] Failed to load trust_data.json: " + e.getMessage());
         }
 
+        File claimsFile = new File(getDataFolder(), "claims.json");
+        this.claimManager = new com.chestlogger.claim.ClaimManager(claimsFile.toPath());
+        try {
+            this.claimManager.load();
+            getLogger().info("[ChestLogger] Loaded claims database with " + claimManager.getClaimCount() + " claimed container blocks.");
+        } catch (IOException e) {
+            getLogger().warning("[ChestLogger] Failed to load claims.json: " + e.getMessage());
+        }
+
         this.theftEvaluator = new com.chestlogger.security.SmartTheftEvaluator(trustManager, alertConfig, new com.chestlogger.security.RaidVelocityTracker());
-        this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig, alertDispatcher);
+        this.securityBroadcaster = new PaperSecurityAlertBroadcaster(this, theftEvaluator, alertConfig, alertDispatcher, claimManager);
 
         // 7. Register Bukkit Events and Commands
         this.inspectModeManager = new com.chestlogger.inspect.InspectModeManager();
@@ -236,6 +246,15 @@ public final class ChestLoggerPlugin extends JavaPlugin {
         if (alertDispatcher != null) {
             alertDispatcher.close();
             alertDispatcher = null;
+        }
+
+        if (claimManager != null) {
+            try {
+                claimManager.save();
+                getLogger().info("[ChestLogger] Saved claims database successfully.");
+            } catch (IOException e) {
+                getLogger().severe("[ChestLogger] Error saving claims.json: " + e.getMessage());
+            }
         }
 
         if (trustManager != null) {
@@ -356,6 +375,10 @@ public final class ChestLoggerPlugin extends JavaPlugin {
 
     public QueryEngine getQueryEngine() {
         return queryEngine;
+    }
+
+    public com.chestlogger.claim.ClaimManager getClaimManager() {
+        return claimManager;
     }
 
     public com.chestlogger.security.TrustManager getTrustManager() {

@@ -132,6 +132,10 @@ public class ChestLoggerMod implements ModInitializer {
         return inspectModeManager;
     }
 
+    public static com.chestlogger.claim.ClaimManager getClaimManager() {
+        return lifecycleManager != null ? lifecycleManager.getClaimManager() : null;
+    }
+
     public static com.chestlogger.security.TrustManager getTrustManager() {
         return lifecycleManager != null ? lifecycleManager.getTrustManager() : null;
     }

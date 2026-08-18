@@ -1,6 +1,7 @@
 package com.chestlogger.paper;
 
 import com.chestlogger.alert.AlertConfig;
+import com.chestlogger.claim.ClaimManager;
 import com.chestlogger.event.ActionType;
 import com.chestlogger.event.BlockPosUtil;
 import com.chestlogger.event.TransactionLogEntry;
@@ -18,11 +19,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Real-time in-game security alert broadcaster for Paper.
@@ -34,18 +33,22 @@ public final class PaperSecurityAlertBroadcaster {
     private final SmartTheftEvaluator evaluator;
     private final AlertConfig alertConfig;
     private final com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher;
-    private final Map<Long, UUID> containerOwners = new ConcurrentHashMap<>();
-    private final Map<Long, String> containerOwnerNames = new ConcurrentHashMap<>();
+    private final ClaimManager claimManager;
 
     public PaperSecurityAlertBroadcaster(Plugin plugin, SmartTheftEvaluator evaluator, AlertConfig alertConfig) {
-        this(plugin, evaluator, alertConfig, null);
+        this(plugin, evaluator, alertConfig, null, new ClaimManager());
     }
 
     public PaperSecurityAlertBroadcaster(Plugin plugin, SmartTheftEvaluator evaluator, AlertConfig alertConfig, com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher) {
+        this(plugin, evaluator, alertConfig, alertDispatcher, new ClaimManager());
+    }
+
+    public PaperSecurityAlertBroadcaster(Plugin plugin, SmartTheftEvaluator evaluator, AlertConfig alertConfig, com.chestlogger.alert.DiscordAlertDispatcher alertDispatcher, ClaimManager claimManager) {
         this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
         this.evaluator = Objects.requireNonNull(evaluator, "evaluator cannot be null");
         this.alertConfig = Objects.requireNonNull(alertConfig, "alertConfig cannot be null");
         this.alertDispatcher = alertDispatcher;
+        this.claimManager = claimManager != null ? claimManager : new ClaimManager();
     }
 
     /**
@@ -61,25 +64,21 @@ public final class PaperSecurityAlertBroadcaster {
         // Track container placement / destruction ownership
         if (entry.actionType() == ActionType.CONTAINER_PLACE) {
             if (entry.actorUuid() != null) {
-                containerOwners.put(entry.packedBlockPos(), entry.actorUuid());
-                if (entry.actorName() != null) {
-                    containerOwnerNames.put(entry.packedBlockPos(), entry.actorName());
-                }
+                claimManager.claim(entry.dimension(), entry.packedBlockPos(), entry.actorUuid(), entry.actorName());
             }
         }
 
-        UUID ownerUuid = containerOwners.get(entry.packedBlockPos());
-        String ownerName = containerOwnerNames.get(entry.packedBlockPos());
+        UUID ownerUuid = claimManager.getOwner(entry.dimension(), entry.packedBlockPos());
+        String ownerName = claimManager.getOwnerName(entry.dimension(), entry.packedBlockPos());
 
         if (ownerUuid == null) {
             resolveHistoricalOwnerIfAbsent(entry.packedBlockPos(), entry.dimension());
-            ownerUuid = containerOwners.get(entry.packedBlockPos());
-            ownerName = containerOwnerNames.get(entry.packedBlockPos());
+            ownerUuid = claimManager.getOwner(entry.dimension(), entry.packedBlockPos());
+            ownerName = claimManager.getOwnerName(entry.dimension(), entry.packedBlockPos());
         }
 
         if (entry.actionType() == ActionType.CONTAINER_BREAK) {
-            containerOwners.remove(entry.packedBlockPos());
-            containerOwnerNames.remove(entry.packedBlockPos());
+            claimManager.unclaim(entry.dimension(), entry.packedBlockPos());
         }
 
         OwnerPresenceState presence = calculateOwnerPresence(entry, ownerUuid);
@@ -101,19 +100,16 @@ public final class PaperSecurityAlertBroadcaster {
             return OwnerPresenceState.offline();
         }
 
-        if (Bukkit.getServer() == null) {
-            return OwnerPresenceState.offline();
-        }
-
         try {
             Player ownerPlayer = Bukkit.getPlayer(ownerUuid);
             if (ownerPlayer != null && ownerPlayer.isOnline()) {
-                if (ownerPlayer.getWorld().getName().equals(entry.dimension())) {
-                    int[] coords = BlockPosUtil.unpack(entry.packedBlockPos());
-                    Location loc = ownerPlayer.getLocation();
-                    double dx = loc.getBlockX() - coords[0];
-                    double dy = loc.getBlockY() - coords[1];
-                    double dz = loc.getBlockZ() - coords[2];
+                Location ownerLoc = ownerPlayer.getLocation();
+                int[] coords = BlockPosUtil.unpack(entry.packedBlockPos());
+
+                if (ownerLoc.getWorld() != null && ownerLoc.getWorld().getName().equals(entry.dimension())) {
+                    double dx = ownerLoc.getX() - coords[0];
+                    double dy = ownerLoc.getY() - coords[1];
+                    double dz = ownerLoc.getZ() - coords[2];
                     double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     return OwnerPresenceState.online(dist);
                 } else {
@@ -126,25 +122,25 @@ public final class PaperSecurityAlertBroadcaster {
     }
 
     /**
-     * Broadcasts Action-Bar HUD notice and rich interactive JSON chat card with [Teleport] and [Inspect] buttons to admins.
+     * Broadcasts Action-Bar HUD notice and interactive chat component with [Teleport] and [Inspect] buttons.
      *
      * @param incident SecurityIncident to broadcast.
      */
     public void broadcastAlert(SecurityIncident incident) {
-        if (incident == null || Bukkit.getServer() == null) {
+        if (incident == null) {
             return;
         }
 
         int[] coords = BlockPosUtil.unpack(incident.packedPos());
         int x = coords[0], y = coords[1], z = coords[2];
 
-        // 1. Build Action-Bar HUD notice
+        // 1. Subtle Action-Bar HUD Warning
         Component actionBarComponent = Component.text()
                 .append(Component.text("[ALERT] ", NamedTextColor.RED, TextDecoration.BOLD))
                 .append(Component.text(incident.classification().name() + " at [" + x + ", " + y + ", " + z + "] by " + incident.actorName(), NamedTextColor.GOLD))
                 .build();
 
-        // 2. Build Interactive Chat Component with [Teleport] and [Inspect]
+        // 2. Interactive Clickable Chat Card
         Component teleportBtn = Component.text("[Teleport]", NamedTextColor.GREEN, TextDecoration.BOLD)
                 .clickEvent(ClickEvent.runCommand(String.format(Locale.ROOT, "/tp %d %d %d", x, y, z)))
                 .hoverEvent(HoverEvent.showText(Component.text("Click to teleport to [" + x + ", " + y + ", " + z + "]", NamedTextColor.GRAY)));
@@ -178,17 +174,22 @@ public final class PaperSecurityAlertBroadcaster {
         return evaluator;
     }
 
+    public ClaimManager getClaimManager() {
+        return claimManager;
+    }
+
     public void registerContainerOwner(long packedPos, UUID ownerUuid, String ownerName) {
+        registerContainerOwner("world", packedPos, ownerUuid, ownerName);
+    }
+
+    public void registerContainerOwner(String dimension, long packedPos, UUID ownerUuid, String ownerName) {
         if (ownerUuid != null) {
-            containerOwners.put(packedPos, ownerUuid);
-            if (ownerName != null) {
-                containerOwnerNames.put(packedPos, ownerName);
-            }
+            claimManager.claim(dimension != null ? dimension : "world", packedPos, ownerUuid, ownerName);
         }
     }
 
     private void resolveHistoricalOwnerIfAbsent(long packedPos, String dimension) {
-        if (containerOwners.containsKey(packedPos)) {
+        if (claimManager.isClaimed(dimension, packedPos)) {
             return;
         }
         try {
@@ -203,10 +204,7 @@ public final class PaperSecurityAlertBroadcaster {
                     java.util.List<TransactionLogEntry> history = qe.fetchRecords(filter);
                     for (TransactionLogEntry e : history) {
                         if (e.actorUuid() != null && (e.actionType() == ActionType.CONTAINER_PLACE || e.actionType() == ActionType.PLACE)) {
-                            containerOwners.put(packedPos, e.actorUuid());
-                            if (e.actorName() != null) {
-                                containerOwnerNames.put(packedPos, e.actorName());
-                            }
+                            claimManager.claim(dimension, packedPos, e.actorUuid(), e.actorName());
                             break;
                         }
                     }
