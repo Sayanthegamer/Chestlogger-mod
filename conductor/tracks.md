@@ -31,3 +31,7 @@
 
 - [x] **Track: Smart Theft & Raid Detection Engine**
   *Link: [./tracks/smart_theft_raid_detection_20260817/index.md](./tracks/smart_theft_raid_detection_20260817/index.md)*
+
+- [ ] **Track: Unclaimed Natural Containers, Claim System & Trust UX**
+  *Link: [./tracks/unclaimed_natural_and_claims_20260818/index.md](./tracks/unclaimed_natural_and_claims_20260818/index.md)*
+
