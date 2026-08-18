@@ -15,10 +15,10 @@
 - [x] Task: Write unit tests for `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` codecs [36bd745]
   - [x] Test roundtrip packet serialization and deserialization
   - [x] Test payload validation and permission checking
-- [~] Task: Implement Fabric network packet payloads and server packet handlers
-  - [ ] Register `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` in `ChestLogNetworking`
-  - [ ] Implement server packet receiver with admin permission gating and atomic config saving
-- [ ] Task: Implement client-side `ChestLogConfigScreen`
+- [x] Task: Implement Fabric network packet payloads and server packet handlers [b8a1b14]
+  - [x] Register `ChestLogConfigPayload` and `ChestLogConfigUpdatePayload` in `ChestLogNetworking`
+  - [x] Implement server packet receiver with admin permission gating and atomic config saving
+- [~] Task: Implement client-side `ChestLogConfigScreen`
   - [ ] Build custom `Screen` with tab navigation, text `EditBox` inputs (Discord webhook URL, port, bot name), toggle buttons, and tracked items editor
   - [ ] Register client networking receiver to open screen on receiving server payload
 - [ ] Task: Register `/chestlog config` command in Fabric Brigadier command suite
