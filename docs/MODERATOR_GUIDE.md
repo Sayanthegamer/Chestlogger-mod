@@ -209,11 +209,11 @@ When you run `/chestlog i`, inspect mode is activated:
 ## 5. Container Ownership & Player Trust System
 
 ```mermaid
-graph TD
-    A[Player Places Container] -->|CONTAINER_PLACE| B(Automatic Ownership Registered in claims.json)
-    C[Double Chest Formed] -->|Check Left/Right State| D(Partner Coordinates Auto-Linked)
-    E[Player A runs /cl trust Player B] -->|Directional Trust| F(Player B added to trust_data.json)
-    F -->|Player B Accesses Container| G[Exempt from Theft Alerts - No Spam]
+flowchart TD
+    A["Player Places Container"] -->|CONTAINER_PLACE| B["Automatic Ownership Registered in claims.json"]
+    C["Double Chest Formed"] -->|Detect Connected Half| D["Partner Coordinates Auto-Linked"]
+    E["Player A runs /cl trust Player B"] -->|Directional Trust| F["Player B added to trust_data.json"]
+    F -->|Player B Accesses Container| G["Exempt from Theft Alerts (No Spam)"]
 ```
 
 ### Ownership Rules
@@ -230,19 +230,19 @@ ChestLogger evaluates container transactions in **sub-20ms latency** against **5
 
 ```mermaid
 flowchart TD
-    Start([Container Interaction Event]) --> IsPlayer{Is Actor a Player?}
-    IsPlayer -- No --> EndBypass([Silent Log / Bypassed])
-    IsPlayer -- Yes --> IsExempt{Is Actor Owner or Trusted?}
-    IsExempt -- Yes --> EndExempt([Exempt - Benign])
-    IsExempt -- No --> IsTheft{Extraction or Container Break?}
+    Start(["Container Interaction Event"]) --> IsPlayer{"Is Actor a Player?"}
+    IsPlayer -- No --> EndBypass(["Silent Log / Bypassed"])
+    IsPlayer -- Yes --> IsExempt{"Is Actor Owner or Trusted?"}
+    IsExempt -- Yes --> EndExempt(["Exempt - Benign"])
+    IsExempt -- No --> IsTheft{"Extraction or Container Break?"}
     IsTheft -- No --> EndExempt
-    IsTheft -- Yes --> CheckRaid{Raid Velocity: >=3 Containers in 300s?}
-    CheckRaid -- Yes --> RaidAlert[🚨 CRITICAL_RAID Alert]
-    CheckRaid -- No --> CheckOnline{Is Owner Online?}
-    CheckOnline -- No --> OfflineAlert[🔴 OFFLINE_THEFT Alert]
-    CheckOnline -- Yes --> CheckDist{Owner Distance <= 24 Blocks?}
-    CheckDist -- Yes --> Consensual[🟢 CONSENSUAL_PROXIMITY - Suppressed]
-    CheckDist -- No --> AbsentAlert[🟡 ABSENT_OWNER_THEFT Alert]
+    IsTheft -- Yes --> CheckRaid{"Raid Velocity: &ge; 3 Containers in 300s?"}
+    CheckRaid -- Yes --> RaidAlert["CRITICAL_RAID Alert"]
+    CheckRaid -- No --> CheckOnline{"Is Owner Online?"}
+    CheckOnline -- No --> OfflineAlert["OFFLINE_THEFT Alert"]
+    CheckOnline -- Yes --> CheckDist{"Owner Distance &le; 24 Blocks?"}
+    CheckDist -- Yes --> Consensual["CONSENSUAL_PROXIMITY (Suppressed)"]
+    CheckDist -- No --> AbsentAlert["ABSENT_OWNER_THEFT Alert"]
 ```
 
 ### Incident Classifications Breakdown
@@ -321,13 +321,18 @@ CHESTLOGGER DIFFERENTIAL COMPENSATION:
 ```mermaid
 sequenceDiagram
     autonumber
+    actor Admin as Admin
+    participant Server as ChestLogger Server
+    participant Chest as Container Block
+    participant Audit as Transaction Audit Log
+
     Admin->>Server: /chestlog rollback 120 64 -300 3600 ThiefX
-    Server->>Server: Calculate inverse deltas & generate preview plan
-    Server-->>Admin: "Preview: 1 items to compensate (0 conflicts). Confirm with token: a3f9b2"
+    Server->>Server: Calculate inverse deltas and preview plan
+    Server-->>Admin: Preview: 1 items to compensate (0 conflicts). Token: a3f9b2
     Admin->>Server: /chestlog rollback 120 64 -300 3600 confirm a3f9b2
-    Server->>Container: Apply slot compensation
-    Server->>AuditLog: Record ActionType.ROLLBACK_COMPENSATION
-    Server-->>Admin: "Rollback applied successfully: 1 slot compensations executed."
+    Server->>Chest: Apply slot compensation
+    Server->>Audit: Record ROLLBACK_COMPENSATION
+    Server-->>Admin: Rollback applied successfully (1 slot compensations executed)
 ```
 
 ---
