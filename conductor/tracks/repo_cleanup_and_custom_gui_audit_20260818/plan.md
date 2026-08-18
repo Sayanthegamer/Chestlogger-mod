@@ -8,15 +8,15 @@
   - [x] Execute `./gradlew test` to ensure zero compilation or classpath breakage
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [db084a5]
 
-## Phase 2: Fabric Provenance Networking & TDD Unit Tests
+## Phase 2: Fabric Provenance Networking & TDD Unit Tests [checkpoint: 2bb49cc]
 - [x] Task: Write unit tests for `ChestLogProvenancePayload` codec (`ChestLogProvenancePayloadTest.java`) [b6cd594]
   - [x] Test roundtrip encoding and decoding of provenance graph metadata and node list
 - [x] Task: Implement `ChestLogProvenancePayload.java` and register in `ChestLogNetworking` [2bb49cc]
   - [x] Register clientbound payload type in `ChestLogNetworking.java`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [2bb49cc]
 
 ## Phase 3: Fabric Client-Side `ChestLogProvenanceScreen` & Command Dispatch
-- [ ] Task: Implement client-side `ChestLogProvenanceScreen`
+- [~] Task: Implement client-side `ChestLogProvenanceScreen`
   - [ ] Build custom `Screen` with visual node cards, confidence badges (`[EXACT_LINKAGE]`, `[HIGH_CONFIDENCE]`, `[PROBABLE]`), timestamp formatting, item icons, and pagination
 - [ ] Task: Register client packet receiver in `ChestLoggerClient.java`
   - [ ] Open `ChestLogProvenanceScreen` upon receiving `ChestLogProvenancePayload`
