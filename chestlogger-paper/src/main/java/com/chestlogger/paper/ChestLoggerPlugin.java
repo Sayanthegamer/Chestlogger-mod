@@ -210,6 +210,15 @@ public final class ChestLoggerPlugin extends JavaPlugin {
                 new PaperProvenanceGuiListener(),
                 this
         );
+        PaperChatPromptManager.init(this);
+        getServer().getPluginManager().registerEvents(
+                new PaperChestConfigListener(),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new PaperChatPromptManager(),
+                this
+        );
 
         PaperCommandExecutor commandExecutor = new PaperCommandExecutor(
                 this,

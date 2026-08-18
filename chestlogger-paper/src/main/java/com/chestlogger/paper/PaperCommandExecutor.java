@@ -108,6 +108,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             case "rb", "rollback" -> handleRollback(sender, args);
             case "stats" -> handleStats(sender);
             case "web" -> handleWeb(sender, args);
+            case "config", "settings" -> handleConfig(sender, args);
             case "t", "trace" -> handleTrace(sender, args);
             case "trust" -> handleTrust(sender, args);
             case "untrust" -> handleUntrust(sender, args);
@@ -776,12 +777,121 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         };
     }
 
+    private void handleConfig(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("chestlogger.admin") && !sender.isOp()) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to configure ChestLogger.");
+            return;
+        }
+
+        com.chestlogger.config.ConfigManager configManager = null;
+        if (plugin instanceof ChestLoggerPlugin clPlugin) {
+            configManager = clPlugin.getConfigManager();
+        }
+
+        if (configManager == null) {
+            sender.sendMessage(ChatColor.RED + "[ChestLogger] ConfigManager is not initialized.");
+            return;
+        }
+
+        if (args.length == 1) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(ChatColor.RED + "GUI configuration is only available to in-game players. Use /chestlog config <reload|get|set> from console.");
+                return;
+            }
+            new PaperChestConfigView(player, configManager).open();
+            return;
+        }
+
+        String sub = args[1].toLowerCase(Locale.ROOT);
+        switch (sub) {
+            case "reload" -> {
+                configManager.reloadFromDisk();
+                sender.sendMessage(ChatColor.GREEN + "[ChestLogger] Configurations reloaded and hot-swapped from disk successfully.");
+            }
+            case "get" -> {
+                if (args.length < 3) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /chestlog config get <key>");
+                    return;
+                }
+                String key = args[2].toLowerCase(Locale.ROOT);
+                com.chestlogger.alert.AlertConfig alert = configManager.getAlertConfig();
+                com.chestlogger.web.WebConfig web = configManager.getWebConfig();
+                String val = switch (key) {
+                    case "alert_enabled", "alertenabled" -> String.valueOf(alert != null && alert.enabled());
+                    case "webhook", "webhook_url", "webhookurl" -> alert != null ? alert.webhookUrl() : "";
+                    case "bot_username", "botusername" -> alert != null ? alert.botUsername() : "";
+                    case "cooldown", "cooldown_seconds" -> String.valueOf(alert != null ? alert.rateLimitPerMinute() : 30);
+                    case "hud", "actionbar" -> String.valueOf(configManager.isActionBarNoticeEnabled());
+                    case "chat", "chatalerts" -> String.valueOf(configManager.isInGameChatAlertEnabled());
+                    case "owner_distance", "distance" -> String.valueOf(configManager.getMaxOwnerAlertDistance());
+                    case "web_enabled", "webenabled" -> String.valueOf(web != null && web.isEnabled());
+                    case "web_host", "webhost" -> web != null ? web.getHost() : "127.0.0.1";
+                    case "web_port", "webport" -> String.valueOf(web != null ? web.getPort() : 8080);
+                    default -> "Unknown setting key: " + args[2];
+                };
+                sender.sendMessage(ChatColor.YELLOW + "[ChestLogger] " + args[2] + " = " + ChatColor.WHITE + val);
+            }
+            case "set" -> {
+                if (args.length < 4) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /chestlog config set <key> <value>");
+                    return;
+                }
+                String key = args[2].toLowerCase(Locale.ROOT);
+                String value = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
+                try {
+                    switch (key) {
+                        case "alert_enabled", "alertenabled" -> {
+                            boolean v = Boolean.parseBoolean(value.trim());
+                            com.chestlogger.alert.AlertConfig current = configManager.getAlertConfig();
+                            configManager.updateAlertConfig(new com.chestlogger.alert.AlertConfig(
+                                    v,
+                                    current != null ? current.webhookUrl() : "",
+                                    current != null ? current.botUsername() : "",
+                                    current != null ? current.avatarUrl() : "",
+                                    current != null ? current.quantityThreshold() : 64,
+                                    current != null ? current.valuableItems() : Set.of(),
+                                    current != null ? current.alertOnContainerBreak() : true,
+                                    current != null ? current.alertOnValuableTheft() : true,
+                                    current != null ? current.rateLimitPerMinute() : 30
+                            ));
+                        }
+                        case "webhook", "webhook_url", "webhookurl" -> configManager.setDiscordWebhookUrl(value.trim());
+                        case "cooldown", "cooldown_seconds" -> configManager.setAlertCooldownSeconds(Integer.parseInt(value.trim()));
+                        case "hud", "actionbar" -> configManager.setActionBarNoticeEnabled(Boolean.parseBoolean(value.trim()));
+                        case "chat", "chatalerts" -> configManager.setInGameChatAlertEnabled(Boolean.parseBoolean(value.trim()));
+                        case "owner_distance", "distance" -> configManager.setMaxOwnerAlertDistance(Integer.parseInt(value.trim()));
+                        case "web_enabled", "webenabled" -> configManager.setWebEnabled(Boolean.parseBoolean(value.trim()));
+                        case "web_port", "webport" -> configManager.setWebPort(Integer.parseInt(value.trim()));
+                        default -> {
+                            sender.sendMessage(ChatColor.RED + "[ChestLogger] Unknown setting key: " + args[2]);
+                            return;
+                        }
+                    }
+                    configManager.saveAll();
+                    sender.sendMessage(ChatColor.GREEN + "[ChestLogger] Updated " + args[2] + " to " + value + " and hot-reloaded.");
+                } catch (Exception e) {
+                    sender.sendMessage(ChatColor.RED + "[ChestLogger] Failed updating setting: " + e.getMessage());
+                }
+            }
+            default -> sender.sendMessage(ChatColor.RED + "Usage: /chestlog config [reload|get|set]");
+        }
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             String current = args[0].toLowerCase(Locale.ROOT);
-            List<String> subcommands = List.of("i", "inspect", "wand", "claim", "unclaim", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web");
+            List<String> subcommands = List.of("i", "inspect", "wand", "claim", "unclaim", "trace", "trust", "untrust", "trustlist", "rollback", "stats", "web", "config", "settings");
             return subcommands.stream().filter(s -> s.startsWith(current)).toList();
+        }
+        if (args.length == 2 && ("config".equalsIgnoreCase(args[0]) || "settings".equalsIgnoreCase(args[0]))) {
+            String current = args[1].toLowerCase(Locale.ROOT);
+            return List.of("reload", "get", "set").stream().filter(s -> s.startsWith(current)).toList();
+        }
+        if (args.length == 3 && ("config".equalsIgnoreCase(args[0]) || "settings".equalsIgnoreCase(args[0])) && ("get".equalsIgnoreCase(args[1]) || "set".equalsIgnoreCase(args[1]))) {
+            String current = args[2].toLowerCase(Locale.ROOT);
+            List<String> keys = List.of("alert_enabled", "webhook", "bot_username", "cooldown", "hud", "chat", "owner_distance", "web_enabled", "web_host", "web_port");
+            return keys.stream().filter(s -> s.startsWith(current)).toList();
         }
         if (args.length == 2 && "web".equalsIgnoreCase(args[0])) {
             String current = args[1].toLowerCase(Locale.ROOT);
