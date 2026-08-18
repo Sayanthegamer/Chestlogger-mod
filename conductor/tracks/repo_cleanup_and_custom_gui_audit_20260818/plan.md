@@ -1,11 +1,11 @@
 # Implementation Plan: Repository Housekeeping & Custom GUI Audit
 
 ## Phase 1: Repository Housekeeping & Obsolete Code Purge
-- [ ] Task: Remove legacy root `src/` directory and unreferenced leftover files
-  - [ ] Delete root `src/main/` and `src/test/` directories
-  - [ ] Clean up any orphaned root test logs or temporary artifacts
-- [ ] Task: Verify build and test integrity post-removal
-  - [ ] Execute `./gradlew test` to ensure zero compilation or classpath breakage
+- [x] Task: Remove legacy root `src/` directory and unreferenced leftover files [db084a5]
+  - [x] Delete root `src/main/` and `src/test/` directories
+  - [x] Clean up any orphaned root test logs or temporary artifacts
+- [x] Task: Verify build and test integrity post-removal [db084a5]
+  - [x] Execute `./gradlew test` to ensure zero compilation or classpath breakage
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Fabric Provenance Networking & TDD Unit Tests
