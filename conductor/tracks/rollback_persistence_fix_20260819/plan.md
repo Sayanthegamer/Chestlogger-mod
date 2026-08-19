@@ -1,34 +1,34 @@
 # Implementation Plan: Fix Rollback Container Persistence on Fabric & Paper Servers
 
-## Phase 1: Fabric Live Container Rollback Executor
+## Phase 1: Fabric Live Container Rollback Executor [checkpoint: 521e4d7]
 
-- [ ] Task: Write failing tests for `FabricRollbackExecutor` that verify items are set on a mock `Container` via `setItem()` and `setChanged()` is called
-  - [ ] Test: Positive delta (item restoration) writes `ItemStack` to correct slot
-  - [ ] Test: Negative delta (item removal) sets AIR to slot
-  - [ ] Test: `setChanged()` is called after mutations
-  - [ ] Test: Audit `ROLLBACK_COMPENSATION` entry is enqueued only after successful mutation
-- [ ] Task: Implement `FabricRollbackExecutor` in `chestlogger-fabric` that operates on live `Container` instances
-- [ ] Task: Refactor `ChestLoggerCommands.executeRollbackConfirm()` to use `FabricRollbackExecutor` instead of `RollbackEngine.applyRollback()` with detached snapshot
-- [ ] Task: Refactor `ChestLoggerCommands.executeRollbackPreview()` to resolve full double-chest `CompoundContainer` via `ChestBlock.getContainer()`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write failing tests for `FabricRollbackExecutor` that verify items are set on a mock `Container` via `setItem()` and `setChanged()` is called `521e4d7`
+  - [x] Test: Positive delta (item restoration) writes `ItemStack` to correct slot
+  - [x] Test: Negative delta (item removal) sets AIR to slot
+  - [x] Test: `setChanged()` is called after mutations
+  - [x] Test: Audit `ROLLBACK_COMPENSATION` entry is enqueued only after successful mutation
+- [x] Task: Implement `FabricRollbackExecutor` in `chestlogger-fabric` that operates on live `Container` instances `521e4d7`
+- [x] Task: Refactor `ChestLoggerCommands.executeRollbackConfirm()` to use `FabricRollbackExecutor` instead of `RollbackEngine.applyRollback()` with detached snapshot `521e4d7`
+- [x] Task: Refactor `ChestLoggerCommands.executeRollbackPreview()` to resolve full double-chest `CompoundContainer` via `ChestBlock.getContainer()` `521e4d7`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `521e4d7`
 
-## Phase 2: Paper BlockState Persistence & Stale State Fix
+## Phase 2: Paper BlockState Persistence & Stale State Fix [checkpoint: 521e4d7]
 
-- [ ] Task: Write failing tests for Paper rollback persistence verifying `container.update(true, true)` is invoked
-  - [ ] Test: `BlockState.update(true, true)` is called after inventory modification
-  - [ ] Test: Fresh `BlockState` is captured on sync thread after async query
-- [ ] Task: Fix `PaperCommandExecutor.handleRollback()` to re-capture `BlockState` on the sync server thread after async query completes
-- [ ] Task: Fix `PaperRollbackExecutor.execute()` — caller must invoke `container.update(true, true)` after execution
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write failing tests for Paper rollback persistence verifying `container.update(true, true)` is invoked `521e4d7`
+  - [x] Test: `BlockState.update(true, true)` is called after inventory modification
+  - [x] Test: Fresh `BlockState` is captured on sync thread after async query
+- [x] Task: Fix `PaperCommandExecutor.handleRollback()` to re-capture `BlockState` on the sync server thread after async query completes `521e4d7`
+- [x] Task: Fix `PaperRollbackExecutor.execute()` — caller must invoke `container.update(true, true)` after execution `521e4d7`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `521e4d7`
 
-## Phase 3: Double Chest Full 54-Slot Resolution
+## Phase 3: Double Chest Full 54-Slot Resolution [checkpoint: 521e4d7]
 
-- [ ] Task: Write failing tests for double-chest resolution on both platforms
-  - [ ] Test (Fabric): `ChestBlock.getContainer()` returns 54-slot `CompoundContainer`
-  - [ ] Test (Paper): `DoubleChestInventory` detection returns full 54-slot inventory
-- [ ] Task: Implement Fabric double-chest resolution in rollback command using `ChestBlock.getContainer(state, level, pos, true)`
-- [ ] Task: Implement Paper double-chest resolution via `DoubleChestInventory` detection in `PaperCommandExecutor`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write failing tests for double-chest resolution on both platforms `521e4d7`
+  - [x] Test (Fabric): `ChestBlock.getContainer()` returns 54-slot `CompoundContainer`
+  - [x] Test (Paper): `DoubleChestInventory` detection returns full 54-slot inventory
+- [x] Task: Implement Fabric double-chest resolution in rollback command using `ChestBlock.getContainer(state, level, pos, true)` `521e4d7`
+- [x] Task: Implement Paper double-chest resolution via `DoubleChestInventory` detection in `PaperCommandExecutor` `521e4d7`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `521e4d7`
 
 ## Phase 4: Component/Metadata Restoration
 
