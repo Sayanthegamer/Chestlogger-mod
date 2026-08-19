@@ -51,4 +51,41 @@ class PaperRollbackExecutorTest {
         assertThat(step.itemId()).isEqualTo("minecraft:diamond");
         assertThat(step.targetDeltaQuantity()).isEqualTo(16);
     }
+    @Test
+    @DisplayName("Should call container.update(true, true) when executing rollback")
+    void testExecuteCallsContainerUpdate() {
+        TransactionEventQueue queue = new TransactionEventQueue(100);
+        PaperRollbackExecutor executor = new PaperRollbackExecutor(queue);
+
+        boolean[] updateCalled = { false };
+        org.bukkit.block.Container mockContainer = (org.bukkit.block.Container) java.lang.reflect.Proxy.newProxyInstance(
+                getClass().getClassLoader(),
+                new Class<?>[] { org.bukkit.block.Container.class },
+                (proxy, method, args) -> {
+                    if (method.getName().equals("update") && args.length == 2) {
+                        if (Boolean.TRUE.equals(args[0]) && Boolean.TRUE.equals(args[1])) {
+                            updateCalled[0] = true;
+                        }
+                        return true;
+                    }
+                    if (method.getName().equals("getInventory")) {
+                        return (org.bukkit.inventory.Inventory) java.lang.reflect.Proxy.newProxyInstance(
+                                getClass().getClassLoader(),
+                                new Class<?>[] { org.bukkit.inventory.Inventory.class },
+                                (p, m, a) -> {
+                                    if (m.getName().equals("getSize")) return 27;
+                                    if (m.getName().equals("getItem")) return null;
+                                    return null;
+                                }
+                        );
+                    }
+                    return null;
+                }
+        );
+
+        RollbackPlan plan = new RollbackPlan(List.of(), 0);
+        executor.execute(plan, mockContainer, UUID.randomUUID(), "Admin", "minecraft:overworld", 12345L);
+
+        assertThat(updateCalled[0]).isTrue();
+    }
 }

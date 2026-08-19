@@ -42,14 +42,19 @@ public final class PaperRollbackExecutor {
 
     public RollbackResult execute(
             RollbackPlan plan,
-            Inventory targetInventory,
+            org.bukkit.block.Container container,
             UUID adminUuid,
             String adminName,
             String dimension,
             long packedBlockPos
     ) {
         Objects.requireNonNull(plan, "plan cannot be null");
-        Objects.requireNonNull(targetInventory, "targetInventory cannot be null");
+        Objects.requireNonNull(container, "container cannot be null");
+        
+        Inventory targetInventory = container.getInventory();
+        if (targetInventory instanceof org.bukkit.inventory.DoubleChestInventory dci) {
+            targetInventory = dci;
+        }
 
         List<SlotDelta> compensationDeltas = new ArrayList<>();
         int applied = 0;
@@ -116,6 +121,8 @@ public final class PaperRollbackExecutor {
             );
             eventQueue.offer(compensationEntry);
         }
+
+        container.update(true, true);
 
         return new RollbackResult(applied, plan.conflictCount(), true);
     }

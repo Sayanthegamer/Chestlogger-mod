@@ -198,7 +198,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         }
 
         Block targetBlock = player.getTargetBlockExact(5);
-        if (targetBlock == null || !(targetBlock.getState() instanceof Container container)) {
+        if (targetBlock == null || !(targetBlock.getState() instanceof org.bukkit.block.Container)) {
             player.sendMessage(ChatColor.RED + "[ChestLogger] You must look at a valid container within 5 blocks to rollback.");
             return;
         }
@@ -228,7 +228,17 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
                 List<TransactionLogEntry> history = queryEngine.fetchRecords(filter);
 
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    RollbackPlan plan = rollbackExecutor.plan(history, container.getInventory());
+                    if (!(targetBlock.getState() instanceof org.bukkit.block.Container container)) {
+                        player.sendMessage(ChatColor.RED + "[ChestLogger] Container is no longer valid.");
+                        return;
+                    }
+
+                    org.bukkit.inventory.Inventory targetInv = container.getInventory();
+                    if (targetInv instanceof org.bukkit.inventory.DoubleChestInventory dci) {
+                        targetInv = dci;
+                    }
+
+                    RollbackPlan plan = rollbackExecutor.plan(history, targetInv);
                     if (plan.steps().isEmpty()) {
                         player.sendMessage(ChatColor.YELLOW + "[ChestLogger] No eligible modifications found to rollback.");
                         return;
@@ -236,7 +246,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
 
                     RollbackResult result = rollbackExecutor.execute(
                             plan,
-                            container.getInventory(),
+                            container,
                             player.getUniqueId(),
                             player.getName(),
                             dim,

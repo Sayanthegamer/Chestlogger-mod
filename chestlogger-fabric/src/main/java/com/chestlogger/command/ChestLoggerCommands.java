@@ -327,8 +327,16 @@ public final class ChestLoggerCommands {
             }
 
             BlockEntity be = source.getLevel().getBlockEntity(pos);
+            net.minecraft.world.level.block.state.BlockState state = source.getLevel().getBlockState(pos);
+            Container c = null;
+            if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock chest) {
+                c = net.minecraft.world.level.block.ChestBlock.getContainer(chest, state, source.getLevel(), pos, true);
+            } else if (be instanceof Container bc) {
+                c = bc;
+            }
+
             ContainerSnapshot currentSnapshot;
-            if (be instanceof Container c) {
+            if (c != null) {
                 currentSnapshot = ContainerTracker.capture(c);
             } else {
                 currentSnapshot = new ContainerSnapshot(27);
@@ -377,8 +385,17 @@ public final class ChestLoggerCommands {
             }
 
             List<TransactionLogEntry> history = ChestLoggerMod.getQueryEngine().fetchRecords(filterBuilder.build());
+            
             BlockEntity be = source.getLevel().getBlockEntity(pos);
-            if (!(be instanceof Container c)) {
+            net.minecraft.world.level.block.state.BlockState state = source.getLevel().getBlockState(pos);
+            Container c = null;
+            if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock chest) {
+                c = net.minecraft.world.level.block.ChestBlock.getContainer(chest, state, source.getLevel(), pos, true);
+            } else if (be instanceof Container bc) {
+                c = bc;
+            }
+
+            if (c == null) {
                 source.sendFailure(Component.literal("Target block entity is not a container."));
                 return 0;
             }
@@ -387,8 +404,9 @@ public final class ChestLoggerCommands {
             RollbackPlan plan = ChestLoggerMod.getRollbackEngine().createPlan(history, snapshot);
 
             String adminName = source.getTextName();
-            RollbackResult result = ChestLoggerMod.getRollbackEngine().applyRollback(
-                    plan, snapshot, ChestLoggerMod.getEventQueue(), sender, adminName, dim, packed
+            com.chestlogger.rollback.FabricRollbackExecutor executor = new com.chestlogger.rollback.FabricRollbackExecutor();
+            RollbackResult result = executor.applyRollback(
+                    plan, c, ChestLoggerMod.getEventQueue(), sender, adminName, dim, packed
             );
 
             source.sendSuccess(() -> Component.literal(String.format("§aRollback applied successfully: %d slot compensations executed.", result.appliedSteps())), true);
