@@ -53,4 +53,6 @@
 - [x] **Track: Player Mass-Claiming, Anti-Sniping Historical Protection & Claim Transfers**
   *Link: [./tracks/mass_claim_and_anti_sniping_20260818/index.md](./tracks/mass_claim_and_anti_sniping_20260818/index.md)*
 
+- [ ] **Track: Fix Rollback Container Persistence on Fabric & Paper Servers**
+  *Link: [./tracks/rollback_persistence_fix_20260819/index.md](./tracks/rollback_persistence_fix_20260819/index.md)*
 

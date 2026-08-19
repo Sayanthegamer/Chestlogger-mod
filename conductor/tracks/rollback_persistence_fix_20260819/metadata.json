@@ -1,0 +1,8 @@
+{
+  "trackId": "rollback_persistence_fix_20260819",
+  "type": "Bug",
+  "status": "new",
+  "title": "Fix Rollback Container Persistence on Fabric & Paper Servers",
+  "createdAt": "2026-08-19T21:13:00+05:30",
+  "updatedAt": "2026-08-19T21:13:00+05:30"
+}
