@@ -30,19 +30,19 @@
   - [x] Verify `conductor/product.md` and `conductor/tech-stack.md` match 2.6.0 capabilities `c235fd0`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `c235fd0`
 
-## Phase 4: Multi-Platform Test & Build Verification
+## Phase 4: Multi-Platform Test & Build Verification [checkpoint: c235fd0]
 
-- [ ] Task: Run full test suite across all subprojects
-  - [ ] Run `./gradlew check` to ensure 100% test pass rate across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper`
-- [ ] Task: Run full release build and artifact packaging
-  - [ ] Run `./gradlew build` and verify output jar files in `build/libs`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Run full test suite across all subprojects `c235fd0`
+  - [x] Run `./gradlew check` to ensure 100% test pass rate across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper` `c235fd0`
+- [x] Task: Run full release build and artifact packaging `c235fd0`
+  - [x] Run `./gradlew build` and verify output jar files in `build/libs` `c235fd0`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `c235fd0`
 
-## Phase 5: Git Hygiene, CI Verification & Upstream Sync Preparation
+## Phase 5: Git Hygiene, CI Verification & Upstream Sync Preparation [checkpoint: c235fd0]
 
-- [ ] Task: Verify GitHub Actions CI workflow integrity
-  - [ ] Validate `.github/workflows/ci.yml` steps for build, test, and release artifact generation
-- [ ] Task: Git tree audit and status validation
-  - [ ] Check `git status` to ensure zero untracked debris or dirty artifacts
-  - [ ] Review commit log (`git log`) and prepare final push checklist
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Verify GitHub Actions CI workflow integrity `c235fd0`
+  - [x] Validate `.github/workflows/ci.yml` steps for build, test, and release artifact generation `c235fd0`
+- [x] Task: Git tree audit and status validation `c235fd0`
+  - [x] Check `git status` to ensure zero untracked debris or dirty artifacts `c235fd0`
+  - [x] Review commit log (`git log`) and prepare final push checklist `c235fd0`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `c235fd0`
