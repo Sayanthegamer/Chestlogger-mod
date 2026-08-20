@@ -23,11 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Executes rollback plans against Paper Bukkit Inventory instances on the server main thread.
  */
 public final class PaperRollbackExecutor {
+    private static final Logger LOGGER = Logger.getLogger(PaperRollbackExecutor.class.getName());
     private final RollbackPlanner planner = new RollbackPlanner();
     private final TransactionEventQueue eventQueue;
 
@@ -65,6 +67,9 @@ public final class PaperRollbackExecutor {
             }
 
             ItemStack currentStack = targetInventory.getItem(step.slotIndex());
+            if (step.metadataHash() != 0L) {
+                LOGGER.warning(String.format("Rollback: Item %s in slot %d had custom components (hash: %d) that cannot be reconstructed from hash alone", step.itemId(), step.slotIndex(), step.metadataHash()));
+            }
             int prevQty = currentStack != null ? currentStack.getAmount() : 0;
             String prevItem = currentStack != null ? resolveItemId(currentStack.getType()) : "";
 
@@ -145,18 +150,27 @@ public final class PaperRollbackExecutor {
     }
 
     public static String resolveItemId(Material material) {
-        if (material == null) return "minecraft:air";
-        NamespacedKey key = material.getKey();
-        return key != null ? key.toString() : "minecraft:" + material.name().toLowerCase();
+        if (material == null || material.isAir()) return "minecraft:air";
+        try {
+            NamespacedKey key = material.getKey();
+            if (key != null) return key.toString();
+        } catch (Throwable ignored) {
+        }
+        return "minecraft:" + material.name().toLowerCase();
     }
 
     public static Material resolveMaterial(String itemId) {
-        if (itemId == null || itemId.isBlank()) return Material.AIR;
-        NamespacedKey key = NamespacedKey.fromString(itemId);
-        if (key != null) {
-            Material mat = Registry.MATERIAL.get(key);
-            if (mat != null) return mat;
+        if (itemId == null || itemId.isBlank() || "minecraft:air".equalsIgnoreCase(itemId)) return Material.AIR;
+        try {
+            NamespacedKey key = NamespacedKey.fromString(itemId);
+            if (key != null && Registry.MATERIAL != null) {
+                Material mat = Registry.MATERIAL.get(key);
+                if (mat != null) return mat;
+            }
+        } catch (Throwable ignored) {
         }
-        return Material.matchMaterial(itemId);
+        String clean = itemId.startsWith("minecraft:") ? itemId.substring("minecraft:".length()) : itemId;
+        Material mat = Material.matchMaterial(clean);
+        return mat != null ? mat : Material.AIR;
     }
 }

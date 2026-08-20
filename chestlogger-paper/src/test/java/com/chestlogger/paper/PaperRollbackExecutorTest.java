@@ -88,4 +88,21 @@ class PaperRollbackExecutorTest {
 
         assertThat(updateCalled[0]).isTrue();
     }
+
+    @Test
+    @DisplayName("Should correctly resolve materials and item IDs")
+    void testMaterialResolution() {
+        assertThat(PaperRollbackExecutor.resolveItemId(null)).isEqualTo("minecraft:air");
+        assertThat(PaperRollbackExecutor.resolveMaterial(null)).isEqualTo(org.bukkit.Material.AIR);
+        assertThat(PaperRollbackExecutor.resolveMaterial("")).isEqualTo(org.bukkit.Material.AIR);
+        assertThat(PaperRollbackExecutor.resolveMaterial("minecraft:diamond")).isEqualTo(org.bukkit.Material.DIAMOND);
+    }
+
+    @Test
+    @DisplayName("Should snapshot inventory correctly")
+    void testSnapshotNullInventory() {
+        ContainerSnapshot snapshot = PaperRollbackExecutor.snapshotInventory(null);
+        assertThat(snapshot.size()).isZero();
+    }
 }
+

@@ -16,11 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Executes a rollback plan on a live Minecraft Container.
  */
 public final class FabricRollbackExecutor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FabricRollbackExecutor.class);
 
     /**
      * Interface for mutating a container, abstracting away Minecraft specific classes for testability.
@@ -131,6 +134,10 @@ public final class FabricRollbackExecutor {
             }
 
             if (targetSlot < container.getSize()) {
+                if (step.metadataHash() != 0L) {
+                    LOGGER.warn("Rollback: Item {} in slot {} had custom components (hash: {}) that cannot be reconstructed from hash alone", step.itemId(), targetSlot, step.metadataHash());
+                }
+                
                 int currentCount = container.getCount(targetSlot);
                 int newCount = Math.max(0, Math.min(64, currentCount + step.targetDeltaQuantity()));
                 
