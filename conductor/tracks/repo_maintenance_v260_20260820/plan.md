@@ -21,14 +21,14 @@
   - [x] Verify `expand "version": project.version` in `chestlogger-fabric/build.gradle` and `chestlogger-paper/build.gradle` `f8cff40`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `f8cff40`
 
-## Phase 3: Documentation Alignment & Specification Reference Audit
+## Phase 3: Documentation Alignment & Specification Reference Audit [checkpoint: c235fd0]
 
-- [ ] Task: Update README.md and documentation references to v2.6.0
-  - [ ] Update `README.md` version badges, artifact jar names (`chestlogger-fabric-2.6.0.jar`, `chestlogger-paper-2.6.0.jar`), and feature highlights
-  - [ ] Update `docs/COMMANDS.md`, `docs/USER_GUIDE.md`, and `docs/MODERATOR_GUIDE.md` references where applicable
-- [ ] Task: Update Conductor product and tech-stack references
-  - [ ] Verify `conductor/product.md` and `conductor/tech-stack.md` match 2.6.0 capabilities
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Update README.md and documentation references to v2.6.0 `c235fd0`
+  - [x] Update `README.md` version badges, artifact jar names (`chestlogger-fabric-2.6.0.jar`, `chestlogger-paper-2.6.0.jar`), and feature highlights `c235fd0`
+  - [x] Update `docs/COMMANDS.md`, `docs/USER_GUIDE.md`, and `docs/MODERATOR_GUIDE.md` references where applicable `c235fd0`
+- [x] Task: Update Conductor product and tech-stack references `c235fd0`
+  - [x] Verify `conductor/product.md` and `conductor/tech-stack.md` match 2.6.0 capabilities `c235fd0`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `c235fd0`
 
 ## Phase 4: Multi-Platform Test & Build Verification
 
