@@ -1,0 +1,47 @@
+# Implementation Plan: Heavy Repository Maintenance, Version Sync & Release Preparation (v2.6.0)
+
+## Phase 1: Rollback Persistence Track Finalization & Verification
+
+- [ ] Task: Complete Phase 4 Component/Metadata Restoration in `FabricRollbackExecutor` and `PaperRollbackExecutor`
+  - [ ] Implement component warning logging and metadata hash delta verification tests
+- [ ] Task: Complete Phase 5 Audit Integrity & Final Integration Tests for Rollback Persistence
+  - [ ] Verify `ROLLBACK_COMPENSATION` ordering and partial rollback fallback tests in `FabricRollbackExecutorTest`
+  - [ ] Mark `rollback_persistence_fix_20260819` as completed in its `plan.md` and update `conductor/tracks.md`
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 2: Version Synchronization & Manifest Updates (v2.6.0)
+
+- [ ] Task: Update build configuration version to 2.6.0
+  - [ ] Update `gradle.properties` (`mod_version=2.6.0`)
+- [ ] Task: Update embedded web dashboard manifests
+  - [ ] Update `chestlogger-common/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`)
+  - [ ] Update `chestlogger-fabric/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`)
+- [ ] Task: Audit `plugin.yml` and `fabric.mod.json` token interpolation
+  - [ ] Verify `expand "version": project.version` in `chestlogger-fabric/build.gradle` and `chestlogger-paper/build.gradle`
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 3: Documentation Alignment & Specification Reference Audit
+
+- [ ] Task: Update README.md and documentation references to v2.6.0
+  - [ ] Update `README.md` version badges, artifact jar names (`chestlogger-fabric-2.6.0.jar`, `chestlogger-paper-2.6.0.jar`), and feature highlights
+  - [ ] Update `docs/COMMANDS.md`, `docs/USER_GUIDE.md`, and `docs/MODERATOR_GUIDE.md` references where applicable
+- [ ] Task: Update Conductor product and tech-stack references
+  - [ ] Verify `conductor/product.md` and `conductor/tech-stack.md` match 2.6.0 capabilities
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 4: Multi-Platform Test & Build Verification
+
+- [ ] Task: Run full test suite across all subprojects
+  - [ ] Run `./gradlew check` to ensure 100% test pass rate across `chestlogger-common`, `chestlogger-fabric`, and `chestlogger-paper`
+- [ ] Task: Run full release build and artifact packaging
+  - [ ] Run `./gradlew build` and verify output jar files in `build/libs`
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 5: Git Hygiene, CI Verification & Upstream Sync Preparation
+
+- [ ] Task: Verify GitHub Actions CI workflow integrity
+  - [ ] Validate `.github/workflows/ci.yml` steps for build, test, and release artifact generation
+- [ ] Task: Git tree audit and status validation
+  - [ ] Check `git status` to ensure zero untracked debris or dirty artifacts
+  - [ ] Review commit log (`git log`) and prepare final push checklist
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
