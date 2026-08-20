@@ -10,16 +10,16 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `7afea44`
 
 
-## Phase 2: Version Synchronization & Manifest Updates (v2.6.0)
+## Phase 2: Version Synchronization & Manifest Updates (v2.6.0) [checkpoint: f8cff40]
 
-- [ ] Task: Update build configuration version to 2.6.0
-  - [ ] Update `gradle.properties` (`mod_version=2.6.0`)
-- [ ] Task: Update embedded web dashboard manifests
-  - [ ] Update `chestlogger-common/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`)
-  - [ ] Update `chestlogger-fabric/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`)
-- [ ] Task: Audit `plugin.yml` and `fabric.mod.json` token interpolation
-  - [ ] Verify `expand "version": project.version` in `chestlogger-fabric/build.gradle` and `chestlogger-paper/build.gradle`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Update build configuration version to 2.6.0 `f8cff40`
+  - [x] Update `gradle.properties` (`mod_version=2.6.0`) `f8cff40`
+- [x] Task: Update embedded web dashboard manifests `f8cff40`
+  - [x] Update `chestlogger-common/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`) `f8cff40`
+  - [x] Update `chestlogger-fabric/src/main/resources/assets/chestlogger/web/manifest.json` (`"version": "2.6.0"`) `f8cff40`
+- [x] Task: Audit `plugin.yml` and `fabric.mod.json` token interpolation `f8cff40`
+  - [x] Verify `expand "version": project.version` in `chestlogger-fabric/build.gradle` and `chestlogger-paper/build.gradle` `f8cff40`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `f8cff40`
 
 ## Phase 3: Documentation Alignment & Specification Reference Audit
 
