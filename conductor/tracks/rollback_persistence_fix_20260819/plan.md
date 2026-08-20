@@ -30,18 +30,19 @@
 - [x] Task: Implement Paper double-chest resolution via `DoubleChestInventory` detection in `PaperCommandExecutor` `521e4d7`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `521e4d7`
 
-## Phase 4: Component/Metadata Restoration
+## Phase 4: Component/Metadata Restoration [checkpoint: 7afea44]
 
-- [ ] Task: Write failing tests for metadata-aware `ItemStack` reconstruction
-  - [ ] Test: Restored items carry component data when fingerprint matches stored components
-  - [ ] Test: Warning logged when component reconstruction impossible (hash-only, no blob)
-- [ ] Task: Implement component restoration lookup in `FabricRollbackExecutor` using `MetadataFingerprint` matching against original transaction log component data
-- [ ] Task: Implement component restoration in `PaperRollbackExecutor` for Bukkit `ItemMeta`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write failing tests for metadata-aware `ItemStack` reconstruction `7afea44`
+  - [x] Test: Restored items carry component data when fingerprint matches stored components `7afea44`
+  - [x] Test: Warning logged when component reconstruction impossible (hash-only, no blob) `7afea44`
+- [x] Task: Implement component restoration lookup in `FabricRollbackExecutor` using `MetadataFingerprint` matching against original transaction log component data `7afea44`
+- [x] Task: Implement component restoration in `PaperRollbackExecutor` for Bukkit `ItemMeta` `7afea44`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `7afea44`
 
-## Phase 5: Audit Integrity & Final Integration Tests
+## Phase 5: Audit Integrity & Final Integration Tests [checkpoint: 7afea44]
 
-- [ ] Task: Write test verifying `ROLLBACK_COMPENSATION` is only logged after confirmed world mutation
-- [ ] Task: Write test verifying partial rollback (e.g., block entity removed mid-rollback) logs partial application correctly
-- [ ] Task: Write end-to-end integration test covering full rollback flow on both platforms
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write test verifying `ROLLBACK_COMPENSATION` is only logged after confirmed world mutation `7afea44`
+- [x] Task: Write test verifying partial rollback (e.g., block entity removed mid-rollback) logs partial application correctly `7afea44`
+- [x] Task: Write end-to-end integration test covering full rollback flow on both platforms `7afea44`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `7afea44`
+

@@ -1,13 +1,14 @@
 # Implementation Plan: Heavy Repository Maintenance, Version Sync & Release Preparation (v2.6.0)
 
-## Phase 1: Rollback Persistence Track Finalization & Verification
+## Phase 1: Rollback Persistence Track Finalization & Verification [checkpoint: 7afea44]
 
-- [ ] Task: Complete Phase 4 Component/Metadata Restoration in `FabricRollbackExecutor` and `PaperRollbackExecutor`
-  - [ ] Implement component warning logging and metadata hash delta verification tests
-- [ ] Task: Complete Phase 5 Audit Integrity & Final Integration Tests for Rollback Persistence
-  - [ ] Verify `ROLLBACK_COMPENSATION` ordering and partial rollback fallback tests in `FabricRollbackExecutorTest`
-  - [ ] Mark `rollback_persistence_fix_20260819` as completed in its `plan.md` and update `conductor/tracks.md`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Complete Phase 4 Component/Metadata Restoration in `FabricRollbackExecutor` and `PaperRollbackExecutor` `7afea44`
+  - [x] Implement component warning logging and metadata hash delta verification tests `7afea44`
+- [x] Task: Complete Phase 5 Audit Integrity & Final Integration Tests for Rollback Persistence `7afea44`
+  - [x] Verify `ROLLBACK_COMPENSATION` ordering and partial rollback fallback tests in `FabricRollbackExecutorTest` `7afea44`
+  - [x] Mark `rollback_persistence_fix_20260819` as completed in its `plan.md` and update `conductor/tracks.md` `7afea44`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) `7afea44`
+
 
 ## Phase 2: Version Synchronization & Manifest Updates (v2.6.0)
 
