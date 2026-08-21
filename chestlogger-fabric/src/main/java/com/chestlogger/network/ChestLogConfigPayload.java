@@ -35,6 +35,24 @@ public record ChestLogConfigPayload(
             ChestLogConfigPayload::read
     );
 
+    public static ChestLogConfigPayload createDefault() {
+        return new ChestLogConfigPayload(
+                true,
+                "",
+                "ChestLogger Security Bot",
+                "",
+                30,
+                true,
+                true,
+                32,
+                List.of("minecraft:diamond", "minecraft:netherite_ingot", "minecraft:elytra", "minecraft:beacon"),
+                true,
+                "127.0.0.1",
+                8080,
+                ""
+        );
+    }
+
     public ChestLogConfigPayload {
         discordWebhookUrl = discordWebhookUrl != null ? discordWebhookUrl : "";
         botUsername = botUsername != null ? botUsername : "";

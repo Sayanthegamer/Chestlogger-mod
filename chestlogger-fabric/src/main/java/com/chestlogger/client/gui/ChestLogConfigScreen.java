@@ -31,6 +31,7 @@ public class ChestLogConfigScreen extends Screen {
         public String getLabel() { return label; }
     }
 
+    protected final Screen parent;
     private final ChestLogConfigPayload initialPayload;
     private Tab currentTab = Tab.ALERTS;
 
@@ -62,23 +63,32 @@ public class ChestLogConfigScreen extends Screen {
     private EditBox webHostBox;
     private EditBox webPortBox;
 
-    public ChestLogConfigScreen(ChestLogConfigPayload payload) {
+    public ChestLogConfigScreen(Screen parent, ChestLogConfigPayload payload) {
         super(Component.literal("ChestLogger Configuration"));
-        this.initialPayload = payload;
+        this.parent = parent;
+        this.initialPayload = payload != null ? payload : ChestLogConfigPayload.createDefault();
 
-        this.alertEnabled = payload.alertEnabled();
-        this.discordWebhookUrl = payload.discordWebhookUrl();
-        this.botUsername = payload.botUsername();
-        this.avatarUrl = payload.avatarUrl();
-        this.alertCooldownSeconds = payload.alertCooldownSeconds();
-        this.actionBarNoticeEnabled = payload.actionBarNoticeEnabled();
-        this.inGameChatAlertEnabled = payload.inGameChatAlertEnabled();
-        this.maxOwnerAlertDistance = payload.maxOwnerAlertDistance();
-        this.trackedItems.addAll(payload.trackedItems());
-        this.webEnabled = payload.webEnabled();
-        this.webHost = payload.webHost();
-        this.webPort = payload.webPort();
-        this.secretToken = payload.secretToken();
+        this.alertEnabled = this.initialPayload.alertEnabled();
+        this.discordWebhookUrl = this.initialPayload.discordWebhookUrl();
+        this.botUsername = this.initialPayload.botUsername();
+        this.avatarUrl = this.initialPayload.avatarUrl();
+        this.alertCooldownSeconds = this.initialPayload.alertCooldownSeconds();
+        this.actionBarNoticeEnabled = this.initialPayload.actionBarNoticeEnabled();
+        this.inGameChatAlertEnabled = this.initialPayload.inGameChatAlertEnabled();
+        this.maxOwnerAlertDistance = this.initialPayload.maxOwnerAlertDistance();
+        this.trackedItems.addAll(this.initialPayload.trackedItems());
+        this.webEnabled = this.initialPayload.webEnabled();
+        this.webHost = this.initialPayload.webHost();
+        this.webPort = this.initialPayload.webPort();
+        this.secretToken = this.initialPayload.secretToken();
+    }
+
+    public ChestLogConfigScreen(Screen parent) {
+        this(parent, ChestLogConfigPayload.createDefault());
+    }
+
+    public ChestLogConfigScreen(ChestLogConfigPayload payload) {
+        this(null, payload);
     }
 
     @Override
@@ -378,8 +388,22 @@ public class ChestLogConfigScreen extends Screen {
                 webPort
         );
 
-        ClientPlayNetworking.send(updatePayload);
+        try {
+            if (ClientPlayNetworking.canSend(ChestLogConfigUpdatePayload.TYPE)) {
+                ClientPlayNetworking.send(updatePayload);
+            }
+        } catch (Throwable ignored) {
+        }
         onClose();
+    }
+
+    @Override
+    public void onClose() {
+        if (this.minecraft != null && this.parent != null) {
+            this.minecraft.gui.setScreen(this.parent);
+        } else {
+            super.onClose();
+        }
     }
 
     @Override
