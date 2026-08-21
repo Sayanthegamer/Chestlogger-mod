@@ -12,10 +12,10 @@
 ## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook
 - [x] Task: Write Unit Tests for Mod Menu Entrypoint Resolution [39479cc]
   - [x] Test that `ChestLoggerModMenu` class exists and implements config screen factory method
-- [ ] Task: Implement `ChestLoggerModMenu` and Register in `fabric.mod.json`
-  - [ ] Add `modmenu` compileOnly dependency / interface integration
-  - [ ] Implement `ChestLoggerModMenu` providing `ChestLogConfigScreen` factory
-  - [ ] Register `modmenu` entrypoint in `fabric.mod.json`
+- [x] Task: Implement `ChestLoggerModMenu` and Register in `fabric.mod.json` [f05bf26]
+  - [x] Add `modmenu` compileOnly dependency / interface integration
+  - [x] Implement `ChestLoggerModMenu` providing `ChestLogConfigScreen` factory
+  - [x] Register `modmenu` entrypoint in `fabric.mod.json`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Packaging & End-to-End Build Verification
