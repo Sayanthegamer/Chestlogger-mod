@@ -5,10 +5,10 @@
   - [x] Create test for non-op execution of `/chestlog` rendering player help commands
   - [x] Create test for op execution of `/chestlog` toggling inspect mode
   - [x] Create test for `/chestlog help` subcommand node
-- [ ] Task: Implement Fabric Root `/chestlog` Handler & Help Command
-  - [ ] Add root `.executes(...)` handler in `ChestLoggerCommands.java`
-  - [ ] Implement `executeRootOrHelp(CommandSourceStack source)` with permission checks
-  - [ ] Register explicit `help` sub-command node in `ChestLoggerCommands.java`
+- [x] Task: Implement Fabric Root `/chestlog` Handler & Help Command [c7be9f4]
+  - [x] Add root `.executes(...)` handler in `ChestLoggerCommands.java`
+  - [x] Implement `executeRootOrHelp(CommandSourceStack source)` with permission checks
+  - [x] Register explicit `help` sub-command node in `ChestLoggerCommands.java`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper Command & Help Menu Parity
