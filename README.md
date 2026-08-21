@@ -188,6 +188,7 @@ curl -H "X-ChestLogger-Auth: YOUR_SECRET_TOKEN" \
 1. Download `chestlogger-fabric-2.6.1.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
 2. Place into your server or client `mods/` directory.
 3. Requires Fabric API for 26.2.
+4. *(Optional Client)* Supports **Mod Menu** with official brand icon, rich metadata, and direct in-game configuration UI access.
 
 ### Paper Server
 1. Download `chestlogger-paper-2.6.1.jar` from [**Releases**](https://github.com/Sayanthegamer/Chestlogger-mod/releases).
