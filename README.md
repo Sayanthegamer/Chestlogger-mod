@@ -61,18 +61,23 @@ Both platforms share identical binary `.clog` log formatting, spatial index layo
 
 | Command | Permission (Paper) | Description |
 |---|---|---|
+| `/chestlog` (or `/cl`, `/chestlog help`) | *None / All players* | View formatted command help guide (or toggle inspect mode for Ops) |
+| `/chestlog claim [radius]` | `chestlogger.claim` | Claim targeted container (or mass-claim area of containers up to 16 blocks) |
+| `/chestlog unclaim` | `chestlogger.claim` | Remove claim on targeted container |
+| `/chestlog transfer <newOwner>` | `chestlogger.claim` | Transfer container ownership claim to another player |
+| `/chestlog trust <player>` | `chestlogger.trust` | Grant trusted access to a teammate to exempt them from theft alerts |
+| `/chestlog untrust <player>` | `chestlogger.trust` | Revoke container trust from a player |
+| `/chestlog trustlist` | `chestlogger.trust` | View all players currently in your trust list |
+| `/chestlog trace [hand]` | `chestlogger.trace` | Reconstruct chain-of-custody for the item held in your main hand |
 | `/chestlog i` (or `/chestlog inspect`) | `chestlogger.inspect` | Toggle click inspection mode (Left-click for chat, Right-click for GUI) |
 | `/chestlog wand` | `chestlogger.inspect` | Displays wand item info and quick usage instructions |
 | `/chestlog inspect <X> <Y> <Z> [page]` | `chestlogger.inspect` | Inspect container transaction history at target coords |
 | `/chestlog inspect <X> <Y> <Z> <player> [page]` | `chestlogger.inspect` | Filter inspection results by player |
 | `/chestlog trace <X> <Y> <Z> [slot]` | `chestlogger.inspect` | Reconstruct and visualize the item journey at target container slot |
-| `/chestlog trace [hand]` | `chestlogger.inspect` | Reconstruct chain-of-custody for the item held in your main hand |
-| `/chestlog trust <player>` | `chestlogger.trust` | Grant trusted access to a teammate to exempt them from theft alerts |
-| `/chestlog untrust <player>` | `chestlogger.trust` | Revoke container trust from a player |
-| `/chestlog trustlist` | `chestlogger.trust` | View all players currently in your trust list |
 | `/chestlog rollback <X> <Y> <Z> <seconds> [player]` | `chestlogger.rollback` | Calculate and preview rollback compensation plan |
 | `/chestlog rollback <X> <Y> <Z> <sec> confirm <token>` | `chestlogger.rollback` | Execute live non-destructive rollback compensation |
 | `/chestlog stats` | `chestlogger.stats` | Display real-time queue depth, throughput, and index size |
+| `/chestlog config` | `chestlogger.admin` | Open in-game GUI configuration screen or modify settings |
 | `/chestlog purge <days> [confirmToken]` | `chestlogger.purge` | Safe two-step segment cleanup of old audit logs |
 
 ---
