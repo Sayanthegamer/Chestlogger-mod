@@ -90,4 +90,51 @@ class AntiSnipingGuardTest {
         var result = AntiSnipingGuard.evaluateClaim(history, trustManager, dim, pos, bob, false);
         assertThat(result.allowed()).isTrue();
     }
+
+    @Test
+    @DisplayName("Pre-existing container without place event allows claiming by active claimant")
+    void testPreExistingContainerClaimedByActiveUser() {
+        // No CONTAINER_PLACE (chest existed before mod was installed)
+        // Alice interacted with the chest (e.g. shift-click extract)
+        List<TransactionLogEntry> history = List.of(
+                new TransactionLogEntry(1L, System.currentTimeMillis(), UUID.randomUUID(), ActionType.SHIFT_CLICK_EXTRACT, ActorType.PLAYER, alice, "Alice", dim, pos, List.of())
+        );
+
+        var result = AntiSnipingGuard.evaluateClaim(history, trustManager, dim, pos, alice, false);
+        assertThat(result.allowed()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Pre-existing container without place event blocks stranger when history belongs to Alice")
+    void testPreExistingContainerBlocksStranger() {
+        // No CONTAINER_PLACE, but Alice has interaction history
+        List<TransactionLogEntry> history = List.of(
+                new TransactionLogEntry(1L, System.currentTimeMillis(), UUID.randomUUID(), ActionType.SHIFT_CLICK_EXTRACT, ActorType.PLAYER, alice, "Alice", dim, pos, List.of())
+        );
+
+        var result = AntiSnipingGuard.evaluateClaim(history, trustManager, dim, pos, stranger, false);
+        assertThat(result.allowed()).isFalse();
+        assertThat(result.primaryOwnerUuid()).isEqualTo(alice);
+        assertThat(result.primaryOwnerName()).isEqualTo("Alice");
+        assertThat(result.reason()).contains("Container transaction history belongs to Alice");
+    }
+
+    @Test
+    @DisplayName("Pre-existing container without place event allows trusted friend Bob when history belongs to Alice")
+    void testPreExistingContainerAllowsTrustedFriend() {
+        trustManager.trust(alice, bob);
+        List<TransactionLogEntry> history = List.of(
+                new TransactionLogEntry(1L, System.currentTimeMillis(), UUID.randomUUID(), ActionType.SHIFT_CLICK_EXTRACT, ActorType.PLAYER, alice, "Alice", dim, pos, List.of())
+        );
+
+        var result = AntiSnipingGuard.evaluateClaim(history, trustManager, dim, pos, bob, false);
+        assertThat(result.allowed()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Null history safely passes anti-sniping check")
+    void testNullHistoryPasses() {
+        var result = AntiSnipingGuard.evaluateClaim((List<TransactionLogEntry>) null, trustManager, dim, pos, stranger, false);
+        assertThat(result.allowed()).isTrue();
+    }
 }
