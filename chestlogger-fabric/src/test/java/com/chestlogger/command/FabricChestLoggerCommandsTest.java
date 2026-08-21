@@ -17,8 +17,7 @@ class FabricChestLoggerCommandsTest {
 
     private CommandDispatcher<CommandSourceStack> dispatcher;
 
-    @BeforeAll
-    static void initMinecraft() {
+    static {
         try {
             SharedConstants.tryDetectVersion();
         } catch (Throwable ignored) {

@@ -63,4 +63,5 @@ java {
 
 test {
     useJUnitPlatform()
+    forkEvery = 1
 }
