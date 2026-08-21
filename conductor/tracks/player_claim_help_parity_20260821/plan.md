@@ -1,10 +1,10 @@
 # Implementation Plan: Player Container Claiming Usability & Command Help Parity
 
 ## Phase 1: Fabric Root Command & Help Menu Implementation
-- [ ] Task: Write Unit Tests for Fabric `/chestlog` Root Execution & Player Help Menu
-  - [ ] Create test for non-op execution of `/chestlog` rendering player help commands
-  - [ ] Create test for op execution of `/chestlog` toggling inspect mode
-  - [ ] Create test for `/chestlog help` subcommand node
+- [x] Task: Write Unit Tests for Fabric `/chestlog` Root Execution & Player Help Menu [e750dde]
+  - [x] Create test for non-op execution of `/chestlog` rendering player help commands
+  - [x] Create test for op execution of `/chestlog` toggling inspect mode
+  - [x] Create test for `/chestlog help` subcommand node
 - [ ] Task: Implement Fabric Root `/chestlog` Handler & Help Command
   - [ ] Add root `.executes(...)` handler in `ChestLoggerCommands.java`
   - [ ] Implement `executeRootOrHelp(CommandSourceStack source)` with permission checks
