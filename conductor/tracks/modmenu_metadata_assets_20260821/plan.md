@@ -10,8 +10,8 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook
-- [ ] Task: Write Unit Tests for Mod Menu Entrypoint Resolution
-  - [ ] Test that `ChestLoggerModMenu` class exists and implements config screen factory method
+- [x] Task: Write Unit Tests for Mod Menu Entrypoint Resolution [39479cc]
+  - [x] Test that `ChestLoggerModMenu` class exists and implements config screen factory method
 - [ ] Task: Implement `ChestLoggerModMenu` and Register in `fabric.mod.json`
   - [ ] Add `modmenu` compileOnly dependency / interface integration
   - [ ] Implement `ChestLoggerModMenu` providing `ChestLogConfigScreen` factory
