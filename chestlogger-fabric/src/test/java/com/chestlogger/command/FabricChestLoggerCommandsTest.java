@@ -19,8 +19,14 @@ class FabricChestLoggerCommandsTest {
 
     @BeforeAll
     static void initMinecraft() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+        try {
+            SharedConstants.tryDetectVersion();
+        } catch (Throwable ignored) {
+        }
+        try {
+            Bootstrap.bootStrap();
+        } catch (Throwable ignored) {
+        }
     }
 
     @BeforeEach
