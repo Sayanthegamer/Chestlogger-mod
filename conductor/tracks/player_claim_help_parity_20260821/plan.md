@@ -28,6 +28,6 @@
   - [x] Test mass claiming radius limits for players vs admins
 - [x] Task: Verify & Refine Anti-Sniping and Claim Feedback Messages [65ddf24]
   - [x] Ensure descriptive error messaging and clear success notifications
-- [ ] Task: Full Test Suite & Build Verification
-  - [ ] Run `./gradlew check` across all modules
+- [x] Task: Full Test Suite & Build Verification
+  - [x] Run `./gradlew check` across all modules
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
