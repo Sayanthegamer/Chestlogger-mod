@@ -9,14 +9,14 @@
   - [x] Update `fabric.mod.json` with icon, author (`Sayanthegamer`), homepage, sources, issues, and badges
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook
+## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook [checkpoint: f05bf26]
 - [x] Task: Write Unit Tests for Mod Menu Entrypoint Resolution [39479cc]
   - [x] Test that `ChestLoggerModMenu` class exists and implements config screen factory method
 - [x] Task: Implement `ChestLoggerModMenu` and Register in `fabric.mod.json` [f05bf26]
   - [x] Add `modmenu` compileOnly dependency / interface integration
   - [x] Implement `ChestLoggerModMenu` providing `ChestLogConfigScreen` factory
   - [x] Register `modmenu` entrypoint in `fabric.mod.json`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Packaging & End-to-End Build Verification
 - [ ] Task: Verify JAR Asset Packaging & Dependency Isolation
