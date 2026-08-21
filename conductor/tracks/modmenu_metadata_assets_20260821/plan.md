@@ -1,13 +1,13 @@
 # Implementation Plan: Mod Menu Integration, Metadata Enrichment & Brand Icon Assets
 
-## Phase 1: Icon Assets & Metadata Enrichment (`fabric.mod.json`)
+## Phase 1: Icon Assets & Metadata Enrichment (`fabric.mod.json`) [checkpoint: 96208d0]
 - [x] Task: Write Unit Tests for `fabric.mod.json` Schema, Icon & Metadata Presence [a19b66a]
   - [x] Test that `fabric.mod.json` includes valid icon path, author, contact issues, and description
   - [x] Test that `assets/chestlogger/icon.png` is present and loadable as valid image bytes
 - [x] Task: Place `icon.png` Brand Asset & Update `fabric.mod.json` Metadata [96208d0]
   - [x] Copy user logo to `chestlogger-fabric/src/main/resources/assets/chestlogger/icon.png`
   - [x] Update `fabric.mod.json` with icon, author (`Sayanthegamer`), homepage, sources, issues, and badges
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook
 - [ ] Task: Write Unit Tests for Mod Menu Entrypoint Resolution
