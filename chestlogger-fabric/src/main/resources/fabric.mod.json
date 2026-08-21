@@ -3,13 +3,16 @@
   "id": "chestlogger",
   "version": "${version}",
   "name": "ChestLogger",
+  "icon": "assets/chestlogger/icon.png",
   "description": "Production-grade server-authoritative container looting and transaction tracking mod with zero main-thread blocking I/O, append-only binary logging, and compensation rollback.",
   "authors": [
+    "Sayanthegamer",
     "ChestLogger Team"
   ],
   "contact": {
-    "homepage": "https://github.com/chestlogger/chestlogger",
-    "sources": "https://github.com/chestlogger/chestlogger"
+    "homepage": "https://github.com/Sayanthegamer/Chestlogger-mod",
+    "sources": "https://github.com/Sayanthegamer/Chestlogger-mod",
+    "issues": "https://github.com/Sayanthegamer/Chestlogger-mod/issues"
   },
   "license": "MIT",
   "environment": "*",
@@ -19,7 +22,20 @@
     ],
     "client": [
       "com.chestlogger.client.ChestLoggerClient"
+    ],
+    "modmenu": [
+      "com.chestlogger.client.modmenu.ChestLoggerModMenu"
     ]
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "utility"
+      ],
+      "links": {
+        "modmenu.wiki": "https://github.com/Sayanthegamer/Chestlogger-mod#readme"
+      }
+    }
   },
   "mixins": [
     "chestlogger.mixins.json"
