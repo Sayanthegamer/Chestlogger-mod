@@ -116,6 +116,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             case "trust" -> handleTrust(sender, args);
             case "untrust" -> handleUntrust(sender, args);
             case "trustlist" -> handleTrustList(sender);
+            case "help" -> sendHelp(sender);
             default -> sendHelp(sender);
         }
         return true;
@@ -610,19 +611,27 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
     }
 
     private void sendHelp(CommandSender sender) {
+        boolean isAdmin = sender.hasPermission("chestlogger.inspect") || sender.hasPermission("chestlogger.admin") || sender.isOp();
+
         sender.sendMessage(ChatColor.GOLD + "=== ChestLogger Commands ===");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [page]" + ChatColor.WHITE + " - Toggle inspect mode or inspect targeted container");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog claim [radius]" + ChatColor.WHITE + " - Claim container or radius of containers");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog claim [radius]" + ChatColor.WHITE + " - Claim targeted container or area of containers (up to 16 blocks)");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog unclaim" + ChatColor.WHITE + " - Remove claim on targeted container");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog trace <x> <y> <z> [slot]" + ChatColor.WHITE + " - Trace item provenance at container slot");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog trace [hand]" + ChatColor.WHITE + " - Trace item provenance for item in hand");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog transfer <newOwner>" + ChatColor.WHITE + " - Transfer container claim to another player");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trust <player>" + ChatColor.WHITE + " - Trust a player to access your containers");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog untrust <player>" + ChatColor.WHITE + " - Revoke trust from a player");
         sender.sendMessage(ChatColor.YELLOW + "/chestlog trustlist" + ChatColor.WHITE + " - View your list of trusted players");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog rollback [seconds]" + ChatColor.WHITE + " - Revert container changes");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog stats" + ChatColor.WHITE + " - View queue and memory telemetry");
-        sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
+        sender.sendMessage(ChatColor.YELLOW + "/chestlog trace [hand]" + ChatColor.WHITE + " - Trace item provenance for item in hand");
+
+        if (isAdmin) {
+            sender.sendMessage(ChatColor.GOLD + "--- Staff / Administrator Commands ---");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog [i|inspect] [pos] [player] [page]" + ChatColor.WHITE + " - Toggle inspect mode or query history");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog wand" + ChatColor.WHITE + " - View inspection wand tool details");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog trace <x> <y> <z> [slot]" + ChatColor.WHITE + " - Trace item provenance at container slot");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog rollback [seconds]" + ChatColor.WHITE + " - Revert container changes");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog stats" + ChatColor.WHITE + " - View queue and memory telemetry");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog config" + ChatColor.WHITE + " - Open configuration GUI or settings");
+            sender.sendMessage(ChatColor.YELLOW + "/chestlog web [start|stop]" + ChatColor.WHITE + " - Manage web dashboard");
+        }
     }
 
     private void handleClaim(CommandSender sender, String[] args) {
@@ -1021,6 +1030,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
             List<String> subcommands = new ArrayList<>();
 
             // Player-accessible subcommands
+            subcommands.add("help");
             if (sender.hasPermission("chestlogger.claim") || sender.hasPermission("chestlogger.admin") || !sender.isPermissionSet("chestlogger.claim")) {
                 subcommands.add("claim");
                 subcommands.add("transfer");
