@@ -12,9 +12,9 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Paper Command & Help Menu Parity
-- [ ] Task: Write Unit Tests for Paper `/chestlog help` & Tab Completion
-  - [ ] Test non-op tab completion and `/chestlog help` command output
-  - [ ] Test operator `/chestlog` toggle vs `/chestlog help` display
+- [x] Task: Write Unit Tests for Paper `/chestlog help` & Tab Completion [cbb7ca6]
+  - [x] Test non-op tab completion and `/chestlog help` command output
+  - [x] Test operator `/chestlog` toggle vs `/chestlog help` display
 - [ ] Task: Implement Paper `/chestlog help` and Command Parity Updates
   - [ ] Add explicit `case "help"` in `PaperCommandExecutor.java`
   - [ ] Update `sendHelp` and tab-completion for `help` subcommand
