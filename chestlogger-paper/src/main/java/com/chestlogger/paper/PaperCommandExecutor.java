@@ -701,7 +701,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
                                         }
                                         var snipingResult = AntiSnipingGuard.evaluateClaim(
                                                 queryEngine,
-                                                null,
+                                                this.trustManager,
                                                 dimension, p, player.getUniqueId(), isAdmin
                                         );
                                         if (!snipingResult.allowed()) {
@@ -753,7 +753,7 @@ public final class PaperCommandExecutor implements CommandExecutor, TabCompleter
         if (existingOwner == null) {
             var snipingResult = AntiSnipingGuard.evaluateClaim(
                     queryEngine,
-                    null,
+                    this.trustManager,
                     dimension, packed, player.getUniqueId(), isAdmin
             );
             if (!snipingResult.allowed()) {
