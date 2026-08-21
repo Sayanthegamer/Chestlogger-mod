@@ -4,9 +4,9 @@
 - [x] Task: Write Unit Tests for `fabric.mod.json` Schema, Icon & Metadata Presence [a19b66a]
   - [x] Test that `fabric.mod.json` includes valid icon path, author, contact issues, and description
   - [x] Test that `assets/chestlogger/icon.png` is present and loadable as valid image bytes
-- [ ] Task: Place `icon.png` Brand Asset & Update `fabric.mod.json` Metadata
-  - [ ] Copy user logo to `chestlogger-fabric/src/main/resources/assets/chestlogger/icon.png`
-  - [ ] Update `fabric.mod.json` with icon, author (`Sayanthegamer`), homepage, sources, issues, and badges
+- [x] Task: Place `icon.png` Brand Asset & Update `fabric.mod.json` Metadata [96208d0]
+  - [x] Copy user logo to `chestlogger-fabric/src/main/resources/assets/chestlogger/icon.png`
+  - [x] Update `fabric.mod.json` with icon, author (`Sayanthegamer`), homepage, sources, issues, and badges
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Mod Menu API Entrypoint & In-Game Config Hook
