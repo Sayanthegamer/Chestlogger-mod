@@ -58,6 +58,3 @@
 
 - [x] **Track: Heavy Repository Maintenance, Version Sync & Release Preparation (v2.6.0)**
   *Link: [./tracks/repo_maintenance_v260_20260820/index.md](./tracks/repo_maintenance_v260_20260820/index.md)*
-
-- [x] **Track: Player Container Claiming Usability & Command Help Parity**
-  *Link: [./tracks/player_claim_help_parity_20260821/index.md](./tracks/player_claim_help_parity_20260821/index.md)*
