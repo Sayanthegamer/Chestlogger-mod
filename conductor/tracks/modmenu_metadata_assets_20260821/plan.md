@@ -18,9 +18,9 @@
   - [x] Register `modmenu` entrypoint in `fabric.mod.json`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Packaging & End-to-End Build Verification
-- [ ] Task: Verify JAR Asset Packaging & Dependency Isolation
-  - [ ] Verify `chestlogger-fabric.jar` contains `assets/chestlogger/icon.png` and valid `fabric.mod.json`
-- [ ] Task: Full Test Suite & Build Verification
-  - [ ] Run `./gradlew check` across all modules
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Packaging & End-to-End Build Verification [checkpoint: f05bf26]
+- [x] Task: Verify JAR Asset Packaging & Dependency Isolation
+  - [x] Verify `chestlogger-fabric.jar` contains `assets/chestlogger/icon.png` and valid `fabric.mod.json`
+- [x] Task: Full Test Suite & Build Verification
+  - [x] Run `./gradlew check` across all modules
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
