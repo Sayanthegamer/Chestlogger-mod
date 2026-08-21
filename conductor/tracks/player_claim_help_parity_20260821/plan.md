@@ -26,8 +26,8 @@
   - [x] Test claiming pre-existing container with past interaction by claimant (allowed)
   - [x] Test claiming pre-existing container with past interaction by another player (blocked)
   - [x] Test mass claiming radius limits for players vs admins
-- [ ] Task: Verify & Refine Anti-Sniping and Claim Feedback Messages
-  - [ ] Ensure descriptive error messaging and clear success notifications
+- [x] Task: Verify & Refine Anti-Sniping and Claim Feedback Messages [65ddf24]
+  - [x] Ensure descriptive error messaging and clear success notifications
 - [ ] Task: Full Test Suite & Build Verification
   - [ ] Run `./gradlew check` across all modules
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
