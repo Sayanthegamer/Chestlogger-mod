@@ -20,7 +20,7 @@
   - [x] Update `sendHelp` and tab-completion for `help` subcommand
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Claiming Ergonomics & End-to-End Verification
+## Phase 3: Claiming Ergonomics & End-to-End Verification [checkpoint: 65ddf24]
 - [x] Task: Write Unit Tests for Anti-Sniping Pre-Mod Container Claiming Scenarios [76dc3fd]
   - [x] Test claiming pre-existing container with empty history (allowed)
   - [x] Test claiming pre-existing container with past interaction by claimant (allowed)
@@ -30,4 +30,4 @@
   - [x] Ensure descriptive error messaging and clear success notifications
 - [x] Task: Full Test Suite & Build Verification
   - [x] Run `./gradlew check` across all modules
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
