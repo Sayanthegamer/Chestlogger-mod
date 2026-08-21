@@ -21,11 +21,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Claiming Ergonomics & End-to-End Verification
-- [ ] Task: Write Unit Tests for Anti-Sniping Pre-Mod Container Claiming Scenarios
-  - [ ] Test claiming pre-existing container with empty history (allowed)
-  - [ ] Test claiming pre-existing container with past interaction by claimant (allowed)
-  - [ ] Test claiming pre-existing container with past interaction by another player (blocked)
-  - [ ] Test mass claiming radius limits for players vs admins
+- [x] Task: Write Unit Tests for Anti-Sniping Pre-Mod Container Claiming Scenarios [76dc3fd]
+  - [x] Test claiming pre-existing container with empty history (allowed)
+  - [x] Test claiming pre-existing container with past interaction by claimant (allowed)
+  - [x] Test claiming pre-existing container with past interaction by another player (blocked)
+  - [x] Test mass claiming radius limits for players vs admins
 - [ ] Task: Verify & Refine Anti-Sniping and Claim Feedback Messages
   - [ ] Ensure descriptive error messaging and clear success notifications
 - [ ] Task: Full Test Suite & Build Verification
