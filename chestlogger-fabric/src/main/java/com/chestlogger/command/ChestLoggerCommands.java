@@ -178,11 +178,16 @@ public final class ChestLoggerCommands {
                         })
                         .executes(ctx -> executeTransferClaim(ctx.getSource(), StringArgumentType.getString(ctx, "newOwner"))));
 
+        var helpNode = Commands.literal("help")
+                .executes(ctx -> executeHelp(ctx.getSource()));
+
         var unclaimNode = Commands.literal("unclaim")
                 .requires(CommandSourceStack::isPlayer)
                 .executes(ctx -> executeUnclaim(ctx.getSource()));
 
         var mainCommand = Commands.literal("chestlog")
+                .executes(ctx -> executeRoot(ctx.getSource()))
+                .then(helpNode)
                 .then(inspectNode)
                 .then(iNode)
                 .then(wandNode)
@@ -235,6 +240,43 @@ public final class ChestLoggerCommands {
         dispatcher.register(mainCommand);
         dispatcher.register(Commands.literal("cl")
                 .redirect(dispatcher.getRoot().getChild("chestlog")));
+    }
+
+    private static int executeRoot(CommandSourceStack source) {
+        if (source.isPlayer()) {
+            boolean isOp = source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile()));
+            if (isOp) {
+                return executeToggleInspect(source);
+            } else {
+                return executeHelp(source);
+            }
+        }
+        return executeHelp(source);
+    }
+
+    private static int executeHelp(CommandSourceStack source) {
+        boolean isOp = !source.isPlayer() || (source.getServer() != null && source.getServer().getPlayerList().isOp(new net.minecraft.server.players.NameAndId(source.getPlayer().getGameProfile())));
+
+        source.sendSuccess(() -> Component.literal("§6=== ChestLogger Commands ==="), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog claim [radius]§f - Claim targeted container or area of containers (up to 16 blocks)"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog unclaim§f - Remove claim on targeted container"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog transfer <newOwner>§f - Transfer container claim to another player"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog trust <player>§f - Trust a player to access your containers"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog untrust <player>§f - Revoke trust from a player"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog trustlist§f - View your list of trusted players"), false);
+        source.sendSuccess(() -> Component.literal("§e/chestlog trace [hand]§f - Trace item provenance for item held in main hand"), false);
+
+        if (isOp) {
+            source.sendSuccess(() -> Component.literal("§6--- Staff / Administrator Commands ---"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog [i|inspect] [pos] [player] [page]§f - Toggle inspect mode or query history"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog wand§f - View inspection wand tool details"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog trace <pos> [slot]§f - Trace item provenance at container slot"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog rollback <pos> <seconds> [confirm|player]§f - Revert container changes"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog stats§f - View queue, memory and telemetry statistics"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog config§f - Open in-game configuration GUI"), false);
+            source.sendSuccess(() -> Component.literal("§e/chestlog purge <days> [confirmToken]§f - Purge historic transaction records"), false);
+        }
+        return 1;
     }
 
     private static int executeInspect(CommandSourceStack source, BlockPos pos, UUID filterPlayer, int durationSeconds, int page) {
